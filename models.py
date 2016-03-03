@@ -17,17 +17,23 @@ Cliente = Table('Cliente', metadata,
                     Column('telefono', Integer),
                     )
 
+Cliente.create()
+
 Factura = Table('Factura', metadata,
                     Column('num_factura', Integer, primary_key=True),
                     Column('id_cliente',Integer, ForeignKey('Cliente.id_cliente')),
                     Column('fecha', DateTime),
                     )
 
+Factura.create()
+
 Categoria = Table('Categoria', metadata,
                     Column('id_categoria', Integer, primary_key=True),
                     Column('nombre', String(40)),
                     Column('descripcion', String(60)),
                     )
+
+Categoria.create()
 
 Producto=Table('Producto', metadata,
                     Column('id_producto', Integer, primary_key=True),
@@ -39,6 +45,8 @@ Producto=Table('Producto', metadata,
                     Column('detalle',String(80)),
                     )
 
+Producto.create()
+
 Detalle = Table('Detalle', metadata,
                     Column('num_detalle', Integer, primary_key=True),
                     Column('id_factura',Integer, ForeignKey('Factura.num_factura')),
@@ -48,11 +56,15 @@ Detalle = Table('Detalle', metadata,
                     )
 
 
+Detalle.create()
+
 Gasto = Table('Gasto', metadata,
                 Column('id_gasto', Integer, primary_key=True),
                 Column('detalle', String(80)),
                 Column('monto', Numeric(15,2)),
                 )
+
+Gasto.create()
 
 Caja = Table('Caja', metadata,
                 Column('id_caja', Integer, primary_key=True),
@@ -62,3 +74,6 @@ Caja = Table('Caja', metadata,
                 Column('saldo_actual', Numeric(15,2)),
                 Column('fecha', Date)
                 )
+
+Caja.create()
+
