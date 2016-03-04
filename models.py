@@ -68,9 +68,24 @@ metadata.create_all()
 
 class Cliente(Base):
 	__tablename__ = 'Cliente'
-	id_cliente = Column(Integer, primary_key=True)
+	id_cliente = Column(Integer, primary_key=True, autoincrement=True)
 
 class Factura(Base):
 	__tablename__ = 'Factura'
 	num_factura = Column(Integer, primary_key=True)
 	id_cliente = Column(Integer, ForeignKey('Cliente.id_cliente'))
+
+class Categoria(Base):
+    __tablename__ = 'Categoria'
+    id_categoria = Column(Integer, primary_key=True, autoincrement=True)
+
+class Producto(Base):
+    __tablename__ = 'Producto'
+    id_producto = Column(Integer, primary_key=True, autoincrement=True)
+    id_categoria = Column(Integer, ForeignKey('Categoria.id_categoria'))
+
+class Detalle(Base):
+    __tablename__ = 'Detalle'
+    num_detalle = Column(Integer, primary_key=True, autoincrement=True)
+    id_factura = Column(Integer, ForeignKey('Factura.num_factura'))
+    id_producto = Column(Integer, ForeignKey('Producto.id_producto'))
