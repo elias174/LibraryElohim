@@ -1,79 +1,76 @@
 from datetime import datetime, timedelta
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
+from sqlalchemy.ext.declarative import declarative_base
 
-db = create_engine('sqlite:///dataBase.db', echo = True)
+Base = declarative_base()
+
+db = create_engine('sqlite:///dataBase.db', echo = False)
 metadata = MetaData(db)
 
-Session = sessionmaker(bind=db)
-session = Session()
-
 Cliente = Table('Cliente', metadata,
-                    Column('id_cliente', Integer, primary_key=True),
-                    Column('nombre', String(40)),
-                    Column('apellido', String(40)),
+                    Column('id_cliente', Integer, primary_key=True, autoincrement=True),
+                    Column('nombre', String(40), nullable=False),
+                    Column('apellido', String(40), nullable=False),
                     Column('direccion', String(60)),
                     Column('fecha_nacimiento', Date),
                     Column('telefono', Integer),
                     )
 
-Cliente.create()
-
 Factura = Table('Factura', metadata,
                     Column('num_factura', Integer, primary_key=True),
                     Column('id_cliente',Integer, ForeignKey('Cliente.id_cliente')),
-                    Column('fecha', DateTime),
+                    Column('fecha', DateTime, nullable=False),
                     )
 
-Factura.create()
-
 Categoria = Table('Categoria', metadata,
-                    Column('id_categoria', Integer, primary_key=True),
-                    Column('nombre', String(40)),
+                    Column('id_categoria', Integer, primary_key=True, autoincrement=True),
+                    Column('nombre', String(40), nullable=False),
                     Column('descripcion', String(60)),
                     )
 
-Categoria.create()
-
 Producto=Table('Producto', metadata,
-                    Column('id_producto', Integer, primary_key=True),
+                    Column('id_producto', Integer, primary_key=True, autoincrement=True),
                     Column('id_categoria', Integer, ForeignKey('Categoria.id_categoria')),
-                    Column('nombre',String(40)),
+                    Column('nombre',String(40), nullable=False),
                     Column('precio_compra',Numeric(15,2)),
-                    Column('precio_venta',Numeric(15,2)),
-                    Column('stock', Integer),
+                    Column('precio_venta',Numeric(15,2), nullable=False),
+                    Column('stock', Integer, nullable=False),
                     Column('detalle',String(80)),
                     )
 
-Producto.create()
-
 Detalle = Table('Detalle', metadata,
-                    Column('num_detalle', Integer, primary_key=True),
+                    Column('num_detalle', Integer, primary_key=True, autoincrement=True),
                     Column('id_factura',Integer, ForeignKey('Factura.num_factura')),
                     Column('id_producto', Integer, ForeignKey('Producto.id_producto')),
-                    Column('cantidad', Integer),
-                    Column('precio_total', Numeric(15,2)),
+                    Column('cantidad', Integer, nullable=False),
+                    Column('precio_total', Numeric(15,2), nullable=False),
                     )
 
-
-Detalle.create()
-
 Gasto = Table('Gasto', metadata,
-                Column('id_gasto', Integer, primary_key=True),
+                Column('id_gasto', Integer, primary_key=True, autoincrement=True),
                 Column('detalle', String(80)),
-                Column('monto', Numeric(15,2)),
+                Column('monto', Numeric(15,2), nullable=False),
                 )
-
-Gasto.create()
 
 Caja = Table('Caja', metadata,
-                Column('id_caja', Integer, primary_key=True),
-                Column('saldo_anterior', Numeric(15,2)),
-                Column('ingresos', Numeric(15,2)),
-                Column('egresos', Numeric(15,2)),
-                Column('saldo_actual', Numeric(15,2)),
-                Column('fecha', Date)
+                Column('id_caja', Integer, primary_key=True, autoincrement=True),
+                Column('saldo_anterior', Numeric(15,2), nullable=False),
+                Column('ingresos', Numeric(15,2), nullable=False),
+                Column('egresos', Numeric(15,2), nullable=False),
+                Column('saldo_actual', Numeric(15,2), nullable=False),
+                Column('fecha', Date, nullable=False)
                 )
 
-Caja.create()
+metadata.create_all()
 
+''' Creacion de las relacion ''' 
+
+class Cliente(Base):
+	__tablename__ = 'Cliente'
+	id_cliente = Column(Integer, primary_key=True)
+
+class Factura(Base):
+	__tablename__ = 'Factura'
+	num_factura = Column(Integer, primary_key=True)
+	id_cliente = Column(Integer, ForeignKey('Cliente.id_cliente'))
