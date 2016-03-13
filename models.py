@@ -23,7 +23,7 @@ Cliente = Table('Cliente', metadata,
                     )
 
 Factura = Table('Factura', metadata,
-                    Column('num_factura', Integer, primary_key=True),
+                    Column('num_factura', Integer, primary_key=True, unique=True),
                     Column('id_cliente',Integer, ForeignKey('Cliente.id_cliente')),
                     Column('fecha', DateTime, nullable=False),
                     )
@@ -89,7 +89,7 @@ class Cliente(Base):
 
 class Factura(Base):
     __tablename__   = 'Factura'
-    num_factura     = Column(Integer, primary_key=True)
+    num_factura     = Column(Integer, primary_key=True, unique= True)
     id_cliente      = Column(Integer, ForeignKey('Cliente.id_cliente'))
     fecha           = Column(DateTime, nullable=False)
 
@@ -119,8 +119,7 @@ class Producto(Base):
     stock           = Column(Integer, nullable=False)
     detalle         = Column(String(80))
 
-    def __init__(self, id_producto, id_categoria, nombre, precio_compra, precio_venta, stock, detalle):
-        self.id_producto    = id_producto
+    def __init__(self, id_categoria, nombre, precio_compra, precio_venta, stock, detalle):
         self.id_categoria   = id_categoria
         self.nombre         = nombre
         self.precio_compra  = precio_compra
@@ -130,21 +129,20 @@ class Producto(Base):
 
 class Detalle(Base):
     __tablename__   = 'Detalle'
-    num_detalle     = Column(Integer, primary_key=True)
+    num_detalle     = Column(Integer, primary_key=True, autoincrement=True)
     id_factura      = Column(Integer, ForeignKey('Factura.num_factura'))
     id_producto     = Column(Integer, ForeignKey('Producto.id_producto'))
     cantidad        = Column(Integer, nullable=False)
     precio_total    = Column(Numeric(15,2), nullable=False)
 
-    def __init__(self, num_detalle, id_factura, id_producto, cantidad, precio_total):
-        self.num_detalle    = num_detalle
+    def __init__(self, id_factura, id_producto, cantidad, precio_total):
         self.id_factura     = id_factura
         self.id_producto    = id_producto
         self.cantidad       = cantidad
         self.precio_total   = precio_total
 
 
-class Gatos(Base):
+class Gasto(Base):
     __tablename__   = 'Gasto'
     id_gasto        = Column(Integer, primary_key=True, autoincrement=True)
     detalle         = Column(String(80))
