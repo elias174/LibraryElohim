@@ -29,14 +29,14 @@ Factura = Table('Factura', metadata,
                     )
 
 Categoria = Table('Categoria', metadata,
-                    Column('id_categoria', Integer, primary_key=True, autoincrement=True),
+                    Column('categoria', Integer, primary_key=True, autoincrement=True),
                     Column('nombre', String(40), nullable=False),
                     Column('descripcion', String(60)),
                     )
 
 Producto=Table('Producto', metadata,
-                    Column('id_producto', Integer, primary_key=True, autoincrement=True),
-                    Column('id_categoria', Integer, ForeignKey('Categoria.id_categoria')),
+                    Column('producto', Integer, primary_key=True, autoincrement=True),
+                    Column('categoria', Integer, ForeignKey('Categoria.categoria')),
                     Column('nombre',String(40), nullable=False),
                     Column('precio_compra',Numeric(15,2)),
                     Column('precio_venta',Numeric(15,2), nullable=False),
@@ -47,7 +47,7 @@ Producto=Table('Producto', metadata,
 Detalle = Table('Detalle', metadata,
                     Column('num_detalle', Integer, primary_key=True),
                     Column('id_factura',Integer, ForeignKey('Factura.num_factura')),
-                    Column('id_producto', Integer, ForeignKey('Producto.id_producto')),
+                    Column('producto', Integer, ForeignKey('Producto.producto')),
                     Column('cantidad', Integer, nullable=False),
                     Column('precio_total', Numeric(15,2), nullable=False),
                     )
@@ -100,7 +100,7 @@ class Factura(Base):
 
 class Categoria(Base):
     __tablename__   = 'Categoria'
-    id_categoria    = Column(Integer, primary_key=True, autoincrement=True)
+    categoria    = Column(Integer, primary_key=True, autoincrement=True)
     nombre          = Column(String(40), nullable=False)
     descripcion     = Column(String(60))
 
@@ -111,16 +111,16 @@ class Categoria(Base):
 
 class Producto(Base):
     __tablename__   = 'Producto'
-    id_producto     = Column(Integer, primary_key=True, autoincrement=True)
-    id_categoria    = Column(Integer, ForeignKey('Categoria.id_categoria'))
+    producto        = Column(Integer, primary_key=True, autoincrement=True)
+    categoria       = Column(Integer, ForeignKey('Categoria.categoria'))
     nombre          = Column(String(40), nullable=False)
     precio_compra   = Column(Numeric(15,2))
     precio_venta    = Column(Numeric(15,2), nullable=False)
     stock           = Column(Integer, nullable=False)
     detalle         = Column(String(80))
 
-    def __init__(self, id_categoria, nombre, precio_compra, precio_venta, stock, detalle):
-        self.id_categoria   = id_categoria
+    def __init__(self, categoria, nombre, precio_compra, precio_venta, stock, detalle):
+        self.categoria      = categoria
         self.nombre         = nombre
         self.precio_compra  = precio_compra
         self.precio_venta   = precio_venta
@@ -131,13 +131,13 @@ class Detalle(Base):
     __tablename__   = 'Detalle'
     num_detalle     = Column(Integer, primary_key=True, autoincrement=True)
     id_factura      = Column(Integer, ForeignKey('Factura.num_factura'))
-    id_producto     = Column(Integer, ForeignKey('Producto.id_producto'))
+    producto        = Column(Integer, ForeignKey('Producto.producto'))
     cantidad        = Column(Integer, nullable=False)
     precio_total    = Column(Numeric(15,2), nullable=False)
 
-    def __init__(self, id_factura, id_producto, cantidad, precio_total):
+    def __init__(self, id_factura, producto, cantidad, precio_total):
         self.id_factura     = id_factura
-        self.id_producto    = id_producto
+        self.producto       = producto
         self.cantidad       = cantidad
         self.precio_total   = precio_total
 
