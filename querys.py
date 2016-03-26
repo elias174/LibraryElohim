@@ -73,14 +73,14 @@ session.commit()
 
 ''' Agregando Facturas '''
 
-session.add(Factura(1,1,datetime.utcnow()))
-session.add(Factura(2,2,datetime.utcnow()))
-session.add(Factura(3,3,datetime.utcnow()))
-session.add(Factura(4,4,datetime.utcnow()))
-session.add(Factura(5,5,datetime.utcnow()))
-session.add(Factura(6,6,datetime.utcnow()))
-session.add(Factura(7,7,datetime.utcnow()))
-session.add(Factura(8,8,datetime.utcnow()))
+session.add(Factura(1,datetime.utcnow()))
+session.add(Factura(2,datetime.utcnow()))
+session.add(Factura(3,datetime.utcnow()))
+session.add(Factura(4,datetime.utcnow()))
+session.add(Factura(5,datetime.utcnow()))
+session.add(Factura(6,datetime.utcnow()))
+session.add(Factura(7,datetime.utcnow()))
+session.add(Factura(8,datetime.utcnow()))
 session.commit()
 
 ''' Agregando detalles '''

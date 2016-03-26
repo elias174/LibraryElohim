@@ -14,7 +14,7 @@ Session = sessionmaker(bind=db)
 session = Session()
 
 Cliente = Table('Cliente', metadata,
-                    Column('id_cliente', Integer, Sequence('some_id_seq', start=1, increment=1),primary_key=True),
+                    Column('id', Integer, Sequence('some_id_seq', start=1, increment=1),primary_key=True),
                     Column('nombre', String(40), nullable=False),
                     Column('apellido', String(40), nullable=False),
                     Column('direccion', String(60)),
@@ -23,20 +23,20 @@ Cliente = Table('Cliente', metadata,
                     )
 
 Factura = Table('Factura', metadata,
-                    Column('num_factura', Integer, primary_key=True, unique=True),
-                    Column('id_cliente',Integer, ForeignKey('Cliente.id_cliente')),
+                    Column('id', Integer, primary_key=True, unique=True),
+                    Column('cliente',Integer, ForeignKey('Cliente.id')),
                     Column('fecha', DateTime, nullable=False),
                     )
 
 Categoria = Table('Categoria', metadata,
-                    Column('categoria', Integer, primary_key=True, autoincrement=True),
+                    Column('id', Integer, primary_key=True, autoincrement=True),
                     Column('nombre', String(40), nullable=False),
                     Column('descripcion', String(60)),
                     )
 
 Producto=Table('Producto', metadata,
-                    Column('producto', Integer, primary_key=True, autoincrement=True),
-                    Column('categoria', Integer, ForeignKey('Categoria.categoria')),
+                    Column('id', Integer, primary_key=True, autoincrement=True),
+                    Column('categoria', Integer, ForeignKey('Categoria.id')),
                     Column('nombre',String(40), nullable=False),
                     Column('precio_compra',Numeric(15,2)),
                     Column('precio_venta',Numeric(15,2), nullable=False),
@@ -45,21 +45,21 @@ Producto=Table('Producto', metadata,
                     )
 
 Detalle = Table('Detalle', metadata,
-                    Column('num_detalle', Integer, primary_key=True),
-                    Column('id_factura',Integer, ForeignKey('Factura.num_factura')),
-                    Column('producto', Integer, ForeignKey('Producto.producto')),
+                    Column('id', Integer, primary_key=True),
+                    Column('factura',Integer, ForeignKey('Factura.id')),
+                    Column('producto', Integer, ForeignKey('Producto.id')),
                     Column('cantidad', Integer, nullable=False),
                     Column('precio_total', Numeric(15,2), nullable=False),
                     )
 
 Gasto = Table('Gasto', metadata,
-                Column('id_gasto', Integer, primary_key=True, autoincrement=True),
+                Column('id', Integer, primary_key=True, autoincrement=True),
                 Column('detalle', String(80)),
                 Column('monto', Numeric(15,2), nullable=False),
                 )
 
 Caja = Table('Caja', metadata,
-                Column('id_caja', Integer, primary_key=True, autoincrement=True),
+                Column('id', Integer, primary_key=True, autoincrement=True),
                 Column('saldo_anterior', Numeric(15,2), nullable=False),
                 Column('ingresos', Numeric(15,2), nullable=False),
                 Column('egresos', Numeric(15,2), nullable=False),
@@ -73,7 +73,7 @@ metadata.create_all()
 
 class Cliente(Base):
     __tablename__       = 'Cliente'
-    id_cliente          = Column(Integer, Sequence('some_id_seq', start=1, increment=1), primary_key=True)
+    id          = Column(Integer, Sequence('some_id_seq', start=1, increment=1), primary_key=True)
     nombre              = Column(String(40), nullable=False)
     apellido            = Column(String(40), nullable=False)
     direccion           = Column(String(60))
@@ -89,18 +89,17 @@ class Cliente(Base):
 
 class Factura(Base):
     __tablename__   = 'Factura'
-    num_factura     = Column(Integer, primary_key=True, unique= True)
-    id_cliente      = Column(Integer, ForeignKey('Cliente.id_cliente'))
+    id     = Column(Integer, primary_key=True, unique= True)
+    cliente      = Column(Integer, ForeignKey('Cliente.id'))
     fecha           = Column(DateTime, nullable=False)
 
-    def __init__(self, num_factura, id_cliente, fecha):
-        self.num_factura    = num_factura
-        self.id_cliente     = id_cliente
+    def __init__(self, cliente, fecha):
+        self.cliente     = cliente
         self.fecha          = fecha
 
 class Categoria(Base):
     __tablename__   = 'Categoria'
-    categoria    = Column(Integer, primary_key=True, autoincrement=True)
+    id    = Column(Integer, primary_key=True, autoincrement=True)
     nombre          = Column(String(40), nullable=False)
     descripcion     = Column(String(60))
 
@@ -111,8 +110,8 @@ class Categoria(Base):
 
 class Producto(Base):
     __tablename__   = 'Producto'
-    producto        = Column(Integer, primary_key=True, autoincrement=True)
-    categoria       = Column(Integer, ForeignKey('Categoria.categoria'))
+    id    = Column(Integer, primary_key=True, autoincrement=True)
+    categoria       = Column(Integer, ForeignKey('Categoria.id'))
     nombre          = Column(String(40), nullable=False)
     precio_compra   = Column(Numeric(15,2))
     precio_venta    = Column(Numeric(15,2), nullable=False)
@@ -129,14 +128,14 @@ class Producto(Base):
 
 class Detalle(Base):
     __tablename__   = 'Detalle'
-    num_detalle     = Column(Integer, primary_key=True, autoincrement=True)
-    id_factura      = Column(Integer, ForeignKey('Factura.num_factura'))
-    producto        = Column(Integer, ForeignKey('Producto.producto'))
+    id     = Column(Integer, primary_key=True, autoincrement=True)
+    factura      = Column(Integer, ForeignKey('Factura.id'))
+    producto        = Column(Integer, ForeignKey('Producto.id'))
     cantidad        = Column(Integer, nullable=False)
     precio_total    = Column(Numeric(15,2), nullable=False)
 
     def __init__(self, id_factura, producto, cantidad, precio_total):
-        self.id_factura     = id_factura
+        self.factura     = id_factura
         self.producto       = producto
         self.cantidad       = cantidad
         self.precio_total   = precio_total
@@ -144,7 +143,7 @@ class Detalle(Base):
 
 class Gasto(Base):
     __tablename__   = 'Gasto'
-    id_gasto        = Column(Integer, primary_key=True, autoincrement=True)
+    id        = Column(Integer, primary_key=True, autoincrement=True)
     detalle         = Column(String(80))
     monto           = Column(Numeric(15,2), nullable=False)
 
@@ -155,7 +154,7 @@ class Gasto(Base):
 
 class Caja(Base):
     __tablename__   = 'Caja'
-    id_caja         = Column(Integer, primary_key=True, autoincrement=True)
+    id         = Column(Integer, primary_key=True, autoincrement=True)
     saldo_anterior  = Column(Numeric(15,2), nullable=False)
     ingresos        = Column(Numeric(15,2), nullable=False)
     egresos         = Column(Numeric(15,2), nullable=False)
