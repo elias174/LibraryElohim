@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from models import *
 from plugins.models_qt import MyTableModel
 from tab_views.SaleTab import Sale_Tab
+from tab_views.FastSaleTab import Fast_Sale_Tab
 
 Base = declarative_base()
 
@@ -26,16 +27,12 @@ class MainWindow(QtGui.QWidget):
 
         central_layout = QtGui.QVBoxLayout()
         tabs = QtGui.QTabWidget(self)
-        tab_sells = Sale_Tab()
 
-        tab_rapid_sell = QtGui.QWidget()
+        tab_sells = Sale_Tab()
+        tab_rapid_sell = Fast_Sale_Tab(tab_sells)
+
         tabs.addTab(tab_sells, 'Ventas')
         tabs.addTab(tab_rapid_sell, 'Venta Rapida')
-
-        pushButton1 = QtGui.QPushButton("QPushButton 1")
-        vBoxlayout = QtGui.QVBoxLayout()
-        vBoxlayout.addWidget(pushButton1)
-        tab_rapid_sell.setLayout(vBoxlayout)
 
         central_layout.addWidget(tabs)
         self.setLayout(central_layout)
