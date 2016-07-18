@@ -20,7 +20,7 @@ session = Session()
 
 class MainWindow(QtGui.QWidget):
     def __init__(self):
-        super(MainWindow, self).__init__()        
+        super(MainWindow, self).__init__()
         self.setMinimumSize(1000, 800)
         self.setWindowTitle("Sistema Pagos")
 
@@ -48,9 +48,6 @@ class MainWindow(QtGui.QWidget):
                                         QtGui.QMessageBox.No)
         if ok:
             event.accept()
-
-
-
 
 if __name__ == '__main__':
     app = QtGui.QApplication([])

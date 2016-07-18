@@ -86,7 +86,7 @@ class MyTableModel(QAbstractTableModel):
         return True
     def flags(self, index):
         return Qt.ItemIsEditable
-    """    
+    """
 
 if __name__ == "__main__":
     main()

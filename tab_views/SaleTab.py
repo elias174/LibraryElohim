@@ -58,13 +58,13 @@ class Sale_Tab(QtGui.QWidget):
         self.central_layout = QtGui.QGridLayout()
 
         self.sale_group = QtGui.QGroupBox(str("Venta"), self)
-        self.results_group = QtGui.QGroupBox(str("Resultados Busqueda"), self)
+        self.search_group = QtGui.QGroupBox(str("Busqueda"), self)
 
         self.central_layout.addWidget(self.sale_group, 0, 0)
-        self.central_layout.addWidget(self.results_group, 0, 1)
+        self.central_layout.addWidget(self.search_group, 0, 1)
 
         self.initialize_sale_group()
-        self.initialize_results_group()
+        self.initialize_search_group()
 
         QtCore.QObject.connect(self.button_group, QtCore.SIGNAL("buttonClicked(int)"),
                                self, QtCore.SLOT("ResultButtonClick(int)"))
@@ -103,24 +103,43 @@ class Sale_Tab(QtGui.QWidget):
         self.layout_line.addRow("A pagar: ", self.pay_line)
 
 #        to connect the text_search
-
-    def initialize_results_group(self):
-        self.layout_line_results = QtGui.QFormLayout()
+    def initialize_search_group(self):
+        self.layout_line_search = QtGui.QFormLayout()
 
         self.label_search = QtGui.QLabel("Buscar Producto:", self)
-        self.edit_search = QtGui.QLineEdit(self)
+        self.results_group = QtGui.QGroupBox(str("Resultados:"), self)
 
-        self.layout_line_results.addRow(self.label_search, self.edit_search)
+        self.edit_search = QtGui.QLineEdit(self)
+        self.combo_type_search = QtGui.QComboBox(self)
+        self.combo_type_search.addItem("Botones")
+        self.combo_type_search.addItem("Tabla")
+        self.combo_type_search[str].connect(self.change_results_view)
+
+        self.layout_line_search.addRow(self.label_search, self.edit_search)
+        self.layout_line_search.addRow(self.label_search, self.edit_search)
+
+        header_names = ['ID', 'Categoria', 'Nombre', 'Precio Compra',
+                        'Precio Venta', 'Stock', 'Detalle']
+        self.tablemodel = MyTableModel(Producto, my_array, header_names, self)
+        self.tableview = QTableView()
+        self.tableview.setModel(self.tablemodel)
 
         self.layout_results = QtGui.QGridLayout()
         self.button_group = ResultsButtonGroup(self, self.last_query,
                                                self.layout_results)
-        self.layout_line_results.addRow(self.layout_results)
-        self.results_group.setLayout(self.layout_line_results)
+        self.results_group.setLayout(self.layout_results)
+        self.results_group.setMinimumHeight(self.screenGeometry.height() -
+                                            (self.screenGeometry.height() / 4.2))
+        self.layout_line_search.addRow(self.results_group)
 
+        self.search_group.setLayout(self.layout_line_search)
 
         self.edit_search.textChanged.connect(self.on_search_edit_changed)
         self.edit_search_added.textChanged.connect(self.on_search_edit_added_changed)
+
+    def change_results_view(self, text):
+        if text is "Tabla":
+            
 
     @QtCore.pyqtSlot(int)
     def ResultButtonClick(self, id):
