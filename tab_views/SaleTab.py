@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
+from models_qt import MyTableModel
 
 # Base = declarative_base()
 # 
@@ -66,8 +67,8 @@ class Sale_Tab(QtGui.QWidget):
         self.initialize_sale_group()
         self.initialize_search_group()
 
-        QtCore.QObject.connect(self.button_group, QtCore.SIGNAL("buttonClicked(int)"),
-                               self, QtCore.SLOT("ResultButtonClick(int)"))
+        #QtCore.QObject.connect(self.button_group, QtCore.SIGNAL("buttonClicked(int)"),
+        #                      self, QtCore.SLOT("ResultButtonClick(int)"))
         self.change_table.connect(self.update_total)
         self.setLayout(self.central_layout)
 
@@ -87,12 +88,10 @@ class Sale_Tab(QtGui.QWidget):
                                                     "P.Unidad", "P.Total",
                                                     "Eliminar"])
 
-        #self.layout_line.addRow(self.label_search, self.edit_search)
         self.layout_line.addRow(self.table_items)
 
         self.sale_group.setMaximumWidth(self.screenGeometry.width() / 2)
         self.sale_group.setLayout(self.layout_line)
-        self.table_items.setFixedSize(500,400)
 
         #third line, 4th line
         self.edit_search_added = QtGui.QLineEdit(self)
@@ -108,39 +107,71 @@ class Sale_Tab(QtGui.QWidget):
         self.layout_line_search = QtGui.QFormLayout()
 
         self.label_search = QtGui.QLabel("Buscar Producto:", self)
+        self.label_type_view = QtGui.QLabel("Tipo de Vista:", self)
         self.results_group = QtGui.QGroupBox(str("Resultados:"), self)
 
         self.edit_search = QtGui.QLineEdit(self)
-        self.combo_type_search = QtGui.QComboBox(self)
+        self.combo_type_search = QtGui.QComboBox()
         self.combo_type_search.addItem("Botones")
         self.combo_type_search.addItem("Tabla")
-        self.combo_type_search[str].connect(self.change_results_view)
+        self.combo_type_search.setMaximumWidth(100)
 
         self.layout_line_search.addRow(self.label_search, self.edit_search)
-        self.layout_line_search.addRow(self.label_search, self.edit_search)
+        self.layout_line_search.addRow(self.label_type_view, self.combo_type_search)
 
         header_names = ['ID', 'Categoria', 'Nombre', 'Precio Compra',
                         'Precio Venta', 'Stock', 'Detalle']
-        self.tablemodel = MyTableModel(Producto, my_array, header_names, self)
-        self.tableview = QTableView()
-        self.tableview.setModel(self.tablemodel)
-
+        self.tablemodel = MyTableModel(Producto, header_names, self)
         self.layout_results = QtGui.QGridLayout()
-        self.button_group = ResultsButtonGroup(self, self.last_query,
-                                               self.layout_results)
         self.results_group.setLayout(self.layout_results)
         self.results_group.setMinimumHeight(self.screenGeometry.height() -
-                                            (self.screenGeometry.height() / 4.2))
+                                            (self.screenGeometry.height() / 3.5))
+
+        self.button_add_table = QtGui.QPushButton('Aniadir')
+
+        def view_buttons():
+            QtGui.QWidget().setLayout(self.layout_results)
+            self.layout_results = QtGui.QGridLayout()
+            self.results_group.setLayout(self.layout_results)
+            self.button_group = ResultsButtonGroup(self, self.last_query,
+                                                   self.layout_results)
+            QtCore.QObject.connect(self.button_group,
+                                   QtCore.SIGNAL("buttonClicked(int)"), self,
+                                   QtCore.SLOT("ResultButtonClick(int)"))
+            self.edit_search.textChanged.connect(self.on_search_edit_changed)
+
+        def view_table():
+            self.tableview = QTableView()
+            self.tableview.setModel(self.tablemodel)
+            QtGui.QWidget().setLayout(self.layout_results)
+            self.layout_results = QtGui.QVBoxLayout()
+            self.layout_results.addWidget(self.tableview)
+            self.layout_results.addWidget(self.button_add_table)
+            self.results_group.setLayout(self.layout_results)
+            self.results_group.setMinimumHeight(self.screenGeometry.height() -
+                                                (self.screenGeometry.height() / 3.5))
+            self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
+            self.button_add_table.clicked.connect(self.add_selected_rows)
+
+        def change_results_view(index):
+            self.edit_search.textChanged.disconnect()
+            if index is 0:
+                view_buttons()
+            elif index is 1:
+                view_table()
+
         self.layout_line_search.addRow(self.results_group)
 
         self.search_group.setLayout(self.layout_line_search)
-
-        self.edit_search.textChanged.connect(self.on_search_edit_changed)
         self.edit_search_added.textChanged.connect(self.on_search_edit_added_changed)
+        self.combo_type_search.activated.connect(change_results_view)
+        view_buttons()
 
-    def change_results_view(self, text):
-        if text is "Tabla":
-            
+    def add_selected_rows(self):
+        indexes = self.tableview.selectedIndexes()
+        for index in indexes:
+            product_id = self.tablemodel.get_id_object_alchemy(index.row())
+            self.ResultButtonClick(product_id)
 
     @QtCore.pyqtSlot(int)
     def ResultButtonClick(self, id):
@@ -148,7 +179,8 @@ class Sale_Tab(QtGui.QWidget):
         product_name = str(product.nombre)
         items = self.table_items.findItems(product_name, QtCore.Qt.MatchExactly)
         if items:
-            ok = QtGui.QMessageBox.question(self, u'Doble Producto',
+            ok = QtGui.QMessageBox.question(self, u'Doble Producto %s'
+                                            % str(product_name),
                                             "Desea Agregarlo de nuevo?",
                                             QtGui.QMessageBox.Yes,
                                             QtGui.QMessageBox.No)
@@ -159,13 +191,16 @@ class Sale_Tab(QtGui.QWidget):
         else:
             self.add_product_table(product)
 
+    def on_search_table_edit_changed(self, string):
+        self.tablemodel.setFilter('nombre', string)
+
     def on_search_edit_changed(self, string):
         text_query = '%'+unicode(string.toUtf8(), encoding="UTF-8")+'%'
         self.last_query = (session.query(Producto)
                            .filter(Producto.nombre.like(text_query)).all())
         for i in reversed(range(self.layout_results.count())):
             self.layout_results.itemAt(i).widget().setParent(None)
-        self.button_group.refresh(self.last_query)
+        self.button_group.refresh (self.last_query)
 
     def on_search_edit_added_changed(self, string):
         for row in xrange(self.table_items.rowCount()):

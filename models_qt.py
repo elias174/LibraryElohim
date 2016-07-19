@@ -40,7 +40,7 @@ session = Session()
 
 
 class MyTableModel(QAbstractTableModel):
-    def __init__(self, model_alchemy, datain, header_names, parent = None, *args):
+    def __init__(self, model_alchemy, header_names, parent = None, *args):
         QAbstractTableModel.__init__(self, parent, *args)
         self.model_alchemy = model_alchemy
         self.last_query = (session.query(model_alchemy).limit(20).all())
@@ -66,6 +66,10 @@ class MyTableModel(QAbstractTableModel):
             return None
         row = self.arraydata[index.row()]
         return (str(getattr(row, self.columns_name[index.column()])))
+
+    def get_id_object_alchemy(self, row):
+        id_product = getattr(self.arraydata[row], self.columns_name[0])
+        return id_product
 
     def setFilter(self, name_column, search_text=None):
         text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
