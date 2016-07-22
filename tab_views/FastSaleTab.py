@@ -38,9 +38,8 @@ class ResultsButtonGroup(QtGui.QButtonGroup):
 class Fast_Sale_Tab(QtGui.QWidget):
     change_table = QtCore.pyqtSignal()
 
-    def __init__(self, Sale_Tab):
+    def __init__(self):
         super(Fast_Sale_Tab, self).__init__()
-        self.Own_Sale_Tab = Sale_Tab
 
         self.screenGeometry = QtGui.QApplication.desktop().availableGeometry()
         # Initialize Layout
@@ -117,19 +116,15 @@ class Fast_Sale_Tab(QtGui.QWidget):
     @QtCore.pyqtSlot(int)
     def ResultButtonClick(self, id):
         if self.product_total==10:
-            ok = QtGui.QMessageBox.question(self, U"Numero maximo de Productos",
-                                            "Desea pasar a una Venta Normal?",
-                                            QtGui.QMessageBox.Yes,
-                                            QtGui.QMessageBox.No)
-            if ok == QtGui.QMessageBox.Yes:
-                self.product_total=0
-                self.Change_Sale_Tab()
-                return
-            else:
-                return
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText('Venta Rapida solo acepta 10 productos')
+            msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
+            msgBox.setWindowTitle("Numero maximo de Productos")
+            msgBox.exec_()
+            return
+
         product = session.query(Producto).get(id)
         product_name = str(product.nombre)
-        
         items = self.table_items.findItems(product_name, QtCore.Qt.MatchExactly)
         if items:
             ok = QtGui.QMessageBox.question(self, u'Doble Producto',
@@ -144,20 +139,6 @@ class Fast_Sale_Tab(QtGui.QWidget):
         else:
             self.add_product_table(product)
             self.product_total+=1
-
-    def Change_Sale_Tab(self):
-        products = []
-        product = []
-        for row in xrange(self.table_items.rowCount()):
-            cont = 0
-            while cont<3:
-                item = self.table_items.item(row,cont)
-                value = item.text()
-                product.append(str(value))
-                print product[cont]
-                cont+=1
-            products.append(product)
-        return
 
     def on_search_edit_changed(self, string):
         text_query = '%'+unicode(string.toUtf8(), encoding="UTF-8")+'%'

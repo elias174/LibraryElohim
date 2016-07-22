@@ -9,6 +9,7 @@ from models import *
 from plugins.models_qt import MyTableModel
 from tab_views.SaleTab import Sale_Tab
 from tab_views.FastSaleTab import Fast_Sale_Tab
+from tab_views.InventoryTab import Inventory_Tab
 
 Base = declarative_base()
 
@@ -29,10 +30,12 @@ class MainWindow(QtGui.QWidget):
         tabs = QtGui.QTabWidget(self)
 
         tab_sells = Sale_Tab()
-        tab_rapid_sell = Fast_Sale_Tab(tab_sells)
+        tab_rapid_sell = Fast_Sale_Tab()
+        tab_invontary = Inventory_Tab()
 
         tabs.addTab(tab_sells, 'Ventas')
         tabs.addTab(tab_rapid_sell, 'Venta Rapida')
+        tabs.addTab(tab_invontary, 'Inventario')
 
         central_layout.addWidget(tabs)
         self.setLayout(central_layout)
