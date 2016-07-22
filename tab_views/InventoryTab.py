@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
-
+from AddNewProduct import Add_New_Product
 
 class ResultsButtonGroup(QtGui.QButtonGroup):
     def __init__(self, parent, results, layout):
@@ -62,19 +62,45 @@ class Inventory_Tab(QtGui.QWidget):
         self.change_table.connect(self.update_total)
         self.setLayout(self.central_layout)
 
+    def add_new_product(self):
+        window = Add_New_Product().exec_()
+
+    def modify_product(self):
+        return 
+
     def initialize_product_group(self):
         self.layout_line = QtGui.QFormLayout()
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setColumnCount(8)
-        self.table_items.setRowCount(0)
+        self.table_items.setRowCount(1)
+        #Query
         self.NewProductoButton = QtGui.QPushButton("Agregar Nuevo Producto",self)
-
+        self.NewProductoButton.clicked.connect(self.add_new_product)
 
         self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria', 
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock', 
                                                     'Detalle', 'Modificar'])
+        #addin table with the query
+        button = QtGui.QPushButton()
+        button.clicked.connect(self.modify_product)
+        button.setStyleSheet("background-color: rgba(255, 255, 255, 0);")
+        button.setIcon(QtGui.QIcon('icons/Icon_edit.png'))
 
+        self.table_items.setItem(0, 1,
+                                 QtGui.QTableWidgetItem("Categoria"))
+        self.table_items.setItem(0, 2,
+                                 QtGui.QTableWidgetItem("Nombre"))
+        self.table_items.setItem(0, 3,
+                                 QtGui.QTableWidgetItem("Precio Compra"))
+        self.table_items.setItem(0, 4,
+                                 QtGui.QTableWidgetItem("Precio Venta"))
+        self.table_items.setItem(0, 5,
+                                 QtGui.QTableWidgetItem("Precio Stock"))
+        self.table_items.setItem(0, 6,
+                                 QtGui.QTableWidgetItem("Precio Detalle"))
+        self.table_items.setCellWidget(0, 7, button)
+        
         #self.layout_line.addRow(self.label_search, self.edit_search)
         self.layout_line.addRow(self.table_items)
         self.layout_line.addRow(self.NewProductoButton)
