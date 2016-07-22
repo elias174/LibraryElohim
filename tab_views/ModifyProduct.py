@@ -17,12 +17,14 @@ Session = sessionmaker(bind=db)
 session = Session()
 
 
-class Add_New_Product(QDialog):
-	def __init__(self, parent=None):
-		#QDialog.__init__(self, parent)
-		super(Add_New_Product, self).__init__(parent)
 
-		self.acceptButton = QPushButton("Crear Producto", self)
+class Modify_Product(QDialog):
+	def __init__(self, product ,parent=None):
+		#QDialog.__init__(self, parent)
+		super(Modify_Product, self).__init__(parent)
+		self.product = product
+
+		self.acceptButton = QPushButton("Guardar Producto", self)
 		self.cancelButton = QPushButton("Cancelar")
 		self.newCategoryButton = QPushButton("Agregar Categoria", self)
 		self.query = (session.query(Categoria.nombre).all())
@@ -51,6 +53,16 @@ class Add_New_Product(QDialog):
 		self.edit_stock.setSingleStep(1)
 		self.edit_stock.setMaximum(100000)
 		self.edit_detail = QTextEdit()
+
+		#Set values
+
+		self.edit_category.setCurrentIndex(self.product.categoria)
+		#query
+		self.edit_name.setText(self.product.nombre)
+		self.edit_purchase_price.setValue(float(self.product.precio_compra))
+		self.edit_sell_price.setValue(float(self.product.precio_venta))
+		self.edit_stock.setValue(float(self.product.stock))
+		self.edit_detail.setText(self.product.detalle)
 
 		grid = QGridLayout()
 		grid.addWidget(category,1,0)
