@@ -200,7 +200,7 @@ class Sale_Tab(QtGui.QWidget):
                            .filter(Producto.nombre.like(text_query)).all())
         for i in reversed(range(self.layout_results.count())):
             self.layout_results.itemAt(i).widget().setParent(None)
-        self.button_group.refresh (self.last_query)
+        self.button_group.refresh(self.last_query)
 
     def on_search_edit_added_changed(self, string):
         for row in xrange(self.table_items.rowCount()):
