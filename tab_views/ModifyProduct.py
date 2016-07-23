@@ -13,7 +13,7 @@ Base = declarative_base()
 db = create_engine('sqlite:///dataBase.db', echo = False)
 metadata = MetaData(db)
 
-Session = sessionmaker(bind=db)
+Session = sessionmaker(bind = db)
 session = Session()
 
 
@@ -22,7 +22,7 @@ class Modify_Product(QDialog):
         #QDialog.__init__(self, parent)
         super(Modify_Product, self).__init__(parent)
         self.product = product
-        self.control_singleton=False
+        self.control_singleton = False
 
         self.acceptButton = QPushButton("Guardar Producto", self)
         self.cancelButton = QPushButton("Cancelar")
@@ -65,34 +65,34 @@ class Modify_Product(QDialog):
         self.edit_detail.setText(self.product.detalle)
 
         grid = QGridLayout()
-        grid.addWidget(category,1,0)
-        grid.addWidget(self.edit_category,1,1)
-        grid.addWidget(self.newCategoryButton,1,4)
+        grid.addWidget(category, 1, 0)
+        grid.addWidget(self.edit_category, 1, 1)
+        grid.addWidget(self.newCategoryButton, 1, 4)
 
-        grid.addWidget(name,2,0)
-        grid.addWidget(self.edit_name,2,1)
+        grid.addWidget(name, 2, 0)
+        grid.addWidget(self.edit_name, 2, 1)
 
-        grid.addWidget(purchase_price,3,0)
-        grid.addWidget(self.edit_purchase_price,3,1)
+        grid.addWidget(purchase_price, 3, 0)
+        grid.addWidget(self.edit_purchase_price, 3, 1)
 
-        grid.addWidget(sell_price,4,0)
-        grid.addWidget(self.edit_sell_price,4,1)
+        grid.addWidget(sell_price, 4, 0)
+        grid.addWidget(self.edit_sell_price, 4, 1)
 
-        grid.addWidget(stock,5,0)
-        grid.addWidget(self.edit_stock,5,1)
+        grid.addWidget(stock, 5, 0)
+        grid.addWidget(self.edit_stock, 5, 1)
 
-        grid.addWidget(detail,6,0)
-        grid.addWidget(self.edit_detail,6,1)
+        grid.addWidget(detail, 6, 0)
+        grid.addWidget(self.edit_detail, 6, 1)
 
-        grid.addWidget(self.acceptButton,8,1)
-        grid.addWidget(self.cancelButton,8,2)
+        grid.addWidget(self.acceptButton, 8, 1)
+        grid.addWidget(self.cancelButton, 8, 2)
 
         self.setLayout(grid)
 
-        size=self.size()
-        desktopSize=QDesktopWidget().screenGeometry()
-        top=(desktopSize.height()/2)-(size.height()/2)
-        left=(desktopSize.width()/2)-(size.width()/2)
+        size = self.size()
+        desktopSize = QDesktopWidget().screenGeometry()
+        top = (desktopSize.height() / 2)-(size.height() / 2)
+        left = (desktopSize.width() / 2)-(size.width() / 2)
 
         self.move(left, top)
         self.setWindowTitle('Agregar Producto')

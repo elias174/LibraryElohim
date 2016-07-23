@@ -14,7 +14,7 @@ Base = declarative_base()
 db = create_engine('sqlite:///dataBase.db', echo = False)
 metadata = MetaData(db)
 
-Session = sessionmaker(bind=db)
+Session = sessionmaker(bind = db)
 session = Session()
 
 class Inventory_Tab(QtGui.QWidget):
@@ -29,7 +29,7 @@ class Inventory_Tab(QtGui.QWidget):
         # Signal to check total
         self.central_layout = QtGui.QGridLayout()
 
-        self.control_singleton=False
+        self.control_singleton = False
 
         self.product_group = QtGui.QGroupBox(str("Productos"), self)
         self.search_group = QtGui.QGroupBox(str("Busqueda"), self)
@@ -54,12 +54,12 @@ class Inventory_Tab(QtGui.QWidget):
         if(self.control_singleton):
             QMessageBox.warning(self, 'Error',ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
         else:
-            self.control_singleton=True
+            self.control_singleton = True
             button = qApp.focusWidget()
             index = self.table_items.indexAt(button.pos())
             if index.isValid():
                 window = Modify_Product(self.query[index.row()]).exec_()
-            self.control_singleton=False
+            self.control_singleton = False
 
     def initialize_product_group(self):
         self.layout_line = QtGui.QFormLayout()
@@ -81,7 +81,7 @@ class Inventory_Tab(QtGui.QWidget):
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
         #addin table with the query
             
-        self.NewProductoButton = QtGui.QPushButton("Agregar Nuevo Producto",self)
+        self.NewProductoButton = QtGui.QPushButton("Agregar Nuevo Producto", self)
         self.NewProductoButton.clicked.connect(self.add_new_product)
 
         #self.layout_line.addRow(self.label_search, self.edit_search)

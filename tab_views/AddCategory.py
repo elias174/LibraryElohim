@@ -12,11 +12,11 @@ Base = declarative_base()
 db = create_engine('sqlite:///dataBase.db', echo = False)
 metadata = MetaData(db)
 
-Session = sessionmaker(bind=db)
+Session = sessionmaker(bind = db)
 session = Session()
 
 class Add_Category(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent = None):
         #QDialog.__init__(self, parent)
         super(Add_Category, self).__init__(parent)
 
@@ -40,10 +40,10 @@ class Add_Category(QDialog):
 
         self.setLayout(grid)
 
-        size=self.size()
-        desktopSize=QDesktopWidget().screenGeometry()
-        top=(desktopSize.height()/2)-(size.height()/2)
-        left=(desktopSize.width()/2)-(size.width()/2)
+        size = self.size()
+        desktopSize = QDesktopWidget().screenGeometry()
+        top = (desktopSize.height()/2)-(size.height()/2)
+        left = (desktopSize.width()/2)-(size.width()/2)
 
         self.move(left, top)
         self.setWindowTitle('Agregar Categoria')
