@@ -17,32 +17,6 @@ metadata = MetaData(db)
 Session = sessionmaker(bind=db)
 session = Session()
 
-class ResultsButtonGroup(QtGui.QButtonGroup):
-    def __init__(self, parent, results, layout):
-        super(QtGui.QButtonGroup, self).__init__()
-        self.parent = parent
-        self.layout = layout
-        self.refresh(results)
-
-#   Maybe this should be change for personalize
-    def refresh(self, results):
-        n = 0
-        rows = None
-        cols = 4
-        if len(results) % 4 == 0:
-            rows = len(results)/4
-        else:
-            rows = (len(results)/4)+1
-        j = 0
-        for i in range(rows):
-            for result in results[n:n+4]:
-                button = QtGui.QPushButton(result.nombre, self.parent)
-                self.addButton(button, result.id)
-                self.layout.addWidget(button, i, j)
-                j += 1
-            j = 0
-            n += 4
-
 class Inventory_Tab(QtGui.QWidget):
     change_table = QtCore.pyqtSignal()
 
