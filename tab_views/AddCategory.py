@@ -12,7 +12,7 @@ Base = declarative_base()
 db = create_engine('sqlite:///dataBase.db', echo = False)
 metadata = MetaData(db)
 
-Session = sessionmaker(bind = db)
+Session = sessionmaker(bind=db)
 session = Session()
 
 class Add_Category(QDialog):

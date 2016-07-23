@@ -14,7 +14,7 @@ Base = declarative_base()
 db = create_engine('sqlite:///dataBase.db', echo = False)
 metadata = MetaData(db)
 
-Session = sessionmaker(bind = db)
+Session = sessionmaker(bind=db)
 session = Session()
 
 class Inventory_Tab(QtGui.QWidget):
@@ -44,7 +44,7 @@ class Inventory_Tab(QtGui.QWidget):
 
     def add_new_product(self):
         if (self.control_singleton):
-            QMessageBox.warning(self, 'Error',ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
+            QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
         else:
             self.control_singleton = True
             window = Add_New_Product().exec_()
@@ -52,7 +52,7 @@ class Inventory_Tab(QtGui.QWidget):
 
     def modify_product(self):
         if(self.control_singleton):
-            QMessageBox.warning(self, 'Error',ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
+            QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
         else:
             self.control_singleton = True
             button = qApp.focusWidget()

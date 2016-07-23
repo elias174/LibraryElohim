@@ -13,7 +13,7 @@ Base = declarative_base()
 db = create_engine('sqlite:///dataBase.db', echo = False)
 metadata = MetaData(db)
 
-Session = sessionmaker(bind = db)
+Session = sessionmaker(bind=db)
 session = Session()
 
 
@@ -113,7 +113,7 @@ class Modify_Product(QDialog):
 
     def create_Category(self):
         if (self.control_singleton):
-            QMessageBox.warning(self, 'Error',ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
+            QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
         else:
             self.control_singleton = True
             window = Add_Category().exec_()
