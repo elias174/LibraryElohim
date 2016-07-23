@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
-
+from AddCategory import Add_Category
 
 Base = declarative_base()
 
@@ -22,9 +22,10 @@ class Add_New_Product(QDialog):
 		#QDialog.__init__(self, parent)
 		super(Add_New_Product, self).__init__(parent)
 
+		self.control_singleton = False
 		self.acceptButton = QPushButton("Crear Producto", self)
 		self.cancelButton = QPushButton("Cancelar")
-		self.newCategoryButton = QPushButton("Agregar Categoria", self)
+		self.newCategoryButton = QPushButton("Agregar Nueva Categoria", self)
 		self.query = (session.query(Categoria.nombre).all())
 		category = QLabel('Categoria')
 		name = QLabel('Nombre')
@@ -87,6 +88,8 @@ class Add_New_Product(QDialog):
 		self.show()
 		self.cancelButton.clicked.connect(self.close)
 		self.connect(self.acceptButton, SIGNAL("clicked()"), self.create_Product)
+		self.connect(self.newCategoryButton, SIGNAL("clicked()"), self.create_Category)
+		
 
 	def create_Product(self):
 		category = str(self.edit_category.currentText())
@@ -97,3 +100,12 @@ class Add_New_Product(QDialog):
 		detail = unicode(self.edit_detail.toPlainText())
 		#Query insert
 		self.close()
+
+	def create_Category(self):
+		if (self.control_singleton):
+			QMessageBox.warning(self, 'Error',ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
+		else:
+			self.control_singleton = True
+			window = Add_Category().exec_()
+			self.control_singleton = False
+
