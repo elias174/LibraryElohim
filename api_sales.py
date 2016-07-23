@@ -13,22 +13,43 @@ metadata = MetaData(db)
 Session = sessionmaker(bind=db)
 session = Session()
 
+ID_CLIENT_ANONYMOUS = 1
+
 
 class SaleApi(object):
-    def __init__(self, price_total, client_id=None):
+    def __init__(self, price_total, client_id=ID_CLIENT_ANONYMOUS):
         self.price_total = price_total
-        self.client_id = None
         self.details = []
+        self.client_id = client_id
 
-    def generate_factura():
+    def generate_factura(self):
         self.factura = Factura(self.client_id, datetime.utcnow())
         session.add(self.factura)
-        return self.factura
+        session.flush()
+        session.refresh(self.factura)
 
-    def add_detail(id_product, quantity):
+    # def get_client_anonymous():
+    #     client = session.query(Cliente).get(ID_CLIENT_ANONYMOUS)
+    #     return client
+
+    def add_detail(self, id_product, quantity):
         product = session.query(Producto).get(id_product)
-        assert quantity >= product.stock
-        detail = Detalle(self.factura.id, quantity,
+        assert quantity <= product.stock
+        detail = Detalle(self.factura.id, product.id, quantity,
                          float(quantity * product.precio_venta))
         self.details.append(detail)
+        product.stock -= quantity
         session.add(detail)
+
+    def save_sale(self):
+        session.commit()
+
+
+def test_api():
+    sale_api = SaleApi(float(14.5))
+    sale_api.generate_factura()
+    sale_api.add_detail(3, 2)
+    sale_api.add_detail(4, 1)
+    sale_api.save_sale()
+
+#test_api()
