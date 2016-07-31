@@ -53,10 +53,10 @@ class MyTableModel(QAbstractTableModel):
             return QVariant(self.header_names[col])
         return QVariant()
 
-    def rowCount(self, parent):
+    def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.arraydata)
 
-    def columnCount(self, parent):
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return len(self.header_names)
 
     def data(self, index, role):
@@ -77,3 +77,35 @@ class MyTableModel(QAbstractTableModel):
         self.arraydata = (session.query(self.model_alchemy)
                           .filter(obj_column.like(text_query)).all())
         self.layoutChanged.emit()
+
+
+class TableView(QtGui.QTableView):
+    def __init__(self, *args, **kwargs):
+        QtGui.QTableView.__init__(self, *args, **kwargs)
+        self.setItemDelegateForColumn(3, ButtonDelegate(self))
+
+class ButtonDelegate(QtGui.QItemDelegate):
+    def __init__(self, parent):
+        QtGui.QItemDelegate.__init__(self, parent)
+
+    def createEditor(self, parent, option, index):
+        buttonDetails = QtGui.QPushButton("Detalle de Factura", parent)
+        #buttonDetails.setStyleSheet("background-color: rgba(255, 255, 255, 0);")
+        #buttonDetails.setIcon(QtGui.QIcon('icons/boton_detalles.png'))
+        buttonDetails.clicked.connect(self.detail_product)
+        return buttonDetails
+        
+    def setEditorData(self, editor, index):
+        editor.blockSignals(True)
+        #editor.setCurrentIndex(int(index.model().data(index)))
+        editor.blockSignals(False)
+        
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.text())
+        
+    @QtCore.pyqtSlot()
+    def currentIndexChanged(self):
+        self.commitData.emit(self.sender())
+
+    def detail_product(self):
+        return "hola"
