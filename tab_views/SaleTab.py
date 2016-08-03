@@ -1,13 +1,17 @@
 import sys
+import os
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
 from models_qt import MyTableModel
+from Client import ClientDialog
 
+sys.path.append(os.path.abspath(os.path.join('..', 'api')))
 # Base = declarative_base()
 # 
 # db = create_engine('sqlite:///dataBase.db', echo = False)
@@ -93,7 +97,7 @@ class Sale_Tab(QtGui.QWidget):
         self.sale_group.setMaximumWidth(self.screenGeometry.width() / 2)
         self.sale_group.setLayout(self.layout_line)
 
-        #third line, 4th line
+        # third line, 4th line
         self.edit_search_added = QtGui.QLineEdit(self)
         self.label_search_added = QtGui.QLabel("Buscar en Aniadidos:", self)
         self.total_line = QtGui.QLabel("0.00", self)
@@ -101,6 +105,19 @@ class Sale_Tab(QtGui.QWidget):
         self.layout_line.addRow(self.label_search_added, self.edit_search_added)
         self.layout_line.addRow("Total: ", self.total_line)
         self.layout_line.addRow("A pagar: ", self.pay_line)
+
+        # Line Client
+        self.client_label = QtGui.QLabel('0 Cliente Anonimo')
+        self.button_client = QtGui.QPushButton('Aniadir Cliente')
+        self.button_client.setMaximumWidth(self.screenGeometry.width() / 8)
+        self.layout_line.addRow(self.client_label, self.button_client)
+
+        self.button_client.clicked.connect(self.open_dialog_client)
+        self.layout_line.addItem(QtGui.QSpacerItem(1, self.screenGeometry.height() / 4))
+
+        self.button_generate_sale = QtGui.QPushButton('Realizar Venta')
+        self.layout_line.addRow(self.button_generate_sale)
+
 
 #        to connect the text_search
     def initialize_search_group(self):
@@ -127,8 +144,6 @@ class Sale_Tab(QtGui.QWidget):
         self.results_group.setMinimumHeight(self.screenGeometry.height() -
                                             (self.screenGeometry.height() / 3.5))
 
-        self.button_add_table = QtGui.QPushButton('Aniadir')
-
         def view_buttons():
             QtGui.QWidget().setLayout(self.layout_results)
             self.layout_results = QtGui.QGridLayout()
@@ -142,6 +157,7 @@ class Sale_Tab(QtGui.QWidget):
 
         def view_table():
             self.tableview = QTableView()
+            self.button_add_table = QtGui.QPushButton('Aniadir')
             self.tableview.setModel(self.tablemodel)
             QtGui.QWidget().setLayout(self.layout_results)
             self.layout_results = QtGui.QVBoxLayout()
@@ -154,7 +170,10 @@ class Sale_Tab(QtGui.QWidget):
             self.button_add_table.clicked.connect(self.add_selected_rows)
 
         def change_results_view(index):
-            self.edit_search.textChanged.disconnect()
+            try:
+                self.edit_search.textChanged.disconnect()
+            except TypeError:
+                pass
             if index is 0:
                 view_buttons()
             elif index is 1:
@@ -172,6 +191,19 @@ class Sale_Tab(QtGui.QWidget):
         for index in indexes:
             product_id = self.tablemodel.get_id_object_alchemy(index.row())
             self.ResultButtonClick(product_id)
+
+    def open_dialog_client(self):
+        if self.client_label.text() != '0 Cliente Anonimo':
+            self.button_client.setText('Aniadir Cliente')
+            self.client_label.setText('0 Cliente Anonimo')
+        else:
+            id_client, result = ClientDialog.get_client(self)
+            if result and id_client:
+                client = session.query(Cliente).get(id_client)
+                self.client_label.setText('%s %s %s' % (str(client.id),
+                                                        client.nombre,
+                                                        client.apellido))
+                self.button_client.setText('Eliminar Cliente')
 
     @QtCore.pyqtSlot(int)
     def ResultButtonClick(self, id):
