@@ -8,6 +8,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
 from models_qt import MyTableModel
+from Generic_forms import GenericFormDialog
 
 sys.path.append(os.path.abspath(os.path.join('..', 'api')))
 
@@ -36,9 +37,15 @@ class ClientDialog(QtGui.QDialog):
             QtCore.Qt.Horizontal, self)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
+        self.button_new_client.clicked.connect(self.new_client)
+
         self.layout.addRow(self.buttons)
         self.setLayout(self.layout)
         self.setWindowTitle('Clientes Administrador')
+
+    def new_client(self):
+        data, result = GenericFormDialog.get_data(Cliente, self)
+        print data
 
     def get_id_selected_client(self):
         indexes = self.tableview.selectedIndexes()
