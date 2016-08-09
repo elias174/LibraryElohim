@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-db = create_engine('sqlite:///dataBase.db', echo = False)
+db = create_engine('sqlite:///dataBase.db', echo=False)
 metadata = MetaData(db)
 
 Session = sessionmaker(bind=db)
@@ -14,7 +14,8 @@ Session = sessionmaker(bind=db)
 session = Session()
 
 Cliente = Table('Cliente', metadata,
-                Column('id', Integer, Sequence('some_id_seq', start=1, increment=1),primary_key=True),
+                Column('id', Integer, Sequence('some_id_seq', start=1,
+                                               increment=1), primary_key=True),
                 Column('nombre', String(40), nullable=False),
                 Column('apellido', String(40), nullable=False),
                 Column('direccion', String(60)),
