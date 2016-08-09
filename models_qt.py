@@ -1,4 +1,5 @@
 import sys
+from  datetime import date
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -80,18 +81,19 @@ class MyTableModel(QAbstractTableModel):
                           .filter(obj_column.like(text_query)).all())
         self.layoutChanged.emit()
 
-    def searchBillToday(self, name_column, search_text=None):
+    def searchBillToday(self, search_text=None):
         text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
-        #obj_column = getattr(self.model_alchemy, name_column)
-        today = datetime.now()
-        today = '2011-08-16'
-        print today
-        self.query = (session.query(Factura)
-                        .filter(Factura.fecha < today))
-        #self.arraydata = (session.query(self.model_alchemy)
-        #                  .filter(fecha = today))
+        today = '%'+str(date.today())+'%'
+        self.arraydata = (session.query(Factura)
+                        .filter(Factura.id.like(text_query)) \
+                        .filter(Factura.fecha.like(today)).all())
         self.layoutChanged.emit()
 
+    def searchBillDay(self, search_text=None):
+        text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
+        self.arraydata = (session.query(Factura)
+                        .filter(Factura.fecha.like(text_query)).all())
+        self.layoutChanged.emit()
 
 class TableView(QtGui.QTableView):
     def __init__(self, *args, **kwargs):
@@ -127,5 +129,10 @@ class ButtonDelegate(QtGui.QItemDelegate):
             QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
         else:
             self.control_singleton = True
-            window = Detail_Product().exec_()
+            button = qApp.focusWidget()
+            index = self.table_items.indexAt(button.pos())
+            if index.isValid():
+                #window = Detail_Product().exec_()
+                window = Modify_Product(self.query[index.row()]).exec_()
             self.control_singleton = False
+                

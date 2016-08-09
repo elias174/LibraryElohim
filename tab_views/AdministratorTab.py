@@ -11,6 +11,7 @@ from models_qt import TableView
 from AddExpense import Add_Expense
 from DetailExpense import Detail_Expense
 
+
 class Administrator_Tab(QtGui.QWidget):
     change_table = QtCore.pyqtSignal()
 
@@ -43,6 +44,10 @@ class Administrator_Tab(QtGui.QWidget):
         self.search_bill_day = QRadioButton("Buscar Factura por Dia")
         self.edit_search = QtGui.QLineEdit(self)
         self.edit_date = QDateEdit(datetime.now())
+        self.edit_date.setDisplayFormat(('yyyy-MM-dd'))
+        self.edit_search_name = QtGui.QLineEdit(self)
+        self.edit_search_name.hide()
+        self.edit_date.hide()
 
         self.search_bill_today.setChecked(True)
 
@@ -59,7 +64,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_day_expenses = QtGui.QLineEdit(self)
         self.edit_day_expenses.setDisabled(1)
 
-        self.edit_date.hide()
+        
 
         self.buttonAddExpense = QtGui.QPushButton("Agregar Gasto", self)
         self.buttonAddExpense.clicked.connect(self.add_expense)
@@ -89,6 +94,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_radio.addWidget(self.search_bill_name)
         self.layout_line_search.addWidget(self.edit_search)
         self.layout_line_search.addWidget(self.edit_date)
+        self.layout_line_search.addWidget(self.edit_search_name)
         self.layout_line_gain.addWidget(self.day_gain)
         self.layout_line_gain.addWidget(self.edit_day_gain)
         self.layout_line_expenses.addWidget(self.day_expenses)
@@ -106,13 +112,25 @@ class Administrator_Tab(QtGui.QWidget):
 
         self.search_group.setLayout(self.layout_line_main)
         self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
+        self.edit_search_name.textChanged.connect(self.on_search_table_by_name_changed)
+        self.edit_date.dateChanged.connect(self.on_search_table_by_date_changed)
 
     def on_search_table_edit_changed(self, string):
         if self.search_bill_today.isChecked():
-            self.tablemodel.searchBillToday("id", string)
-            
+            self.tablemodel.searchBillToday(string)
+
+    def on_search_table_by_name_changed(self, string):
+        if self.search_bill_name.isChecked():
+            self.tablemodel.setFilter('id', string)
+
+    def on_search_table_by_date_changed(self, string):
+        if self.search_bill_day.isChecked():
+            string = string.toString("yyyy-MM-dd")
+            self.tablemodel.searchBillDay(string)
+        
     def add_searcher(self):
         self.edit_date.hide()
+        self.edit_search_name.hide()
         self.edit_search.show()
         self.buttonCloseBox.show()
         self.buttonShowBox.hide()
@@ -125,6 +143,7 @@ class Administrator_Tab(QtGui.QWidget):
 
     def add_date_searcher(self):
         self.edit_search.hide()
+        self.edit_search_name.hide()
         self.edit_date.show()
         self.buttonCloseBox.hide()
         self.buttonShowBox.show()
@@ -137,7 +156,8 @@ class Administrator_Tab(QtGui.QWidget):
 
     def add_searcher_name(self):
         self.edit_date.hide()
-        self.edit_search.show()
+        self.edit_search_name.show()
+        self.edit_search.hide()
         self.buttonCloseBox.hide()
         self.buttonShowBox.hide()
         self.buttonAddExpense.hide()
@@ -168,6 +188,3 @@ class Administrator_Tab(QtGui.QWidget):
 
     def show_box(self):
         return 0
-
-    def on_search_table_edit_changed(self, string):
-        self.tablemodel.setFilter('id', string)
