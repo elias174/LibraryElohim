@@ -24,7 +24,7 @@ session = Session()
 class MainWindow(QtGui.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setMinimumSize(1000, 800)
+        #self.setMinimumSize(1000, 800)
         self.setWindowTitle("Sistema Pagos")
 
         central_layout = QtGui.QVBoxLayout()

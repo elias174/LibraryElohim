@@ -6,6 +6,8 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
+import sys
+from DetailProduct import Detail_Product
 
 
 Base = declarative_base()
@@ -78,6 +80,18 @@ class MyTableModel(QAbstractTableModel):
                           .filter(obj_column.like(text_query)).all())
         self.layoutChanged.emit()
 
+    def searchBillToday(self, name_column, search_text=None):
+        text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
+        #obj_column = getattr(self.model_alchemy, name_column)
+        today = datetime.now()
+        today = '2011-08-16'
+        print today
+        self.query = (session.query(Factura)
+                        .filter(Factura.fecha < today))
+        #self.arraydata = (session.query(self.model_alchemy)
+        #                  .filter(fecha = today))
+        self.layoutChanged.emit()
+
 
 class TableView(QtGui.QTableView):
     def __init__(self, *args, **kwargs):
@@ -87,6 +101,7 @@ class TableView(QtGui.QTableView):
 class ButtonDelegate(QtGui.QItemDelegate):
     def __init__(self, parent):
         QtGui.QItemDelegate.__init__(self, parent)
+        self.control_singleton = False
 
     def createEditor(self, parent, option, index):
         buttonDetails = QtGui.QPushButton("Detalle de Factura", parent)
@@ -108,4 +123,9 @@ class ButtonDelegate(QtGui.QItemDelegate):
         self.commitData.emit(self.sender())
 
     def detail_product(self):
-        return "hola"
+        if (self.control_singleton):
+            QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
+        else:
+            self.control_singleton = True
+            window = Detail_Product().exec_()
+            self.control_singleton = False

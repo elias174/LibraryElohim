@@ -8,34 +8,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from models import *
 from models_qt import MyTableModel
 from models_qt import TableView
-
-
-class ResultsButtonGroup(QtGui.QButtonGroup):
-    def __init__(self, parent, results, layout):
-        super(QtGui.QButtonGroup, self).__init__()
-        self.parent = parent
-        self.layout = layout
-        self.refresh(results)
-
-#   Maybe this should be change for personalize
-    def refresh(self, results):
-        n = 0
-        rows = None
-        cols = 4
-        if len(results) % 4 == 0:
-            rows = len(results)/4
-        else:
-            rows = (len(results)/4)+1
-        j = 0
-        for i in range(rows):
-            for result in results[n:n+4]:
-                button = QtGui.QPushButton(result.nombre, self.parent)
-                self.addButton(button, result.id)
-                self.layout.addWidget(button, i, j)
-                j += 1
-            j = 0
-            n += 4
-
+from AddExpense import Add_Expense
+from DetailExpense import Detail_Expense
 
 class Administrator_Tab(QtGui.QWidget):
     change_table = QtCore.pyqtSignal()
@@ -45,24 +19,24 @@ class Administrator_Tab(QtGui.QWidget):
 
         self.screenGeometry = QtGui.QApplication.desktop().availableGeometry()
         # Initialize Layout
-
         # Signal to check total
         self.last_query = (session.query(Producto).limit(12).all())
-
         self.central_layout = QtGui.QGridLayout()
-
         self.search_group = QtGui.QGroupBox(str("Busqueda"), self)
-
+        self.control_singleton = False
         self.central_layout.addWidget(self.search_group, 0, 0)
-
         self.initialize_search_group()
-
         self.setLayout(self.central_layout)
-
+        
 
 #        to connect the text_search
     def initialize_search_group(self):
-        self.layout_line_search = QtGui.QFormLayout()
+        self.layout_line_main = QtGui.QGridLayout()
+        self.layout_line_radio = QtGui.QHBoxLayout()
+        self.layout_line_search = QtGui.QHBoxLayout()
+        self.layout_line_table = QtGui.QVBoxLayout()
+        self.layout_line_gain = QtGui.QHBoxLayout()
+        self.layout_line_expenses = QtGui.QHBoxLayout()
 
         self.search_bill_today = QRadioButton("Ver Facturas de Hoy")
         self.search_bill_name = QRadioButton("Buscar Factura por Nombre")
@@ -74,14 +48,18 @@ class Administrator_Tab(QtGui.QWidget):
 
         self.search_bill_today.toggled.connect(self.add_searcher)
         self.search_bill_day.toggled.connect(self.add_date_searcher)
-        self.search_bill_name.toggled.connect(self.add_searcher)
+        self.search_bill_name.toggled.connect(self.add_searcher_name)
 
         #Buttons and Texts lines
         #For search_bill_today
         self.day_gain = QtGui.QLabel("Ganancia del Dia ", self)
         self.day_expenses = QtGui.QLabel("Gastos del Dia ", self)
         self.edit_day_gain = QtGui.QLineEdit(self)
+        self.edit_day_gain.setDisabled(1)
         self.edit_day_expenses = QtGui.QLineEdit(self)
+        self.edit_day_expenses.setDisabled(1)
+
+        self.edit_date.hide()
 
         self.buttonAddExpense = QtGui.QPushButton("Agregar Gasto", self)
         self.buttonAddExpense.clicked.connect(self.add_expense)
@@ -91,118 +69,105 @@ class Administrator_Tab(QtGui.QWidget):
 
         self.buttonCloseBox = QtGui.QPushButton("Cerrar Caja de Hoy", self)
         self.buttonCloseBox.clicked.connect(self.close_box)
+
+        self.buttonShowBox = QtGui.QPushButton("Ver Caja del Dia", self)
+        self.buttonShowBox.clicked.connect(self.show_box)
+        self.buttonShowBox.hide()
         
         header_names = ['ID', 'Factura', 'Fecha', 'Detalles']
-        self.tablemodel = MyTableModel(Producto, header_names, self)
+        self.tablemodel = MyTableModel(Factura, header_names, self)
         self.tableview = TableView()
         self.tableview.setAlternatingRowColors(True)
         self.tableview.setModel(self.tablemodel)
-        #self.tableview.resizeColumnsToContents()
         self.tableview.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
 
         for row in xrange(self.tablemodel.rowCount()):
             self.tableview.openPersistentEditor(self.tablemodel.index(row, 3))
+
+        self.layout_line_radio.addWidget(self.search_bill_today)
+        self.layout_line_radio.addWidget(self.search_bill_day)
+        self.layout_line_radio.addWidget(self.search_bill_name)
+        self.layout_line_search.addWidget(self.edit_search)
+        self.layout_line_search.addWidget(self.edit_date)
+        self.layout_line_gain.addWidget(self.day_gain)
+        self.layout_line_gain.addWidget(self.edit_day_gain)
+        self.layout_line_expenses.addWidget(self.day_expenses)
+        self.layout_line_expenses.addWidget(self.edit_day_expenses)
+        self.layout_line_expenses.addWidget(self.buttonAddExpense)
+        self.layout_line_expenses.addWidget(self.buttonDetailExpense)
+        self.layout_line_table.addWidget(self.tableview)
+        self.layout_line_main.addLayout(self.layout_line_radio, 1, 1)
+        self.layout_line_main.addLayout(self.layout_line_search, 2, 1)
+        self.layout_line_main.addLayout(self.layout_line_table, 3, 1)
+        self.layout_line_main.addLayout(self.layout_line_gain, 4, 1)
+        self.layout_line_main.addLayout(self.layout_line_expenses, 5, 1)
+        self.layout_line_main.addWidget(self.buttonCloseBox, 7, 1)
+        self.layout_line_main.addWidget(self.buttonShowBox, 7, 1)
+
+        self.search_group.setLayout(self.layout_line_main)
+        self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
+
+    def on_search_table_edit_changed(self, string):
+        if self.search_bill_today.isChecked():
+            self.tablemodel.searchBillToday("id", string)
             
-        self.layout_line_search.addRow(self.search_bill_today, self.search_bill_day)
-        self.layout_line_search.addRow(self.search_bill_name)
-        self.layout_line_search.addRow(self.edit_search)
-        self.layout_line_search.addRow(self.edit_date)
-        self.layout_line_search.addRow(self.tableview)
-        self.edit_date.hide()
-
-        #Add buttons to layout
-        self.layout_line_search.addRow(self.day_gain, self.edit_day_gain)
-        self.layout_line_search.addRow(self.day_expenses, self.edit_day_expenses)
-        self.layout_line_search.addRow(self.buttonAddExpense, self.buttonDetailExpense)
-        self.layout_line_search.addRow(self.buttonCloseBox)
-
-
-        self.search_group.setLayout(self.layout_line_search)
-        #self.edit_search_added.textChanged.connect(self.on_search_edit_added_changed)
-
     def add_searcher(self):
         self.edit_date.hide()
         self.edit_search.show()
+        self.buttonCloseBox.show()
+        self.buttonShowBox.hide()
+        self.buttonAddExpense.show()
+        self.buttonDetailExpense.show()
+        self.edit_day_gain.show()
+        self.edit_day_expenses.show()
+        self.day_expenses.show()
+        self.day_gain.show()
 
     def add_date_searcher(self):
         self.edit_search.hide()
         self.edit_date.show()
+        self.buttonCloseBox.hide()
+        self.buttonShowBox.show()
+        self.buttonAddExpense.hide()
+        self.buttonDetailExpense.show()
+        self.edit_day_gain.show()
+        self.edit_day_expenses.show()
+        self.day_expenses.show()
+        self.day_gain.show()
+
+    def add_searcher_name(self):
+        self.edit_date.hide()
+        self.edit_search.show()
+        self.buttonCloseBox.hide()
+        self.buttonShowBox.hide()
+        self.buttonAddExpense.hide()
+        self.buttonDetailExpense.hide()
+        self.edit_day_gain.hide()
+        self.edit_day_expenses.hide()
+        self.day_expenses.hide()
+        self.day_gain.hide()
 
     def add_expense(self):
-        return "Agregar gasto"
+        #if (self.control_singleton):
+        #    QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
+        #else:
+        #    self.control_singleton = True
+        Add_Expense().exec_()
+        #    self.control_singleton = False
 
     def detail_expense(self):
-        return "Detalle de gasto"
+        #if (self.control_singleton):
+        #    QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
+        #else:
+        #    self.control_singleton = True
+        Detail_Expense().exec_()
+        #self.control_singleton = False
 
     def close_box(self):
         return "Cerrar Caja"
 
-    def add_selected_rows(self):
-        indexes = self.tableview.selectedIndexes()
-        for index in indexes:
-            product_id = self.tablemodel.get_id_object_alchemy(index.row())
-            self.ResultButtonClick(product_id)
-
+    def show_box(self):
+        return 0
 
     def on_search_table_edit_changed(self, string):
-        self.tablemodel.setFilter('nombre', string)
-
-    def on_search_edit_changed(self, string):
-        text_query = '%'+unicode(string.toUtf8(), encoding="UTF-8")+'%'
-        self.last_query = (session.query(Producto)
-                           .filter(Producto.nombre.like(text_query)).all())
-        for i in reversed(range(self.layout_results.count())):
-            self.layout_results.itemAt(i).widget().setParent(None)
-        self.button_group.refresh (self.last_query)
-
-    def on_search_edit_added_changed(self, string):
-        for row in xrange(self.table_items.rowCount()):
-                self.table_items.showRow(row)
-        if string != '':
-            to_hide = []
-            items = [item.row()
-                     for item in self.table_items.findItems(string, QtCore.Qt.MatchContains)
-                     if item.column() == 1]
-            for row in xrange(self.table_items.rowCount()):
-                if not (row in items):
-                    self.table_items.hideRow(row)
-
-    def delete_row(self):
-        button = QtGui.qApp.focusWidget()
-        index = self.table_items.indexAt(button.pos())
-        self.table_items.removeRow(index.row())
-        self.change_table.emit()
-
-    def add_product_table(self, product):
-        self.i = self.table_items.rowCount()
-
-        self.table_items.insertRow(self.i)
-
-        button = QtGui.QPushButton()
-        button.clicked.connect(self.delete_row)
-        button.setStyleSheet("background-color: rgba(255, 255, 255, 0);")
-        button.setIcon(QtGui.QIcon('icons/delete-128.png'))
-
-        def quantity_changed(val):
-            spin = QtGui.qApp.focusWidget()
-            row = self.table_items.indexAt(spin.pos()).row()
-            qty = float(val)
-            new_value = str(float(self.table_items.item(row, 2).text()) * qty)
-            self.table_items.setItem(row, 3, QtGui.QTableWidgetItem(new_value))
-            self.change_table.emit()
-
-        spinbox = QtGui.QSpinBox()
-        spinbox.setValue(1)
-        spinbox.setMinimum(1)
-
-        spinbox.valueChanged.connect(quantity_changed)
-
-        self.table_items.setCellWidget(self.i, 0, spinbox)
-        self.table_items.setItem(self.i, 1,
-                                 QtGui.QTableWidgetItem(str(product.nombre)))
-        self.table_items.setItem(self.i, 2,
-                                 QtGui.QTableWidgetItem(str(product.precio_venta)))
-        self.table_items.setItem(self.i, 3,
-                                 QtGui.QTableWidgetItem(str(product.precio_venta)))
-        self.table_items.setCellWidget(self.i, 4, button)
-        self.change_table.emit()
+        self.tablemodel.setFilter('id', string)
