@@ -129,10 +129,10 @@ class ButtonDelegate(QtGui.QItemDelegate):
             QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
         else:
             self.control_singleton = True
-            button = qApp.focusWidget()
-            index = self.table_items.indexAt(button.pos())
-            if index.isValid():
-                #window = Detail_Product().exec_()
-                window = Modify_Product(self.query[index.row()]).exec_()
+            #button = qApp.focusWidget()
+            #index = self.table_items.indexAt(button.pos())
+            #if index.isValid():
+            window = Detail_Product().exec_()
+                #window = Modify_Product(self.query[index.row()]).exec_()
             self.control_singleton = False
                 
