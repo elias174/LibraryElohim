@@ -77,3 +77,7 @@ class MyTableModel(QAbstractTableModel):
         self.arraydata = (session.query(self.model_alchemy)
                           .filter(obj_column.like(text_query)).all())
         self.layoutChanged.emit()
+
+    def refresh_data(self):
+        self.arraydata = (session.query(self.model_alchemy).limit(20).all())
+        self.layoutChanged.emit()

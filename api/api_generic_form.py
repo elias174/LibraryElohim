@@ -17,4 +17,3 @@ class GenericFormApi(object):
     def __init__(self, AlchemyModel, data):
         self.AlchemyModel = AlchemyModel
         self.data = data
-    

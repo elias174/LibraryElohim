@@ -4,7 +4,7 @@ import importlib
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, mapper
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
@@ -16,6 +16,9 @@ metadata = MetaData(db)
 
 Session = sessionmaker(bind=db)
 session = Session()
+
+MAX_VALUE_INT = 10000000000
+MAX_VALUE_FLOAT = 10000000000.0
 
 
 class AdvComboBox(QtGui.QComboBox):
@@ -53,25 +56,25 @@ class AdvComboBox(QtGui.QComboBox):
 class AdvSpinBox(QtGui.QSpinBox):
     def __init__(self, parent=None):
         super(AdvSpinBox, self).__init__(parent)
+        self.setRange(0, MAX_VALUE_INT)
 
     def extract_value(self):
         return self.value()
+
+    def set_value_object(self, data):
+        self.setValue(data)
 
 
 class AdvDoubleSpinBox(QtGui.QDoubleSpinBox):
     def __init__(self, parent=None):
         super(AdvDoubleSpinBox, self).__init__(parent)
+        self.setRange(0, MAX_VALUE_FLOAT)
 
     def extract_value(self):
         return self.value()
 
-
-class AdvDoubleSpinBox(QtGui.QDoubleSpinBox):
-    def __init__(self, parent=None):
-        super(AdvDoubleSpinBox, self).__init__(parent)
-
-    def extract_value(self):
-        return self.value()
+    def set_value_object(self, data):
+        self.setValue(data)
 
 
 class AdvLineEdit(QtGui.QLineEdit):
@@ -81,6 +84,9 @@ class AdvLineEdit(QtGui.QLineEdit):
     def extract_value(self):
         return str(self.text())
 
+    def set_value_object(self, data):
+        self.setText(data)
+
 
 class AdvDateEdit(QtGui.QDateEdit):
     def __init__(self, parent=None):
@@ -89,6 +95,9 @@ class AdvDateEdit(QtGui.QDateEdit):
 
     def extract_value(self):
         return self.date().toPyDate()
+
+    def set_value_object(self, data):
+        self.setDate(QtCore.QDate(data.year, data.month, data.day))
 
 
 TYPES_MAP = {
@@ -101,7 +110,7 @@ TYPES_MAP = {
 
 
 class GenericFormDialog(QtGui.QDialog):
-    def __init__(self, AlchemyModel, parent=None):
+    def __init__(self, AlchemyModel, parent=None, object_edit=None):
         super(GenericFormDialog, self).__init__(parent)
         self.setWindowTitle('Nuevo %s' % (AlchemyModel.__name__))
         self.my_layout = QtGui.QFormLayout(self)
@@ -113,18 +122,39 @@ class GenericFormDialog(QtGui.QDialog):
                 data = ['%s %s' % (str(e.id), str(e.nombre))
                         for e in session.query(value).all()]
             except AttributeError:
-                continue
+                data = ['%s %s' % (str(e.id), str(value.name))
+                        for e in session.query(value).all()]
             widget = TYPES_MAP['Foreign_Key']()
             widget.addItems(data)
+            # to fill the widget foreign key
+            if object_edit:
+                id_obj = getattr(object_edit, key)
+
+                # maybe this is evil
+                class AbstractClassForeign(object):
+                    pass
+
+                mapper(AbstractClassForeign, value)
+                obj_foreign = session.query(AbstractClassForeign).get(id_obj)
+                try:
+                    text = '%s %s' % (str(id_obj), str(obj_foreign.nombre))
+                except AttributeError:
+                    text = '%s %s' % (str(id_obj), str(value.name))
+                index = widget.findText(text, QtCore.Qt.MatchFixedString)
+                if index >= 0:
+                    widget.setCurrentIndex(index)
             self.my_layout.addRow(label, widget)
 
         members = AlchemyModel.__table__.columns
         for member in members:
-            if member.key in foreign_keys:
+            if member.key in foreign_keys or member.key is 'id':
                 continue
             label = QtGui.QLabel(member.key)
             type_member = type(member.type).__name__
             widget = TYPES_MAP[type_member]()
+            if object_edit:
+                data = getattr(object_edit, member.key)
+                widget.set_value_object(data)
             self.my_layout.addRow(label, widget)
 
         self.buttons = QtGui.QDialogButtonBox(
@@ -144,8 +174,10 @@ class GenericFormDialog(QtGui.QDialog):
         return data
 
     @staticmethod
-    def get_data(AlchemyModel, parent=None):
-        dialog = GenericFormDialog(AlchemyModel, parent)
+    def get_data(AlchemyModel, parent=None, obj_edit=None):
+        dialog = GenericFormDialog(AlchemyModel, parent, obj_edit)
+        if obj_edit:
+            dialog.setWindowTitle('Editar %s' % (AlchemyModel.__name__))
         result = dialog.exec_()
         data = dialog.get_all_data()
         return (data, result == QtGui.QDialog.Accepted)
