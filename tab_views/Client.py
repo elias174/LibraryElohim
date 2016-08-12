@@ -35,17 +35,33 @@ class ClientDialog(QtGui.QDialog):
         self.buttons = QtGui.QDialogButtonBox(
             QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel,
             QtCore.Qt.Horizontal, self)
+
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         self.button_new_client.clicked.connect(self.new_client)
+        self.line_edit_search.textChanged.connect(self.search_client)
 
         self.layout.addRow(self.buttons)
         self.setLayout(self.layout)
         self.setWindowTitle('Clientes Administrador')
 
+    def search_client(self, text):
+        self.tablemodel.setFilter('nombre', text)
+
     def new_client(self):
         data, result = GenericFormDialog.get_data(Cliente, self)
-        print data
+        if result:
+            new_client = Cliente(
+                data['nombre'],
+                data['apellido'],
+                data['direccion'],
+                data['fecha_nacimiento'],
+                data['telefono'],
+            )
+            session.add(new_client)
+            session.commit()
+            #QtCore.QAbstractTableModel.dataChanged()
+            self.tableview.model().refresh_data()
 
     def get_id_selected_client(self):
         indexes = self.tableview.selectedIndexes()

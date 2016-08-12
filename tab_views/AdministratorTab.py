@@ -65,23 +65,25 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_day_expenses.setDisabled(1)
 
         
+        self.button_add_table = QtGui.QPushButton('Aniadir')
+        self.button_add_table.clicked.connect(self.view_detail_product)
 
-        self.buttonAddExpense = QtGui.QPushButton("Agregar Gasto", self)
-        self.buttonAddExpense.clicked.connect(self.add_expense)
+        self.button_add_expense = QtGui.QPushButton("Agregar Gasto", self)
+        self.button_add_expense.clicked.connect(self.add_expense)
 
-        self.buttonDetailExpense = QtGui.QPushButton("Detalles de Gastos", self)
-        self.buttonDetailExpense.clicked.connect(self.detail_expense)
+        self.button_detail_expense = QtGui.QPushButton("Detalles de Gastos", self)
+        self.button_detail_expense.clicked.connect(self.detail_expense)
 
-        self.buttonCloseBox = QtGui.QPushButton("Cerrar Caja de Hoy", self)
-        self.buttonCloseBox.clicked.connect(self.close_box)
+        self.button_close_box = QtGui.QPushButton("Cerrar Caja de Hoy", self)
+        self.button_close_box.clicked.connect(self.close_box)
 
-        self.buttonShowBox = QtGui.QPushButton("Ver Caja del Dia", self)
-        self.buttonShowBox.clicked.connect(self.show_box)
-        self.buttonShowBox.hide()
+        self.button_show_box = QtGui.QPushButton("Ver Caja del Dia", self)
+        self.button_show_box.clicked.connect(self.show_box)
+        self.button_show_box.hide()
         
-        header_names = ['ID', 'Factura', 'Fecha', 'Detalles']
+        header_names = ['ID', 'Factura', 'Fecha']
         self.tablemodel = MyTableModel(Factura, header_names, self)
-        self.tableview = TableView()
+        self.tableview = QtGui.QTableView()
         self.tableview.setAlternatingRowColors(True)
         self.tableview.setModel(self.tablemodel)
         self.tableview.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
@@ -99,16 +101,17 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_gain.addWidget(self.edit_day_gain)
         self.layout_line_expenses.addWidget(self.day_expenses)
         self.layout_line_expenses.addWidget(self.edit_day_expenses)
-        self.layout_line_expenses.addWidget(self.buttonAddExpense)
-        self.layout_line_expenses.addWidget(self.buttonDetailExpense)
+        self.layout_line_expenses.addWidget(self.button_add_expense)
+        self.layout_line_expenses.addWidget(self.button_detail_expense)
         self.layout_line_table.addWidget(self.tableview)
         self.layout_line_main.addLayout(self.layout_line_radio, 1, 1)
         self.layout_line_main.addLayout(self.layout_line_search, 2, 1)
         self.layout_line_main.addLayout(self.layout_line_table, 3, 1)
-        self.layout_line_main.addLayout(self.layout_line_gain, 4, 1)
-        self.layout_line_main.addLayout(self.layout_line_expenses, 5, 1)
-        self.layout_line_main.addWidget(self.buttonCloseBox, 7, 1)
-        self.layout_line_main.addWidget(self.buttonShowBox, 7, 1)
+        self.layout_line_main.addWidget(self.button_add_table, 4, 1)
+        self.layout_line_main.addLayout(self.layout_line_gain, 5, 1)
+        self.layout_line_main.addLayout(self.layout_line_expenses, 6, 1)
+        self.layout_line_main.addWidget(self.button_close_box, 7, 1)
+        self.layout_line_main.addWidget(self.button_show_box, 7, 1)
 
         self.search_group.setLayout(self.layout_line_main)
         self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
@@ -132,10 +135,10 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_date.hide()
         self.edit_search_name.hide()
         self.edit_search.show()
-        self.buttonCloseBox.show()
-        self.buttonShowBox.hide()
-        self.buttonAddExpense.show()
-        self.buttonDetailExpense.show()
+        self.button_close_box.show()
+        self.button_show_box.hide()
+        self.button_add_expense.show()
+        self.button_detail_expense.show()
         self.edit_day_gain.show()
         self.edit_day_expenses.show()
         self.day_expenses.show()
@@ -145,10 +148,10 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_search.hide()
         self.edit_search_name.hide()
         self.edit_date.show()
-        self.buttonCloseBox.hide()
-        self.buttonShowBox.show()
-        self.buttonAddExpense.hide()
-        self.buttonDetailExpense.show()
+        self.button_close_box.hide()
+        self.button_show_box.show()
+        self.button_add_expense.hide()
+        self.button_detail_expense.show()
         self.edit_day_gain.show()
         self.edit_day_expenses.show()
         self.day_expenses.show()
@@ -158,10 +161,10 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_date.hide()
         self.edit_search_name.show()
         self.edit_search.hide()
-        self.buttonCloseBox.hide()
-        self.buttonShowBox.hide()
-        self.buttonAddExpense.hide()
-        self.buttonDetailExpense.hide()
+        self.button_close_box.hide()
+        self.button_show_box.hide()
+        self.button_add_expense.hide()
+        self.button_detail_expense.hide()
         self.edit_day_gain.hide()
         self.edit_day_expenses.hide()
         self.day_expenses.hide()
@@ -182,6 +185,13 @@ class Administrator_Tab(QtGui.QWidget):
         #    self.control_singleton = True
         Detail_Expense().exec_()
         #self.control_singleton = False
+
+    def view_detail_product(self):
+        indexes = self.tableview.selectedIndexes()
+        for index in indexes:
+            product_id = self.tablemodel.get_id_object_alchemy(index.row())
+            #self.ResultButtonClick(product_id)
+            print product_id
 
     def close_box(self):
         return "Cerrar Caja"

@@ -1,5 +1,4 @@
 import sys
-from  datetime import date
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -8,7 +7,6 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
 import sys
-from DetailProduct import Detail_Product
 
 
 Base = declarative_base()
@@ -81,58 +79,6 @@ class MyTableModel(QAbstractTableModel):
                           .filter(obj_column.like(text_query)).all())
         self.layoutChanged.emit()
 
-    def searchBillToday(self, search_text=None):
-        text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
-        today = '%'+str(date.today())+'%'
-        self.arraydata = (session.query(Factura)
-                        .filter(Factura.id.like(text_query)) \
-                        .filter(Factura.fecha.like(today)).all())
+    def refresh_data(self):
+        self.arraydata = (session.query(self.model_alchemy).limit(20).all())
         self.layoutChanged.emit()
-
-    def searchBillDay(self, search_text=None):
-        text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
-        self.arraydata = (session.query(Factura)
-                        .filter(Factura.fecha.like(text_query)).all())
-        self.layoutChanged.emit()
-
-class TableView(QtGui.QTableView):
-    def __init__(self, *args, **kwargs):
-        QtGui.QTableView.__init__(self, *args, **kwargs)
-        self.setItemDelegateForColumn(3, ButtonDelegate(self))
-
-class ButtonDelegate(QtGui.QItemDelegate):
-    def __init__(self, parent):
-        QtGui.QItemDelegate.__init__(self, parent)
-        self.control_singleton = False
-
-    def createEditor(self, parent, option, index):
-        buttonDetails = QtGui.QPushButton("Detalle de Factura", parent)
-        #buttonDetails.setStyleSheet("background-color: rgba(255, 255, 255, 0);")
-        #buttonDetails.setIcon(QtGui.QIcon('icons/boton_detalles.png'))
-        buttonDetails.clicked.connect(self.detail_product)
-        return buttonDetails
-        
-    def setEditorData(self, editor, index):
-        editor.blockSignals(True)
-        #editor.setCurrentIndex(int(index.model().data(index)))
-        editor.blockSignals(False)
-        
-    def setModelData(self, editor, model, index):
-        model.setData(index, editor.text())
-        
-    @QtCore.pyqtSlot()
-    def currentIndexChanged(self):
-        self.commitData.emit(self.sender())
-
-    def detail_product(self):
-        if (self.control_singleton):
-            QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
-        else:
-            self.control_singleton = True
-            #button = qApp.focusWidget()
-            #index = self.table_items.indexAt(button.pos())
-            #if index.isValid():
-            window = Detail_Product().exec_()
-                #window = Modify_Product(self.query[index.row()]).exec_()
-            self.control_singleton = False
-                
