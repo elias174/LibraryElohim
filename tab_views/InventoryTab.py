@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from models import *
 from AddNewProduct import Add_New_Product
 from ModifyProduct import Modify_Product
+from Generic_forms import GenericFormDialog
 
 Base = declarative_base()
 
@@ -43,12 +44,14 @@ class Inventory_Tab(QtGui.QWidget):
         self.setLayout(self.central_layout)
 
     def add_new_product(self):
-        if (self.control_singleton):
-            QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
-        else:
-            self.control_singleton = True
-            window = Add_New_Product().exec_()
-            self.control_singleton = False
+        #if (self.control_singleton):
+        #    QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
+        #else:
+        #    self.control_singleton = True
+        #window = Add_New_Product().exec_()
+        window, data = GenericFormDialog.get_data(Cliente, self)
+        print data, window
+        #    self.control_singleton = False
 
     def modify_product(self):
         if(self.control_singleton):
