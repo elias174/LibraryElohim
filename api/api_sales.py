@@ -49,6 +49,11 @@ class SaleApi(object):
         # To be implemented
         pass
 
+    @staticmethod
+    def get_quantity_product(id_product):
+        product = session.query(Producto).get(id_product)
+        return product.stock
+
 
 def test_api():
     sale_api = SaleApi(float(14.5))

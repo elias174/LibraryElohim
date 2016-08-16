@@ -12,6 +12,7 @@ from models_qt import MyTableModel
 from Client import ClientDialog
 
 sys.path.append(os.path.abspath(os.path.join('..', 'api')))
+from api.api_sales import SaleApi
 # Base = declarative_base()
 # 
 # db = create_engine('sqlite:///dataBase.db', echo = False)
@@ -85,10 +86,10 @@ class Sale_Tab(QtGui.QWidget):
         #                                                  QtGui.QSizePolicy.Fixed))
         # Second Line
         self.table_items = QtGui.QTableWidget(self)
-        self.table_items.setColumnCount(5)
+        self.table_items.setColumnCount(6)
         self.table_items.setRowCount(0)
 
-        self.table_items.setHorizontalHeaderLabels(["Cantidad", "Producto",
+        self.table_items.setHorizontalHeaderLabels(["ID", "Cantidad", "Producto",
                                                     "P.Unidad", "P.Total",
                                                     "Eliminar"])
 
@@ -107,7 +108,7 @@ class Sale_Tab(QtGui.QWidget):
         self.layout_line.addRow("A pagar: ", self.pay_line)
 
         # Line Client
-        self.client_label = QtGui.QLabel('0 Cliente Anonimo')
+        self.client_label = QtGui.QLabel('1 Cliente Anonimo')
         self.button_client = QtGui.QPushButton('Aniadir Cliente')
         self.button_client.setMaximumWidth(self.screenGeometry.width() / 8)
         self.layout_line.addRow(self.client_label, self.button_client)
@@ -116,10 +117,9 @@ class Sale_Tab(QtGui.QWidget):
         self.layout_line.addItem(QtGui.QSpacerItem(1, self.screenGeometry.height() / 4))
 
         self.button_generate_sale = QtGui.QPushButton('Realizar Venta')
+        self.button_generate_sale.clicked.connect(self.realease_sale)
         self.layout_line.addRow(self.button_generate_sale)
 
-
-#        to connect the text_search
     def initialize_search_group(self):
         self.layout_line_search = QtGui.QFormLayout()
 
@@ -193,9 +193,9 @@ class Sale_Tab(QtGui.QWidget):
             self.ResultButtonClick(product_id)
 
     def open_dialog_client(self):
-        if self.client_label.text() != '0 Cliente Anonimo':
+        if self.client_label.text() != '1 Cliente Anonimo':
             self.button_client.setText('Aniadir Cliente')
-            self.client_label.setText('0 Cliente Anonimo')
+            self.client_label.setText('1 Cliente Anonimo')
         else:
             id_client, result = ClientDialog.get_client(self)
             if result and id_client:
@@ -208,16 +208,34 @@ class Sale_Tab(QtGui.QWidget):
     @QtCore.pyqtSlot(int)
     def ResultButtonClick(self, id):
         product = session.query(Producto).get(id)
-        product_name = str(product.nombre)
-        items = self.table_items.findItems(product_name, QtCore.Qt.MatchExactly)
+        if product.stock < 1:
+            QtGui.QMessageBox.critical(self, 'Error',
+                                       'No hay stock de este producto',
+                                       QtGui.QMessageBox.Ok)
+            return
+        product_id = str(product.id)
+        items = self.table_items.findItems(product_id, QtCore.Qt.MatchExactly)
         if items:
             ok = QtGui.QMessageBox.question(self, u'Doble Producto %s'
-                                            % str(product_name),
+                                            % str(product.nombre),
                                             "Desea Agregarlo de nuevo?",
                                             QtGui.QMessageBox.Yes,
                                             QtGui.QMessageBox.No)
             if ok == QtGui.QMessageBox.Yes:
-                self.add_product_table(product)
+                row_item = items[0].row()
+                widget_spin = self.table_items.cellWidget(row_item, 1)
+                val = (widget_spin.value() + 1)
+                if SaleApi.get_quantity_product(product.id) >= val:
+                    widget_spin.setValue(val)
+                    qty = float(val)
+                    new_value = str(float(self.table_items.item(row_item, 3).text()) * qty)
+                    self.table_items.item(row_item, 4).setText(new_value)
+                    self.change_table.emit()
+                else:
+                    QtGui.QMessageBox.critical(self,
+                                               'Error',
+                                               'No hay mas stock de este producto',
+                                               QtGui.QMessageBox.Ok)
             else:
                 return
         else:
@@ -263,33 +281,84 @@ class Sale_Tab(QtGui.QWidget):
         button.setIcon(QtGui.QIcon('icons/delete-128.png'))
 
         def quantity_changed(val):
+            old_value = spinbox.value()
             spin = QtGui.qApp.focusWidget()
-            row = self.table_items.indexAt(spin.pos()).row()
+            try:
+                row = self.table_items.indexAt(spin.pos()).row()
+            except AttributeError:
+                return
             qty = float(val)
-            new_value = str(float(self.table_items.item(row, 2).text()) * qty)
-            self.table_items.setItem(row, 3, QtGui.QTableWidgetItem(new_value))
+            new_value = str(float(self.table_items.item(row, 3).text()) * qty)
+            self.table_items.setItem(row, 4, QtGui.QTableWidgetItem(new_value))
             self.change_table.emit()
 
         spinbox = QtGui.QSpinBox()
         spinbox.setValue(1)
         spinbox.setMinimum(1)
+        spinbox.setMaximum(SaleApi.get_quantity_product(product.id))
 
         spinbox.valueChanged.connect(quantity_changed)
 
-        self.table_items.setCellWidget(self.i, 0, spinbox)
-        self.table_items.setItem(self.i, 1,
-                                 QtGui.QTableWidgetItem(str(product.nombre)))
-        self.table_items.setItem(self.i, 2,
-                                 QtGui.QTableWidgetItem(str(product.precio_venta)))
-        self.table_items.setItem(self.i, 3,
-                                 QtGui.QTableWidgetItem(str(product.precio_venta)))
-        self.table_items.setCellWidget(self.i, 4, button)
+        product_item = QtGui.QTableWidgetItem(str(product.id))
+        product_item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+        self.table_items.setItem(self.i, 0, product_item)
+
+        self.table_items.setCellWidget(self.i, 1, spinbox)
+
+        product_name = QtGui.QTableWidgetItem(str(product.nombre))
+        product_name.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+        self.table_items.setItem(self.i, 2, product_name)
+
+        product_price_sale = QtGui.QTableWidgetItem(str(product.precio_venta))
+        product_price_sale.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+        self.table_items.setItem(self.i, 3, product_price_sale)
+
+        product_price_sale_total = QtGui.QTableWidgetItem(str(product.precio_venta))
+        product_price_sale_total.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+        self.table_items.setItem(self.i, 4, product_price_sale_total)
+
+        self.table_items.setCellWidget(self.i, 5, button)
+
         self.change_table.emit()
 
     def update_total(self):
-        index_price = 3
+        index_price = 4
         price = 0
         for row in xrange(self.table_items.rowCount()):
             item = self.table_items.item(row, index_price)
             price += float(item.text())
         self.total_line.setText(QtCore.QString(str(price)))
+
+    def realease_sale(self):
+        result = QtGui.QMessageBox.question(self, 'Confirmar',
+                                            'Realizar Venta?',
+                                            QtGui.QMessageBox.Yes,
+                                            QtGui.QMessageBox.No)
+        if result == QMessageBox.Yes:
+            index_id = 0
+            index_quantity = 1
+            client_id = int(str(self.client_label.text()).split(' ')[0])
+            price_total = float(str(self.total_line.text()))
+            if price_total > float(0):
+                sale = SaleApi(price_total, client_id)
+                sale.generate_factura()
+                for row in xrange(self.table_items.rowCount()):
+                    item_id = int(self.table_items.item(row, index_id).text())
+                    quantity = self.table_items.cellWidget(row, index_quantity).value()
+                    try:
+                        sale.add_detail(item_id, quantity)
+                    except AssertionError:
+                        QtGui.QMessageBox.critical(self, 'Error',
+                                                   'Algo salio mal, venta anulada',
+                                                   QtGui.QMessageBox.Ok)
+                        return
+                sale.save_sale()
+                QtGui.QMessageBox.information(self, 'Finalizado', 'Venta Finalizada')
+
+            else:
+                QtGui.QMessageBox.critical(self, 'Error',
+                                           'Venta vacia, no es posible realizar',
+                                           QtGui.QMessageBox.Ok)
+                return
+        else:
+            return
