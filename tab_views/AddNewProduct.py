@@ -7,6 +7,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
 from AddCategory import Add_Category
+from Generic_forms import GenericFormDialog
 
 Base = declarative_base()
 
@@ -101,9 +102,4 @@ class Add_New_Product(QDialog):
         self.close()
 
     def create_Category(self):
-        if (self.control_singleton):
-            QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
-        else:
-            self.control_singleton = True
-            window = Add_Category().exec_()
-            self.control_singleton = False
+        window, data = GenericFormDialog.get_data(Categoria, self)

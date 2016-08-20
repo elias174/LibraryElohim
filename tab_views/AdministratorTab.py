@@ -21,8 +21,6 @@ class Administrator_Tab(QtGui.QWidget):
         super(Administrator_Tab, self).__init__()
 
         self.screenGeometry = QtGui.QApplication.desktop().availableGeometry()
-        # Initialize Layout
-        # Signal to check total
         self.last_query = (session.query(Producto).limit(12).all())
         self.central_layout = QtGui.QGridLayout()
         self.search_group = QtGui.QGroupBox(str("Busqueda"), self)
@@ -31,8 +29,6 @@ class Administrator_Tab(QtGui.QWidget):
         self.initialize_search_group()
         self.setLayout(self.central_layout)
         
-
-#        to connect the text_search
     def initialize_search_group(self):
         self.layout_line_main = QtGui.QGridLayout()
         self.layout_line_radio = QtGui.QHBoxLayout()
@@ -46,6 +42,8 @@ class Administrator_Tab(QtGui.QWidget):
         self.search_bill_day = QRadioButton("Buscar Factura por Dia")
         self.edit_search = QtGui.QLineEdit(self)
         self.edit_date = QDateEdit(datetime.now())
+        self.edit_date.setCalendarPopup(True)
+        self.edit_date.setMaximumWidth(self.screenGeometry.width() / 8)
         self.edit_date.setDisplayFormat(('yyyy-MM-dd'))
         self.edit_search_name = QtGui.QLineEdit(self)
         self.edit_search_name.hide()
@@ -57,14 +55,12 @@ class Administrator_Tab(QtGui.QWidget):
         self.search_bill_day.toggled.connect(self.add_date_searcher)
         self.search_bill_name.toggled.connect(self.add_searcher_name)
 
-        #Buttons and Texts lines
-        #For search_bill_today
         self.day_gain = QtGui.QLabel("Ganancia del Dia ", self)
         self.day_expenses = QtGui.QLabel("Gastos del Dia ", self)
         self.edit_day_gain = QtGui.QLineEdit(self)
-        self.edit_day_gain.setDisabled(1)
+        self.edit_day_gain.setDisabled(True)
         self.edit_day_expenses = QtGui.QLineEdit(self)
-        self.edit_day_expenses.setDisabled(1)
+        self.edit_day_expenses.setDisabled(True)
         
         self.button_add_table = QtGui.QPushButton('Ver Detalle de Factura')
         self.button_add_table.clicked.connect(self.view_detail_product)
@@ -172,26 +168,15 @@ class Administrator_Tab(QtGui.QWidget):
         self.day_gain.hide()
 
     def add_expense(self):
-        #if (self.control_singleton):
-        #    QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
-        #else:
-        #    self.control_singleton = True
         window, data = GenericFormDialog.get_data(Gasto, self)
-        #    self.control_singleton = False
-
+        
     def detail_expense(self):
-        #if (self.control_singleton):
-        #    QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
-        #else:
-        #    self.control_singleton = True
         if self.search_bill_today.isChecked():
             today = str(date.today())
             Detail_Expense(0,today).exec_()
         if self.search_bill_day.isChecked():
             string = self.edit_date.date()
             Detail_Expense(1,string).exec_()
-            
-        #self.control_singleton = False
 
     def view_detail_product(self):
         indexes = self.tableview.selectedIndexes()
