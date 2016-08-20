@@ -16,10 +16,14 @@ Session = sessionmaker(bind=db)
 session = Session()
 
 
-class Detail_Product(QDialog):
-    def __init__(self, parent = None):
+class Detail_Bill(QDialog):
+    def __init__(self, object_id, parent = None):
         #QDialog.__init__(self, parent)
-        super(Detail_Product, self).__init__(parent)
+        super(Detail_Bill, self).__init__(parent)
+        self.product_id = object_id
+
+        self.query = (session.query(Detalle)
+                        .filter(Detalle.factura == self.product_id).all())
 
         self.control_singleton = False
         self.acceptButton = QPushButton("Aceptar", self)
@@ -34,15 +38,16 @@ class Detail_Product(QDialog):
         self.initializate_products_group()
 
         grid = QGridLayout()
-        grid.addWidget(bill, 1, 0)
-        grid.addWidget(self.edit_bill, 1, 1)
-
-        grid.addWidget(date, 2, 0)
-        grid.addWidget(self.edit_date, 2, 1)
-
-        grid.addWidget(self.products_group, 3, 0, 3, 2)
-
-        grid.addWidget(self.acceptButton, 4, 1)
+        self.layout_line_bill = QtGui.QHBoxLayout()
+        self.layout_line_date = QtGui.QHBoxLayout()
+        self.layout_line_bill.addWidget(bill)
+        self.layout_line_bill.addWidget(self.edit_bill)
+        self.layout_line_date.addWidget(date)
+        self.layout_line_date.addWidget(self.edit_date)
+        grid.addLayout(self.layout_line_bill, 1, 0)
+        grid.addLayout(self.layout_line_date, 2, 0)
+        grid.addWidget(self.products_group, 3, 0)
+        grid.addWidget(self.acceptButton, 5, 0)
 
         self.setLayout(grid)
 
@@ -61,8 +66,9 @@ class Detail_Product(QDialog):
         #Creating table
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table_items.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
     
-        self.table_items.setRowCount(0)
+        self.table_items.setRowCount(len(self.query))
 
         self.table_items.setColumnCount(3)
         self.table_items.setHorizontalHeaderLabels(['Producto', 'Cantidad', 
@@ -70,21 +76,19 @@ class Detail_Product(QDialog):
         header = self.table_items.horizontalHeader()
         header.setResizeMode(QHeaderView.Stretch)
         self.stringRow = ''
-        #query
-        """
-        self.query = (session.query(Producto).limit(20).all())
-        self.table_items.setRowCount(len(self.query))
-        self.stringRow = ''
+
         for detail in range(len(self.query)):
             self.table_items.setItem(detail, 0,
-                                     QtGui.QTableWidgetItem(str(self.query[detail].id)))
+                                     QtGui.QTableWidgetItem(str(self.query[detail].producto)))
             self.table_items.setItem(detail, 1,
-                                     QtGui.QTableWidgetItem(str(self.query[detail].categoria)))
-            self.stringRow = self.stringRow + str(product+1) + ','
+                                     QtGui.QTableWidgetItem(str(self.query[detail].cantidad)))
+            self.table_items.setItem(detail, 2,
+                                     QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
+            self.stringRow = self.stringRow + str(detail+1) + ','
 
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
-        """
         #addin table with the query
 
         self.layout_line.addRow(self.table_items)
         self.products_group.setLayout(self.layout_line)
+        

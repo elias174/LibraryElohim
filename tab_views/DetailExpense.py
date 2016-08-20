@@ -1,4 +1,5 @@
 import sys
+from  datetime import date
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -17,7 +18,7 @@ session = Session()
 
 
 class Detail_Expense(QDialog):
-    def __init__(self, parent = None):
+    def __init__(self, action, day, parent = None):
         #QDialog.__init__(self, parent)
         super(Detail_Expense, self).__init__(parent)
 
@@ -28,6 +29,16 @@ class Detail_Expense(QDialog):
 
         date_expense = QLabel('Fecha')
         self.edit_date_expense = QDateEdit(datetime.now())
+        self.edit_date_expense.setDisplayFormat(('yyyy-MM-dd'))
+        self.edit_date_expense.setDisabled(1)
+
+        if action:
+            self.set_date = day
+            self.edit_date_expense.setDate(self.set_date)
+            self.day = '%'+unicode(day.toString("yyyy-MM-dd").toUtf8(), encoding="UTF-8")+'%'
+        else:
+            self.day = '%'+day+'%'
+
         self.initializate_expenses_group()
 
         grid = QGridLayout()
@@ -55,29 +66,26 @@ class Detail_Expense(QDialog):
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
     
-        self.table_items.setRowCount(0)
-
         self.table_items.setColumnCount(2)
         self.table_items.setHorizontalHeaderLabels(['Detalle', 'Cantidad'])
 
         header = self.table_items.horizontalHeader()
         header.setResizeMode(QHeaderView.Stretch)
-        self.stringRow = ''
-        #query
-        """
-        self.query = (session.query(Producto).limit(20).all())
+
+        self.query = (session.query(Gasto)
+                        .filter(Gasto.fecha.like(self.day)).all())
+
         self.table_items.setRowCount(len(self.query))
+
         self.stringRow = ''
         for detail in range(len(self.query)):
             self.table_items.setItem(detail, 0,
-                                     QtGui.QTableWidgetItem(str(self.query[detail].id)))
+                                     QtGui.QTableWidgetItem(str(self.query[detail].detalle)))
             self.table_items.setItem(detail, 1,
-                                     QtGui.QTableWidgetItem(str(self.query[detail].categoria)))
-            self.stringRow = self.stringRow + str(product+1) + ','
+                                     QtGui.QTableWidgetItem(str(self.query[detail].monto)))
+            self.stringRow = self.stringRow + str(detail+1) + ','
 
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
-        """
-        #addin table with the query
 
         self.layout_line.addRow(self.table_items)
         self.expenses_group.setLayout(self.layout_line)

@@ -2,14 +2,16 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from  datetime import date
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
 from models_qt import MyTableModel
-from models_qt import TableView
 from AddExpense import Add_Expense
 from DetailExpense import Detail_Expense
+from DetailBill import Detail_Bill
+from Generic_forms import GenericFormDialog
 
 
 class Administrator_Tab(QtGui.QWidget):
@@ -63,9 +65,8 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_day_gain.setDisabled(1)
         self.edit_day_expenses = QtGui.QLineEdit(self)
         self.edit_day_expenses.setDisabled(1)
-
         
-        self.button_add_table = QtGui.QPushButton('Aniadir')
+        self.button_add_table = QtGui.QPushButton('Ver Detalle de Factura')
         self.button_add_table.clicked.connect(self.view_detail_product)
 
         self.button_add_expense = QtGui.QPushButton("Agregar Gasto", self)
@@ -175,7 +176,7 @@ class Administrator_Tab(QtGui.QWidget):
         #    QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
         #else:
         #    self.control_singleton = True
-        Add_Expense().exec_()
+        window, data = GenericFormDialog.get_data(Gasto, self)
         #    self.control_singleton = False
 
     def detail_expense(self):
@@ -183,15 +184,20 @@ class Administrator_Tab(QtGui.QWidget):
         #    QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
         #else:
         #    self.control_singleton = True
-        Detail_Expense().exec_()
+        if self.search_bill_today.isChecked():
+            today = str(date.today())
+            Detail_Expense(0,today).exec_()
+        if self.search_bill_day.isChecked():
+            string = self.edit_date.date()
+            Detail_Expense(1,string).exec_()
+            
         #self.control_singleton = False
 
     def view_detail_product(self):
         indexes = self.tableview.selectedIndexes()
         for index in indexes:
             product_id = self.tablemodel.get_id_object_alchemy(index.row())
-            #self.ResultButtonClick(product_id)
-            print product_id
+            Detail_Bill(product_id, self).exec_()
 
     def close_box(self):
         return "Cerrar Caja"

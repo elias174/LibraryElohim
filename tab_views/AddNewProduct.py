@@ -89,7 +89,6 @@ class Add_New_Product(QDialog):
         self.cancelButton.clicked.connect(self.close)
         self.connect(self.acceptButton, SIGNAL("clicked()"), self.create_Product)
         self.connect(self.newCategoryButton, SIGNAL("clicked()"), self.create_Category)
-        
 
     def create_Product(self):
         category = str(self.edit_category.currentText())
@@ -108,4 +107,3 @@ class Add_New_Product(QDialog):
             self.control_singleton = True
             window = Add_Category().exec_()
             self.control_singleton = False
-
