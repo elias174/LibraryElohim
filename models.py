@@ -42,7 +42,7 @@ Producto = Table('Producto', metadata,
                  Column('precio_compra', Numeric(15, 2)),
                  Column('precio_venta', Numeric(15, 2), nullable=False),
                  Column('stock', Integer, nullable=False),
-                 Column('detalle', String(80)),
+                 Column('detalle', Text(80)),
                  )
 
 Detalle = Table('Detalle', metadata,
