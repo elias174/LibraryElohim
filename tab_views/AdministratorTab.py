@@ -12,6 +12,16 @@ from AddExpense import Add_Expense
 from DetailExpense import Detail_Expense
 from DetailBill import Detail_Bill
 from Generic_forms import GenericFormDialog
+from ShowBox import Show_Box
+
+
+Base = declarative_base()
+
+db = create_engine('sqlite:///dataBase.db', echo = False)
+metadata = MetaData(db)
+
+Session = sessionmaker(bind=db)
+session = Session()
 
 
 class Administrator_Tab(QtGui.QWidget):
@@ -173,10 +183,10 @@ class Administrator_Tab(QtGui.QWidget):
     def detail_expense(self):
         if self.search_bill_today.isChecked():
             today = str(date.today())
-            Detail_Expense(0,today).exec_()
+            Detail_Expense(False,today).exec_()
         if self.search_bill_day.isChecked():
             string = self.edit_date.date()
-            Detail_Expense(1,string).exec_()
+            Detail_Expense(True,string).exec_()
 
     def view_detail_product(self):
         indexes = self.tableview.selectedIndexes()
@@ -188,4 +198,6 @@ class Administrator_Tab(QtGui.QWidget):
         return "Cerrar Caja"
 
     def show_box(self):
-        return 0
+        string = self.edit_date.date()
+        Show_Box(string ,self).exec_()
+        #window, data = GenericFormDialog.get_data(Caja, self, query)
