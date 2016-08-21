@@ -82,7 +82,7 @@ class Fast_Sale_Tab(QtGui.QWidget):
 
         #self.layout_line.addRow(self.label_search, self.edit_search)
         self.layout_line.addRow(self.table_items)
-        self.table_items.setFixedSize(500,400)
+        self.table_items.setFixedSize(500, 400)
 
         self.sale_group.setMaximumWidth(self.screenGeometry.width() / 2)
         self.sale_group.setLayout(self.layout_line)
