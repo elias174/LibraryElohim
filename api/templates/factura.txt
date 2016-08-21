@@ -1,0 +1,18 @@
+    ----------------------------
+    Ticket Venta Libreria Elohim
+    ----------------------------
+    
+Ticket N°: {{ factura.id }}
+Fecha: {{ factura.fecha }}
+Cliente: {{client.id}} {{ client.nombre }}
+
+Productos Comprados:
+-------------------------------------------------------
+Nombre              Cantidad    P.Unidad    P.Total
+-------------------------------------------------------
+{% for detail in details %}
+{{detail.1.nombre}}             {{detail.0.cantidad}}       {{detail.1.precio_venta}}           {{detail.0.precio_total}}
+{% endfor %}
+-------------------------------------------------------
+
+Total: {{price_total}}

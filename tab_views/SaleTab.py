@@ -259,7 +259,7 @@ class Sale_Tab(QtGui.QWidget):
             to_hide = []
             items = [item.row()
                      for item in self.table_items.findItems(string, QtCore.Qt.MatchContains)
-                     if item.column() == 1]
+                     if item.column() == 2]
             for row in xrange(self.table_items.rowCount()):
                 if not (row in items):
                     self.table_items.hideRow(row)
@@ -329,6 +329,12 @@ class Sale_Tab(QtGui.QWidget):
             price += float(item.text())
         self.total_line.setText(QtCore.QString(str(price)))
 
+    def clear_table(self):
+        while self.table_items.rowCount() > 0:
+            self.table_items.removeRow(0)
+        self.table_items.setRowCount(0)
+        self.change_table.emit()
+
     def realease_sale(self):
         result = QtGui.QMessageBox.question(self, 'Confirmar',
                                             'Realizar Venta?',
@@ -353,6 +359,10 @@ class Sale_Tab(QtGui.QWidget):
                                                    QtGui.QMessageBox.Ok)
                         return
                 sale.save_sale()
+                QtGui.QMessageBox.information(self, 'Finalizado', 'Venta Guardada')
+                # sale.print_factura()
+                QtGui.QMessageBox.information(self, 'Finalizado', 'Ticket Imprimido')
+                self.clear_table()
                 QtGui.QMessageBox.information(self, 'Finalizado', 'Venta Finalizada')
 
             else:

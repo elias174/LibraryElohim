@@ -1,8 +1,12 @@
 #!/usr/bin/env python
+import os
 from datetime import datetime, timedelta, date
+
+from jinja2 import Environment, FileSystemLoader
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
 
 Base = declarative_base()
@@ -14,6 +18,12 @@ Session = sessionmaker(bind=db)
 session = Session()
 
 ID_CLIENT_ANONYMOUS = 1
+
+PATH = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_ENVIRONMENT = Environment(
+    autoescape=False,
+    loader=FileSystemLoader(os.path.join(PATH, 'templates')),
+    trim_blocks=False)
 
 
 class SaleApi(object):
@@ -46,8 +56,22 @@ class SaleApi(object):
         session.commit()
 
     def print_factura(self):
-        # To be implemented
-        pass
+        client = session.query(Cliente).get(self.client_id)
+        assert len(self.details) > 0
+
+        def render_template(template_filename, context):
+            return TEMPLATE_ENVIRONMENT.get_template(template_filename).render(context)
+
+        file_output = "ouput_factura.txt"
+        context = {
+            'id_factura': self.factura.id,
+            'details': self.details,
+            'client': client,
+            'price_total': self.price_total
+        }
+        with open(file_output, 'w') as f:
+            html = render_template('factura.txt', context)
+            f.write(html)
 
     @staticmethod
     def get_quantity_product(id_product):
