@@ -44,7 +44,12 @@ class Inventory_Tab(QtGui.QWidget):
         self.setLayout(self.central_layout)
 
     def add_new_product(self):
-        window, data = GenericFormDialog.get_data(Cliente, self)
+        window, data = GenericFormDialog.get_data(Producto, self)
+        if data:
+            session.add(Producto(window['categoria'], window['nombre'], 
+                                    window['precio_compra'],window['precio_venta'],
+                                    window['stock'],window['detalle']))
+            session.commit()
 
     def modify_product(self):
         if(self.control_singleton):
@@ -59,7 +64,7 @@ class Inventory_Tab(QtGui.QWidget):
         self.refresh_table()
 
     def initialize_product_group(self):
-        self.layout_line = QtGui.QFormLayout()
+        self.layout_line = QtGui.QVBoxLayout()
         #Creating table
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -82,8 +87,8 @@ class Inventory_Tab(QtGui.QWidget):
         self.NewProductoButton.clicked.connect(self.add_new_product)
 
         #self.layout_line.addRow(self.label_search, self.edit_search)
-        self.layout_line.addRow(self.table_items)
-        self.layout_line.addRow(self.NewProductoButton)
+        self.layout_line.addWidget(self.table_items)
+        self.layout_line.addWidget(self.NewProductoButton)
         self.product_group.setLayout(self.layout_line)
         self.refresh_table()
 
@@ -95,6 +100,7 @@ class Inventory_Tab(QtGui.QWidget):
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock', 
                                                     'Detalle', 'Modificar'])
+        
     def refresh_table(self,string = None):
         self.clear_table()
         if string!=None:

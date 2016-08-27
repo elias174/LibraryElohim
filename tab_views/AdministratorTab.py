@@ -228,6 +228,9 @@ class Administrator_Tab(QtGui.QWidget):
 
     def add_expense(self):
         window, data = GenericFormDialog.get_data(Gasto, self)
+        if data:
+            session.add(Gasto(window['detalle'], window['monto'], window['fecha']))
+            session.commit()
         
     def detail_expense(self):
         if self.search_bill_today.isChecked():
