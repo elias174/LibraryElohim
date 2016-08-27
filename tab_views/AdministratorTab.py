@@ -2,8 +2,10 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from  datetime import date
+from datetime import date
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.sql import func
+from sqlalchemy.sql import text
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
@@ -120,10 +122,55 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_main.addWidget(self.button_close_box, 7, 1)
         self.layout_line_main.addWidget(self.button_show_box, 7, 1)
 
+        self.refresh_box_today()
         self.search_group.setLayout(self.layout_line_main)
         self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
         self.edit_search_name.textChanged.connect(self.on_search_table_by_name_changed)
         self.edit_date.dateChanged.connect(self.on_search_table_by_date_changed)
+
+    def refresh_box_today(self):
+        self.day = '%' + str(date.today()) + '%'
+
+        self.query_expenses = (session.query(func.sum(Gasto.monto))
+                                .filter(Gasto.fecha.like(self.day)).scalar())
+
+        self.query_gain = (session.query(Detalle, func.sum(Detalle.precio_total))
+                            .join(Factura).\
+                            filter(Factura.fecha.like(self.day)).first())
+
+        if(self.query_expenses is None):
+            self.edit_day_expenses.setText("0.00")
+        else:
+            self.edit_day_expenses.setText(str(self.query_expenses))
+
+        if(self.query_gain[1] is None):
+            self.edit_day_gain.setText('0.00')
+        else:
+            self.edit_day_gain.setText(str(self.query_gain[1]))
+        
+
+    def refresh_box_day(self):
+        string = self.edit_date.date()
+        self.day = '%'+unicode(string.toString("yyyy-MM-dd").toUtf8(), encoding="UTF-8")+'%'
+
+        #SELECT sum(Detalle.precio_total) FROM Detalle INNER JOIN Factura On Factura.id=Detalle.factura where Factura.fecha LIKE '%2016-08-12%'
+
+        self.query_gain = (session.query(Detalle, func.sum(Detalle.precio_total))
+                            .join(Factura).\
+                            filter(Factura.fecha.like(self.day)).first())
+        self.query_expenses = (session.query(func.sum(Gasto.monto))
+                                .filter(Gasto.fecha.like(self.day)).scalar())
+
+        if(self.query_expenses is None):
+            self.edit_day_expenses.setText("0.00")
+        else:
+            self.edit_day_expenses.setText(str(self.query_expenses))
+
+        if(self.query_gain[1] is None):
+            self.edit_day_gain.setText('0.00')
+        else:
+            self.edit_day_gain.setText(str(self.query_gain[1]))
+        
 
     def on_search_table_edit_changed(self, string):
         if self.search_bill_today.isChecked():
@@ -137,6 +184,7 @@ class Administrator_Tab(QtGui.QWidget):
         if self.search_bill_day.isChecked():
             string = string.toString("yyyy-MM-dd")
             self.tablemodel.searchBillDay(string)
+            self.refresh_box_day()
         
     def add_searcher(self):
         self.edit_date.hide()
@@ -150,6 +198,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_day_expenses.show()
         self.day_expenses.show()
         self.day_gain.show()
+        self.refresh_box_today()
 
     def add_date_searcher(self):
         self.edit_search.hide()
@@ -189,15 +238,37 @@ class Administrator_Tab(QtGui.QWidget):
             Detail_Expense(True,string).exec_()
 
     def view_detail_product(self):
-        indexes = self.tableview.selectedIndexes()
-        for index in indexes:
-            product_id = self.tablemodel.get_id_object_alchemy(index.row())
+        try:
+            indexes = self.tableview.selectedIndexes()
+            for index in indexes:
+                product_id = self.tablemodel.get_id_object_alchemy(index.row())
             Detail_Bill(product_id, self).exec_()
+        except:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText('Por favor seleccione una fila')
+            msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
+            msgBox.setWindowTitle("No Selecciono una fila")
+            msgBox.exec_()
 
     def close_box(self):
-        return "Cerrar Caja"
+        ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
+                                            "Solo podra cerrar Caja una sola vez, desea cerrar la Caja de hoy?",
+                                            QtGui.QMessageBox.Yes,
+                                            QtGui.QMessageBox.No)
+        if ok == QtGui.QMessageBox.Yes:
+            self.refresh_box_today()
+            self.last_query = (session.query(Caja)
+                                .order_by(desc(Caja.id)).all())
+            previous_balance = self.last_query[0].saldo_actual
+            gains = self.edit_day_gain.text()
+            expenses = self.edit_day_expenses.text()
+            current_balance = float(previous_balance) + float(gains) - float(expenses)
+            today = date.today()
+            session.add(Caja(previous_balance,gains,expenses,current_balance,today))
+            session.commit()
+        else:
+            return
 
     def show_box(self):
         string = self.edit_date.date()
         Show_Box(string ,self).exec_()
-        #window, data = GenericFormDialog.get_data(Caja, self, query)

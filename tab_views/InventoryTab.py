@@ -54,7 +54,7 @@ class Inventory_Tab(QtGui.QWidget):
             button = qApp.focusWidget()
             index = self.table_items.indexAt(button.pos())
             if index.isValid():
-                window = Modify_Product(self.query[index.row()]).exec_()
+                window = Modify_Product(self.query[index.row()], session).exec_()
             self.control_singleton = False
         self.refresh_table()
 

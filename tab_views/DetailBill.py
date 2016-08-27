@@ -25,6 +25,9 @@ class Detail_Bill(QDialog):
         self.query = (session.query(Detalle)
                         .filter(Detalle.factura == self.product_id).all())
 
+        self.query_bill = (session.query(Factura)
+                        .filter(Factura.id == self.product_id).first())
+
         self.control_singleton = False
         self.acceptButton = QPushButton("Aceptar", self)
 
@@ -32,7 +35,11 @@ class Detail_Bill(QDialog):
         date = QLabel('Fecha')
 
         self.edit_bill = QLineEdit()
-        self.edit_date = QDateEdit(datetime.now())
+        self.edit_bill.setText(str(self.product_id))
+        self.edit_bill.setDisabled(True)
+        self.edit_date = QDateEdit(self.query_bill.fecha)
+        self.edit_date.setDisplayFormat(('yyyy-MM-dd'))
+        self.edit_date.setDisabled(True)
 
         self.products_group = QtGui.QGroupBox(str("Productos"), self)
         self.initializate_products_group()
