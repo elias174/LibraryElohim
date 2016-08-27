@@ -103,3 +103,6 @@ class Add_New_Product(QDialog):
 
     def create_Category(self):
         window, data = GenericFormDialog.get_data(Categoria, self)
+        if data:
+            session.add(Categoria(window['nombre'], window['descripcion'])
+            session.commit()
