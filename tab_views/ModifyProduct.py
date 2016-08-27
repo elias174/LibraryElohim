@@ -9,21 +9,13 @@ from models import *
 from AddCategory import Add_Category
 from Generic_forms import GenericFormDialog
 
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo = False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
-
-
 class Modify_Product(QDialog):
-    def __init__(self, product ,parent=None):
+    def __init__(self, product, session,parent=None):
         #QDialog.__init__(self, parent)
         super(Modify_Product, self).__init__(parent)
         self.product = product
         self.control_singleton = False
+        self.session = session
 
         self.acceptButton = QPushButton("Guardar Producto", self)
         self.cancelButton = QPushButton("Cancelar")
@@ -119,8 +111,8 @@ class Modify_Product(QDialog):
         self.product.precio_venta = sell_price
         self.product.stock = stock
         self.product.detalle = detail
-        session.commit()
-        
+        self.session.add(self.product)
+        self.session.commit()
         self.close()
 
     def create_Category(self):
