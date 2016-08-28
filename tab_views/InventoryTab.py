@@ -44,11 +44,11 @@ class Inventory_Tab(QtGui.QWidget):
         self.setLayout(self.central_layout)
 
     def add_new_product(self):
-        window, data = GenericFormDialog.get_data(Producto, self)
-        if data:
-            session.add(Producto(window['categoria'], window['nombre'], 
-                                    window['precio_compra'],window['precio_venta'],
-                                    window['stock'],window['detalle']))
+        data, window = GenericFormDialog.get_data(Producto, self)
+        if window:
+            session.add(Producto(data['categoria'], data['nombre'], 
+                                    data['precio_compra'],data['precio_venta'],
+                                    data['stock'],data['detalle']))
             session.commit()
 
     def modify_product(self):
