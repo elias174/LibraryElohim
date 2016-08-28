@@ -227,7 +227,10 @@ class Administrator_Tab(QtGui.QWidget):
         self.day_gain.hide()
 
     def add_expense(self):
-        window, data = GenericFormDialog.get_data(Gasto, self)
+        data, window = GenericFormDialog.get_data(Gasto, self)
+        if window:
+            session.add(Gasto(data['detalle'], data['monto'], data['fecha']))
+            session.commit()
         
     def detail_expense(self):
         if self.search_bill_today.isChecked():
@@ -245,9 +248,9 @@ class Administrator_Tab(QtGui.QWidget):
             Detail_Bill(product_id, self).exec_()
         except:
             msgBox = QtGui.QMessageBox()
-            msgBox.setText('Por favor seleccione una fila')
+            msgBox.setText('Por favor seleccione una Factura')
             msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
-            msgBox.setWindowTitle("No Selecciono una fila")
+            msgBox.setWindowTitle("No Selecciono una Factura")
             msgBox.exec_()
 
     def close_box(self):
