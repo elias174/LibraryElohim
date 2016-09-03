@@ -12,7 +12,7 @@ from Generic_forms import GenericFormDialog
 
 sys.path.append(os.path.abspath(os.path.join('..', 'api')))
 
-
+#Client Dialog
 class ClientDialog(QtGui.QDialog):
     def __init__(self, screen_size, parent=None):
         super(ClientDialog, self).__init__(parent)
