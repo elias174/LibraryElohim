@@ -12,7 +12,7 @@ import sys
 
 Base = declarative_base()
 
-db = create_engine('sqlite:///dataBase.db', echo = False)
+db = create_engine('sqlite:///dataBase.db', echo=False)
 metadata = MetaData(db)
 
 Session = sessionmaker(bind=db)
