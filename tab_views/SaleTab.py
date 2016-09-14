@@ -21,6 +21,8 @@ from api.api_sales import SaleApi
 # Session = sessionmaker(bind=db)
 # session = Session()
 
+LIMIT_RESULTS = 20
+
 
 class ResultsButtonGroup(QtGui.QButtonGroup):
     def __init__(self, parent, results, layout):
@@ -41,7 +43,29 @@ class ResultsButtonGroup(QtGui.QButtonGroup):
         j = 0
         for i in range(rows):
             for result in results[n:n+4]:
-                button = QtGui.QPushButton(result.nombre, self.parent)
+                button = QtGui.QPushButton(self.parent)
+                playout = QtGui.QHBoxLayout()
+                label = QtGui.QLabel(result.nombre)
+                label.setAlignment(QtCore.Qt.AlignCenter)
+                label.setWordWrap(True)
+                label.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+                label.setMouseTracking(False)
+                label.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
+                playout.addWidget(label)
+                playout.setSpacing(0)
+                playout.setMargin(0)
+                playout.setContentsMargins(5, 5, 5, 5)
+
+                button.setText('')
+                button.setMinimumHeight(60)
+                button.setLayout(playout)
+
+                tool_tip = '%s \n Stock: %s \n Precio: %s' % (
+                    result.nombre,
+                    result.stock,
+                    str(result.precio_venta))
+                button.setToolTip(QtCore.QString(tool_tip))
                 self.addButton(button, result.id)
                 self.layout.addWidget(button, i, j)
                 j += 1
@@ -59,7 +83,7 @@ class Sale_Tab(QtGui.QWidget):
         # Initialize Layout
 
         # Signal to check total
-        self.last_query = (session.query(Producto).limit(12).all())
+        self.last_query = (session.query(Producto).limit(LIMIT_RESULTS).all())
 
         self.central_layout = QtGui.QGridLayout()
 
@@ -88,12 +112,12 @@ class Sale_Tab(QtGui.QWidget):
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setColumnCount(6)
         self.table_items.setRowCount(0)
-
+        self.table_items.setMinimumHeight(self.screenGeometry.height() / 2)
+        self.layout_line.addRow(self.table_items)
         self.table_items.setHorizontalHeaderLabels(["ID", "Cantidad", "Producto",
                                                     "P.Unidad", "P.Total",
                                                     "Eliminar"])
 
-        self.layout_line.addRow(self.table_items)
 
         self.sale_group.setMaximumWidth(self.screenGeometry.width() / 2)
         self.sale_group.setLayout(self.layout_line)
@@ -114,10 +138,10 @@ class Sale_Tab(QtGui.QWidget):
         self.layout_line.addRow(self.client_label, self.button_client)
 
         self.button_client.clicked.connect(self.open_dialog_client)
-        self.layout_line.addItem(QtGui.QSpacerItem(1, self.screenGeometry.height() / 4))
 
         self.button_generate_sale = QtGui.QPushButton('Realizar Venta')
         self.button_generate_sale.clicked.connect(self.realease_sale)
+        self.layout_line.addRow(self.table_items)
         self.layout_line.addRow(self.button_generate_sale)
 
     def initialize_search_group(self):
@@ -247,7 +271,7 @@ class Sale_Tab(QtGui.QWidget):
     def on_search_edit_changed(self, string):
         text_query = '%'+unicode(string.toUtf8(), encoding="UTF-8")+'%'
         self.last_query = (session.query(Producto)
-                           .filter(Producto.nombre.like(text_query)).all())
+                           .filter(Producto.nombre.like(text_query)).limit(LIMIT_RESULTS).all())
         for i in reversed(range(self.layout_results.count())):
             self.layout_results.itemAt(i).widget().setParent(None)
         self.button_group.refresh(self.last_query)

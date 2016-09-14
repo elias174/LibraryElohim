@@ -1,3 +1,5 @@
+import sys
+
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from collections import namedtuple
@@ -19,6 +21,9 @@ metadata = MetaData(db)
 
 Session = sessionmaker(bind=db)
 session = Session()
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 
 class MainWindow(QtGui.QWidget):
