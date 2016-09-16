@@ -16,7 +16,7 @@ from tab_views.AdministratorTab import Administrator_Tab
 
 Base = declarative_base()
 
-db = create_engine('sqlite:///dataBase.db', echo = False)
+db = create_engine('sqlite:///dataBase.db', echo=False, encoding='utf8')
 metadata = MetaData(db)
 
 Session = sessionmaker(bind=db)

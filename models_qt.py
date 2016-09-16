@@ -67,7 +67,7 @@ class MyTableModel(QAbstractTableModel):
         elif role != Qt.DisplayRole:
             return None
         row = self.arraydata[index.row()]
-        return (str(getattr(row, self.columns_name[index.column()])))
+        return (unicode(getattr(row, self.columns_name[index.column()])))
 
     def get_id_object_alchemy(self, row):
         id_product = getattr(self.arraydata[row], self.columns_name[0])
