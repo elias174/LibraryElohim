@@ -9,12 +9,13 @@ from models import *
 from AddCategory import Add_Category
 from Generic_forms import GenericFormDialog
 
-class Modify_Product(QDialog):
+
+class Modify_Product(QtGui.QDialog):
     def __init__(self, product, session,parent=None):
         #QDialog.__init__(self, parent)
         super(Modify_Product, self).__init__(parent)
+        self.setParent(parent)
         self.product = product
-        self.control_singleton = False
         self.session = session
 
         self.acceptButton = QPushButton("Guardar Producto", self)

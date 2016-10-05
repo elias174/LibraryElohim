@@ -48,7 +48,7 @@ class SaleApi(object):
         assert quantity <= product.stock
         detail = Detalle(self.factura.id, product.id, quantity,
                          float(quantity * product.precio_venta))
-        self.details.append(detail)
+        self.details.append((detail, product))
         product.stock -= quantity
         session.add(detail)
 
@@ -64,7 +64,7 @@ class SaleApi(object):
 
         file_output = "ouput_factura.txt"
         context = {
-            'id_factura': self.factura.id,
+            'factura': self.factura,
             'details': self.details,
             'client': client,
             'price_total': self.price_total

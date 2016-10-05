@@ -52,6 +52,9 @@ class AdvComboBox(QtGui.QComboBox):
         string = str(self.currentText())
         return int(string.split(' ')[0])
 
+    def is_valid(self):
+        return True
+
 
 class AdvSpinBox(QtGui.QSpinBox):
     def __init__(self, parent=None):
@@ -63,6 +66,9 @@ class AdvSpinBox(QtGui.QSpinBox):
 
     def set_value_object(self, data):
         self.setValue(data)
+
+    def is_valid(self):
+        return self.value() != 0
 
 
 class AdvDoubleSpinBox(QtGui.QDoubleSpinBox):
@@ -76,6 +82,9 @@ class AdvDoubleSpinBox(QtGui.QDoubleSpinBox):
     def set_value_object(self, data):
         self.setValue(data)
 
+    def is_valid(self):
+        return self.value() != 0.00
+
 
 class AdvLineEdit(QtGui.QLineEdit):
     def __init__(self, parent=None):
@@ -86,6 +95,9 @@ class AdvLineEdit(QtGui.QLineEdit):
 
     def set_value_object(self, data):
         self.setText(data)
+
+    def is_valid(self):
+        return str(self.text()) != ''
 
 
 class AdvDateEdit(QtGui.QDateEdit):
@@ -99,6 +111,22 @@ class AdvDateEdit(QtGui.QDateEdit):
     def set_value_object(self, data):
         self.setDate(QtCore.QDate(data.year, data.month, data.day))
 
+    def is_valid(self):
+        return True
+
+
+class AdvTextEdit(QtGui.QTextEdit):
+    def __init__(self, parent=None):
+        super(AdvTextEdit, self).__init__(parent)
+
+    def extract_value(self):
+        return str(self.toPlainText())
+
+    def set_value_object(self, data):
+        self.setPlainText(data)
+
+    def is_valid(self):
+        return str(self.toPlainText()) != ''
 
 TYPES_MAP = {
     'Integer': AdvSpinBox,
@@ -106,11 +134,13 @@ TYPES_MAP = {
     'Numeric': AdvDoubleSpinBox,
     'String': AdvLineEdit,
     'Foreign_Key': AdvComboBox,
+    'LargeString': AdvTextEdit,
 }
 
 
 class GenericFormDialog(QtGui.QDialog):
     def __init__(self, AlchemyModel, parent=None, object_edit=None):
+        self.parent = parent
         super(GenericFormDialog, self).__init__(parent)
         self.setWindowTitle('Nuevo %s' % (AlchemyModel.__name__))
         self.my_layout = QtGui.QFormLayout(self)
@@ -151,6 +181,11 @@ class GenericFormDialog(QtGui.QDialog):
                 continue
             label = QtGui.QLabel(member.key)
             type_member = type(member.type).__name__
+            # print dir(member.type)
+            if type_member is 'String':
+                if member.type.length > 50:
+                    type_member = 'LargeString'
+            print type_member
             widget = TYPES_MAP[type_member]()
             if object_edit:
                 data = getattr(object_edit, member.key)
@@ -160,21 +195,34 @@ class GenericFormDialog(QtGui.QDialog):
         self.buttons = QtGui.QDialogButtonBox(
             QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel,
             QtCore.Qt.Horizontal, self)
-        self.buttons.accepted.connect(self.accept)
+        self.buttons.accepted.connect(self.validate_form)
         self.buttons.rejected.connect(self.reject)
         self.my_layout.addRow(self.buttons)
         self.setLayout(self.my_layout)
+
+    def validate_form(self):
+        self.data = self.get_all_data()
+        if self.data:
+            self.accept()
 
     def get_all_data(self):
         widgets = [self.my_layout.itemAt(i).widget()
                    for i in range(self.my_layout.count())]
         data = {}
         for i in range(0, len(widgets)-1, 2):
-            data[str(widgets[i].text())] = widgets[i+1].extract_value()
+            if widgets[i+1].is_valid():
+                data[str(widgets[i].text())] = widgets[i+1].extract_value()
+            else:
+                errors = 'Campo %s Invalido' % str(widgets[i].text())
+                QtGui.QMessageBox.critical(self.parent, 'Error',
+                                           errors,
+                                           QtGui.QMessageBox.Ok)
+                return {}
         return data
 
     @staticmethod
     def get_data(AlchemyModel, parent=None, obj_edit=None):
+        data = {}
         dialog = GenericFormDialog(AlchemyModel, parent, obj_edit)
         if obj_edit:
             dialog.setWindowTitle('Editar %s' % (AlchemyModel.__name__))

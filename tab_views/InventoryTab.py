@@ -18,6 +18,7 @@ metadata = MetaData(db)
 Session = sessionmaker(bind=db)
 session = Session()
 
+
 class Inventory_Tab(QtGui.QWidget):
     change_table = QtCore.pyqtSignal()
 
@@ -52,19 +53,24 @@ class Inventory_Tab(QtGui.QWidget):
             session.commit()
 
     def modify_product(self):
-        if(self.control_singleton):
-            QMessageBox.warning(self, 'Error', ERROR_A_PROCESS_OPENED, QMessageBox.Ok)
-        else:
-            self.control_singleton = True
-            button = qApp.focusWidget()
-            index = self.table_items.indexAt(button.pos())
-            if index.isValid():
-                window = Modify_Product(self.query[index.row()], session).exec_()
-            self.control_singleton = False
-        self.refresh_table()
+        button = qApp.focusWidget()
+        index = self.table_items.indexAt(button.pos())
+        if index.isValid():
+            product = self.query[index.row()]
+            data, window = GenericFormDialog.get_data(Producto, self, product)
+            if window:
+                product.categoria = data['categoria']
+                product.precio_compra = data['precio_compra']
+                product.precio_venta = data['precio_venta']
+                product.nombre = data['nombre']
+                product.detalle = data['detalle']
+                product.stock = data['stock']
+                session.commit()
+                self.refresh_table()
 
     def initialize_product_group(self):
         self.layout_line = QtGui.QVBoxLayout()
+
         #Creating table
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -81,12 +87,10 @@ class Inventory_Tab(QtGui.QWidget):
         self.stringRow = ''
 
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
-        #addin table with the query
-            
+
         self.NewProductoButton = QtGui.QPushButton("Agregar Nuevo Producto", self)
         self.NewProductoButton.clicked.connect(self.add_new_product)
 
-        #self.layout_line.addRow(self.label_search, self.edit_search)
         self.layout_line.addWidget(self.table_items)
         self.layout_line.addWidget(self.NewProductoButton)
         self.product_group.setLayout(self.layout_line)
@@ -100,34 +104,39 @@ class Inventory_Tab(QtGui.QWidget):
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock', 
                                                     'Detalle', 'Modificar'])
-        
-    def refresh_table(self,string = None):
+
+    def refresh_table(self, string=None):
         self.clear_table()
-        if string!=None:
+        if string:
             text_query = '%'+unicode(string.toUtf8(), encoding="UTF-8")+'%'
             if self.search_name.isChecked():
-                self.query = (session.query(Producto)
-                                .filter(Producto.nombre.like(text_query)).all())
+                self.query = (session.query(Producto).filter(
+                    Producto.nombre.like(text_query)).all())
             elif self.search_category.isChecked():
-                self.query = (session.query(Producto)
-                                .filter(Producto.categoria.like(text_query)).all())
+                self.query = (session.query(Producto).join(Categoria).filter(
+                    Categoria.nombre.like(text_query)).all())
             elif self.search_min_stock.isChecked():
                 text_query = unicode(string.toUtf8(), encoding="UTF-8")
-                self.query = (session.query(Producto)
-                                .filter(Producto.stock <= text_query).all())
+                self.query = (session.query(Producto).filter(
+                    Producto.stock <= text_query).all())
             elif self.search_max_stock.isChecked():
                 text_query = unicode(string.toUtf8(), encoding="UTF-8")
-                self.query = (session.query(Producto)
-                                .filter(Producto.stock >= text_query).all())
+                self.query = (session.query(Producto).filter(
+                    Producto.stock >= text_query).all())
         else:
             self.query = (session.query(Producto).limit(20).all())
+
         self.table_items.setRowCount(len(self.query))
         self.stringRow = ''
         for product in range(len(self.query)):
             self.table_items.setItem(product, 0,
                                      QtGui.QTableWidgetItem(str(self.query[product].id)))
+
+            category_name = (session.query(Categoria).get(
+                self.query[product].categoria)).nombre
+
             self.table_items.setItem(product, 1,
-                                     QtGui.QTableWidgetItem(str(self.query[product].categoria)))
+                                     QtGui.QTableWidgetItem(str(category_name)))
             self.table_items.setItem(product, 2,
                                      QtGui.QTableWidgetItem(str(self.query[product].nombre)))
             self.table_items.setItem(product, 3,
@@ -146,8 +155,7 @@ class Inventory_Tab(QtGui.QWidget):
             self.stringRow = self.stringRow + str(product+1) + ','
 
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
-        
-    #to connect the text_search
+
     def initialize_results_group(self):
         self.layout_line_results = QtGui.QFormLayout()
 
