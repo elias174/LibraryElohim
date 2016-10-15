@@ -52,10 +52,11 @@ class Administrator_Tab(QtGui.QWidget):
         self.search_bill_today = QRadioButton("Ver Facturas de Hoy")
         self.search_bill_name = QRadioButton("Buscar Factura por Nombre")
         self.search_bill_day = QRadioButton("Buscar Factura por Dia")
+        self.searh_name = QtGui.QLabel("Buscador ", self)
         self.edit_search = QtGui.QLineEdit(self)
         self.edit_date = QDateEdit(datetime.now())
         self.edit_date.setCalendarPopup(True)
-        self.edit_date.setMaximumWidth(self.screenGeometry.width() / 8)
+        self.edit_date.setMaximumWidth(self.screenGeometry.width() / 7)
         self.edit_date.setDisplayFormat(('yyyy-MM-dd'))
         self.edit_search_name = QtGui.QLineEdit(self)
         self.edit_search_name.hide()
@@ -103,6 +104,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_radio.addWidget(self.search_bill_today)
         self.layout_line_radio.addWidget(self.search_bill_day)
         self.layout_line_radio.addWidget(self.search_bill_name)
+        self.layout_line_search.addWidget(self.searh_name)
         self.layout_line_search.addWidget(self.edit_search)
         self.layout_line_search.addWidget(self.edit_date)
         self.layout_line_search.addWidget(self.edit_search_name)
@@ -121,6 +123,9 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_main.addLayout(self.layout_line_expenses, 6, 1)
         self.layout_line_main.addWidget(self.button_close_box, 7, 1)
         self.layout_line_main.addWidget(self.button_show_box, 7, 1)
+
+        self.layout_line_search.addStretch()
+        self.layout_line_search.setSpacing(20)
 
         self.refresh_box_today()
         self.search_group.setLayout(self.layout_line_main)
@@ -254,23 +259,33 @@ class Administrator_Tab(QtGui.QWidget):
             msgBox.exec_()
 
     def close_box(self):
-        ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
+        self.last_query = (session.query(Caja)
+                            .order_by(desc(Caja.id)).all())
+        previous_date = self.last_query[0].fecha
+        if (previous_date == date.today()):
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText('Ya se cerro la caja de hoy')
+            msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
+            msgBox.setWindowTitle("Caja")
+            msgBox.exec_()
+        else:
+            ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
                                             "Solo podra cerrar Caja una sola vez, desea cerrar la Caja de hoy?",
                                             QtGui.QMessageBox.Yes,
                                             QtGui.QMessageBox.No)
-        if ok == QtGui.QMessageBox.Yes:
-            self.refresh_box_today()
-            self.last_query = (session.query(Caja)
-                                .order_by(desc(Caja.id)).all())
-            previous_balance = self.last_query[0].saldo_actual
-            gains = self.edit_day_gain.text()
-            expenses = self.edit_day_expenses.text()
-            current_balance = float(previous_balance) + float(gains) - float(expenses)
-            today = date.today()
-            session.add(Caja(previous_balance,gains,expenses,current_balance,today))
-            session.commit()
-        else:
-            return
+            if ok == QtGui.QMessageBox.Yes:
+                self.refresh_box_today()
+                self.last_query = (session.query(Caja)
+                                    .order_by(desc(Caja.id)).all())
+                previous_balance = self.last_query[0].saldo_actual
+                gains = self.edit_day_gain.text()
+                expenses = self.edit_day_expenses.text()
+                current_balance = float(previous_balance) + float(gains) - float(expenses)
+                today = date.today()
+                session.add(Caja(previous_balance,gains,expenses,current_balance,today))
+                session.commit()
+            else:
+                return
 
     def show_box(self):
         string = self.edit_date.date()
