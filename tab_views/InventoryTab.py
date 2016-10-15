@@ -63,6 +63,12 @@ class Inventory_Tab(QtGui.QWidget):
             self.control_singleton = False
         self.refresh_table()
 
+    def create_Category(self):
+        data, window = GenericFormDialog.get_data(Categoria, self)
+        if window:
+            session.add(Categoria(data['nombre'], data['descripcion']))
+            session.commit()
+
     def initialize_product_group(self):
         self.layout_line = QtGui.QVBoxLayout()
         #Creating table
@@ -86,9 +92,13 @@ class Inventory_Tab(QtGui.QWidget):
         self.NewProductoButton = QtGui.QPushButton("Agregar Nuevo Producto", self)
         self.NewProductoButton.clicked.connect(self.add_new_product)
 
+        self.NewCategoryButton = QtGui.QPushButton("Agregar Nueva Categoria", self)
+        self.NewCategoryButton.clicked.connect(self.create_Category)
+
         #self.layout_line.addRow(self.label_search, self.edit_search)
         self.layout_line.addWidget(self.table_items)
         self.layout_line.addWidget(self.NewProductoButton)
+        self.layout_line.addWidget(self.NewCategoryButton)
         self.product_group.setLayout(self.layout_line)
         self.refresh_table()
 
