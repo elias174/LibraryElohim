@@ -12,6 +12,7 @@ from models import *
 from models_qt import MyTableModel
 from AddExpense import Add_Expense
 from DetailExpense import Detail_Expense
+from DetailGain import Detail_Gain
 from DetailBill import Detail_Bill
 from Generic_forms import GenericFormDialog
 from ShowBox import Show_Box
@@ -78,8 +79,14 @@ class Administrator_Tab(QtGui.QWidget):
         self.button_add_table = QtGui.QPushButton('Ver Detalle de Factura')
         self.button_add_table.clicked.connect(self.view_detail_product)
 
+        self.button_add_gain = QtGui.QPushButton("Agregar Ingreso", self)
+        self.button_add_gain.clicked.connect(self.add_gain)
+
         self.button_add_expense = QtGui.QPushButton("Agregar Gasto", self)
         self.button_add_expense.clicked.connect(self.add_expense)
+
+        self.button_detail_gain = QtGui.QPushButton("Detalles de Ingresos", self)
+        self.button_detail_gain.clicked.connect(self.detail_gain)
 
         self.button_detail_expense = QtGui.QPushButton("Detalles de Gastos", self)
         self.button_detail_expense.clicked.connect(self.detail_expense)
@@ -112,7 +119,9 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_gain.addWidget(self.edit_day_gain)
         self.layout_line_expenses.addWidget(self.day_expenses)
         self.layout_line_expenses.addWidget(self.edit_day_expenses)
+        self.layout_line_expenses.addWidget(self.button_add_gain)
         self.layout_line_expenses.addWidget(self.button_add_expense)
+        self.layout_line_expenses.addWidget(self.button_detail_gain)
         self.layout_line_expenses.addWidget(self.button_detail_expense)
         self.layout_line_table.addWidget(self.tableview)
         self.layout_line_main.addLayout(self.layout_line_radio, 1, 1)
@@ -198,7 +207,9 @@ class Administrator_Tab(QtGui.QWidget):
         self.button_close_box.show()
         self.button_show_box.hide()
         self.button_add_expense.show()
+        self.button_add_gain.show()
         self.button_detail_expense.show()
+        self.button_detail_gain.show()
         self.edit_day_gain.show()
         self.edit_day_expenses.show()
         self.day_expenses.show()
@@ -212,7 +223,9 @@ class Administrator_Tab(QtGui.QWidget):
         self.button_close_box.hide()
         self.button_show_box.show()
         self.button_add_expense.hide()
+        self.button_add_gain.hide()
         self.button_detail_expense.show()
+        self.button_detail_gain.show()
         self.edit_day_gain.show()
         self.edit_day_expenses.show()
         self.day_expenses.show()
@@ -226,6 +239,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.button_show_box.hide()
         self.button_add_expense.hide()
         self.button_detail_expense.hide()
+        self.button_detail_gain.hide()
         self.edit_day_gain.hide()
         self.edit_day_expenses.hide()
         self.day_expenses.hide()
@@ -236,6 +250,12 @@ class Administrator_Tab(QtGui.QWidget):
         if window:
             session.add(Gasto(data['detalle'], data['monto'], data['fecha']))
             session.commit()
+
+    def add_gain(self):
+        data, window = GenericFormDialog.get_data(Ingreso, self)
+        if window:
+            session.add(Ingreso(data['detalle'], data['monto'], data['fecha']))
+            session.commit()
         
     def detail_expense(self):
         if self.search_bill_today.isChecked():
@@ -244,6 +264,14 @@ class Administrator_Tab(QtGui.QWidget):
         if self.search_bill_day.isChecked():
             string = self.edit_date.date()
             Detail_Expense(True,string).exec_()
+
+    def detail_gain(self):
+        if self.search_bill_today.isChecked():
+            today = str(date.today())
+            Detail_Gain(False,today).exec_()
+        if self.search_bill_day.isChecked():
+            string = self.edit_date.date()
+            Detail_Gain(True,string).exec_()
 
     def view_detail_product(self):
         try:

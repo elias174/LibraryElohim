@@ -69,6 +69,13 @@ Caja = Table('Caja', metadata,
              Column('fecha', Date, nullable=False)
              )
 
+Ingreso = Table('Ingreso', metadata,
+              Column('id', Integer, primary_key=True, autoincrement=True),
+              Column('detalle', String(80)),
+              Column('monto', Numeric(15, 2), nullable=False),
+              Column('fecha', Date, nullable=False)
+              )
+
 metadata.create_all()
 
 ''' Creacion de las relacion y modelos''' 
@@ -175,4 +182,17 @@ class Caja(Base):
         self.ingresos = ingresos
         self.egresos = egresos
         self.saldo_actual = saldo_actual
+        self.fecha = fecha
+
+
+class Ingreso(Base):
+    __tablename__ = 'Ingreso'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    detalle = Column(String(80))
+    monto = Column(Numeric(15, 2), nullable=False)
+    fecha = Column(Date, nullable=False)
+
+    def __init__(self, detalle, monto, fecha):
+        self.detalle = detalle
+        self.monto = monto
         self.fecha = fecha
