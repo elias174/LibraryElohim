@@ -289,18 +289,37 @@ class Administrator_Tab(QtGui.QWidget):
     def close_box(self):
         self.last_query = (session.query(Caja)
                             .order_by(desc(Caja.id)).all())
-        previous_date = self.last_query[0].fecha
-        if (previous_date == date.today()):
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText('Ya se cerro la caja de hoy')
-            msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
-            msgBox.setWindowTitle("Caja")
-            msgBox.exec_()
+        if(len(self.last_query) != 0):
+            previous_date = self.last_query[0].fecha            
+            if (previous_date == date.today()):
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText('Ya se cerro la caja de hoy')
+                msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
+                msgBox.setWindowTitle("Caja")
+                msgBox.exec_()
+            else:
+                ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
+                                                "Solo podra cerrar Caja una sola vez, desea cerrar la Caja de hoy?",
+                                                QtGui.QMessageBox.Yes,
+                                                QtGui.QMessageBox.No)
+                if ok == QtGui.QMessageBox.Yes:
+                    self.refresh_box_today()
+                    self.last_query = (session.query(Caja)
+                                        .order_by(desc(Caja.id)).all())
+                    previous_balance = self.last_query[0].saldo_actual
+                    gains = self.edit_day_gain.text()
+                    expenses = self.edit_day_expenses.text()
+                    current_balance = float(previous_balance) + float(gains) - float(expenses)
+                    today = date.today()
+                    session.add(Caja(previous_balance,gains,expenses,current_balance,today))
+                    session.commit()
+                else:
+                    return
         else:
             ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
-                                            "Solo podra cerrar Caja una sola vez, desea cerrar la Caja de hoy?",
-                                            QtGui.QMessageBox.Yes,
-                                            QtGui.QMessageBox.No)
+                                                "Solo podra cerrar Caja una sola vez, desea cerrar la Caja de hoy?",
+                                                QtGui.QMessageBox.Yes,
+                                                QtGui.QMessageBox.No)
             if ok == QtGui.QMessageBox.Yes:
                 self.refresh_box_today()
                 self.last_query = (session.query(Caja)
