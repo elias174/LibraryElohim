@@ -85,8 +85,10 @@ class Detail_Bill(QDialog):
         self.stringRow = ''
 
         for detail in range(len(self.query)):
+            product = session.query(Producto).get(self.query[detail].producto)
+            print product.nombre
             self.table_items.setItem(detail, 0,
-                                     QtGui.QTableWidgetItem(str(self.query[detail].producto)))
+                                     QtGui.QTableWidgetItem(str(product.nombre)))
             self.table_items.setItem(detail, 1,
                                      QtGui.QTableWidgetItem(str(self.query[detail].cantidad)))
             self.table_items.setItem(detail, 2,
@@ -98,4 +100,3 @@ class Detail_Bill(QDialog):
 
         self.layout_line.addRow(self.table_items)
         self.products_group.setLayout(self.layout_line)
-        
