@@ -17,8 +17,8 @@ metadata = MetaData(db)
 Session = sessionmaker(bind=db)
 session = Session()
 
-MAX_VALUE_INT = 10000000000
-MAX_VALUE_FLOAT = 10000000000.0
+MAX_VALUE_INT = 100000000
+MAX_VALUE_FLOAT = 1000000000.0
 
 
 class AdvComboBox(QtGui.QComboBox):
@@ -185,7 +185,6 @@ class GenericFormDialog(QtGui.QDialog):
             if type_member is 'String':
                 if member.type.length > 50:
                     type_member = 'LargeString'
-            print type_member
             widget = TYPES_MAP[type_member]()
             if object_edit:
                 data = getattr(object_edit, member.key)
@@ -227,5 +226,7 @@ class GenericFormDialog(QtGui.QDialog):
         if obj_edit:
             dialog.setWindowTitle('Editar %s' % (AlchemyModel.__name__))
         result = dialog.exec_()
-        data = dialog.get_all_data()
-        return (data, result == QtGui.QDialog.Accepted)
+        if result == QtGui.QDialog.Accepted:
+            data = dialog.get_all_data()
+            return data, True
+        return {}, False
