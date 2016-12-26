@@ -5,7 +5,7 @@ from PIL import Image
 from PIL import ImageDraw
 from sqlalchemy.dialects.oracle.cx_oracle import _OracleChar
 
-from config import PRINTER
+from config import PRINTER, NO_PRINT
 
 
 def printer_render(context, color = "#000", bgcolor = "#FFF",
@@ -87,5 +87,8 @@ def printer_render(context, color = "#000", bgcolor = "#FFF",
         draw.text((leftpadding, y), line, color, font=font)
         y += line_height
 
+    if NO_PRINT:
+        img.show()
+        return
     PRINTER.image(img)
     PRINTER.cut()
