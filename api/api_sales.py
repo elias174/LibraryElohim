@@ -2,11 +2,10 @@
 import os
 from datetime import datetime, timedelta, date
 
-from jinja2 import Environment, FileSystemLoader
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
-
+from api_printer import printer_render
 from models import *
 
 Base = declarative_base()
@@ -20,10 +19,10 @@ session = Session()
 ID_CLIENT_ANONYMOUS = 1
 
 PATH = os.path.dirname(os.path.abspath(__file__))
-TEMPLATE_ENVIRONMENT = Environment(
-    autoescape=False,
-    loader=FileSystemLoader(os.path.join(PATH, 'templates')),
-    trim_blocks=False)
+# TEMPLATE_ENVIRONMENT = Environment(
+#     autoescape=False,
+#     loader=FileSystemLoader(os.path.join(PATH, 'templates')),
+#     trim_blocks=False)
 
 
 class SaleApi(object):
@@ -59,19 +58,21 @@ class SaleApi(object):
         client = session.query(Cliente).get(self.client_id)
         assert len(self.details) > 0
 
-        def render_template(template_filename, context):
-            return TEMPLATE_ENVIRONMENT.get_template(template_filename).render(context)
+        # def render_template(template_filename, context):
+        #     return TEMPLATE_ENVIRONMENT.get_template(
+        # template_filename).render(context)
+        # file_output = "output_factura.txt"
 
-        file_output = "ouput_factura.txt"
         context = {
             'factura': self.factura,
             'details': self.details,
             'client': client,
             'price_total': self.price_total
         }
-        with open(file_output, 'w') as f:
-            html = render_template('factura.txt', context)
-            f.write(html)
+        # with open(file_output, 'w') as f:
+        #     html = render_template('factura.txt', context)
+        #     f.write(html)
+        printer_render(context, fontfullpath='DejaVuSans.ttf', fontsize=21)
 
     @staticmethod
     def get_quantity_product(id_product):
