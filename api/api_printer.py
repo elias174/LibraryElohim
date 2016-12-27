@@ -1,9 +1,6 @@
-
-import PIL
 from PIL import ImageFont
 from PIL import Image
 from PIL import ImageDraw
-from sqlalchemy.dialects.oracle.cx_oracle import _OracleChar
 
 from config import PRINTER, NO_PRINT
 
