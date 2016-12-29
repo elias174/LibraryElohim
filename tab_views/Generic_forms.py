@@ -103,6 +103,7 @@ class AdvLineEdit(QtGui.QLineEdit):
 class AdvDateEdit(QtGui.QDateEdit):
     def __init__(self, parent=None):
         super(AdvDateEdit, self).__init__(parent)
+        self.setDate(QtCore.QDate.currentDate())
         self.setCalendarPopup(True)
 
     def extract_value(self):
