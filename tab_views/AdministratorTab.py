@@ -51,7 +51,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_expenses = QtGui.QHBoxLayout()
 
         self.search_bill_today = QRadioButton("Ver Facturas de Hoy")
-        self.search_bill_name = QRadioButton("Buscar Factura por Nombre")
+        self.search_bill_name = QRadioButton("Buscar Factura por ID")
         self.search_bill_day = QRadioButton("Buscar Factura por Dia")
         self.searh_name = QtGui.QLabel("Buscador ", self)
         self.edit_search = QtGui.QLineEdit(self)
@@ -137,6 +137,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_search.setSpacing(20)
 
         self.refresh_box_today()
+        self.update_all_search()
         self.search_group.setLayout(self.layout_line_main)
         self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
         self.edit_search_name.textChanged.connect(self.on_search_table_by_name_changed)
@@ -148,30 +149,35 @@ class Administrator_Tab(QtGui.QWidget):
         self.query_expenses = (session.query(func.sum(Gasto.monto))
                                 .filter(Gasto.fecha.like(self.day)).scalar())
 
-        self.query_gain = (session.query(Detalle, func.sum(Detalle.precio_total))
+        self.query_gain_bill = (session.query(Detalle, func.sum(Detalle.precio_total))
                             .join(Factura).\
                             filter(Factura.fecha.like(self.day)).first())
+
+        self.query_gain = (session.query(func.sum(Ingreso.monto)).\
+                            filter(Ingreso.fecha.like(self.day)).scalar())
 
         if(self.query_expenses is None):
             self.edit_day_expenses.setText("0.00")
         else:
             self.edit_day_expenses.setText(str(self.query_expenses))
 
-        if(self.query_gain[1] is None):
+        if(self.query_gain_bill[1] is None):
             self.edit_day_gain.setText('0.00')
         else:
-            self.edit_day_gain.setText(str(self.query_gain[1]))
+            self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
         
 
     def refresh_box_day(self):
         string = self.edit_date.date()
         self.day = '%'+unicode(string.toString("yyyy-MM-dd").toUtf8(), encoding="UTF-8")+'%'
 
-        #SELECT sum(Detalle.precio_total) FROM Detalle INNER JOIN Factura On Factura.id=Detalle.factura where Factura.fecha LIKE '%2016-08-12%'
-
-        self.query_gain = (session.query(Detalle, func.sum(Detalle.precio_total))
+        self.query_gain_bill = (session.query(Detalle, func.sum(Detalle.precio_total))
                             .join(Factura).\
                             filter(Factura.fecha.like(self.day)).first())
+
+        self.query_gain = (session.query(func.sum(Ingreso.monto)).\
+                            filter(Ingreso.fecha.like(self.day)).scalar())
+
         self.query_expenses = (session.query(func.sum(Gasto.monto))
                                 .filter(Gasto.fecha.like(self.day)).scalar())
 
@@ -180,15 +186,29 @@ class Administrator_Tab(QtGui.QWidget):
         else:
             self.edit_day_expenses.setText(str(self.query_expenses))
 
-        if(self.query_gain[1] is None):
+        if(self.query_gain_bill[1] is None):
             self.edit_day_gain.setText('0.00')
         else:
-            self.edit_day_gain.setText(str(self.query_gain[1]))
+            self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
         
+    #Actualizar todas las busqueda    
+    def update_all_search(self):
+        if self.search_bill_today.isChecked():
+            string = self.edit_search.text()
+            self.tablemodel.searchBillToday(string)
+            self.refresh_box_today()
+        elif self.search_bill_name.isChecked():
+            string = self.edit_search_name.text()
+            self.tablemodel.setFilter('id', string)
+        elif self.search_bill_day.isChecked():
+            string = self.edit_date.text()
+            self.tablemodel.searchBillDay(string)
+            self.refresh_box_day()
 
     def on_search_table_edit_changed(self, string):
         if self.search_bill_today.isChecked():
             self.tablemodel.searchBillToday(string)
+            self.refresh_box_today()
 
     def on_search_table_by_name_changed(self, string):
         if self.search_bill_name.isChecked():
@@ -215,6 +235,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.day_expenses.show()
         self.day_gain.show()
         self.refresh_box_today()
+        self.update_all_search()
 
     def add_date_searcher(self):
         self.edit_search.hide()
@@ -230,6 +251,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_day_expenses.show()
         self.day_expenses.show()
         self.day_gain.show()
+        self.update_all_search()
 
     def add_searcher_name(self):
         self.edit_date.hide()
@@ -244,6 +266,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_day_expenses.hide()
         self.day_expenses.hide()
         self.day_gain.hide()
+        self.update_all_search()
 
     def add_expense(self):
         data, window = GenericFormDialog.get_data(Gasto, self)
@@ -290,36 +313,10 @@ class Administrator_Tab(QtGui.QWidget):
         self.last_query = (session.query(Caja)
                             .order_by(desc(Caja.id)).all())
         if(len(self.last_query) != 0):
-            previous_date = self.last_query[0].fecha            
-            if (previous_date == date.today()):
-                msgBox = QtGui.QMessageBox()
-                msgBox.setText('Ya se cerro la caja de hoy')
-                msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
-                msgBox.setWindowTitle("Caja")
-                msgBox.exec_()
-            else:
-                ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
-                                                "Solo podra cerrar Caja una sola vez, desea cerrar la Caja de hoy?",
-                                                QtGui.QMessageBox.Yes,
-                                                QtGui.QMessageBox.No)
-                if ok == QtGui.QMessageBox.Yes:
-                    self.refresh_box_today()
-                    self.last_query = (session.query(Caja)
-                                        .order_by(desc(Caja.id)).all())
-                    previous_balance = self.last_query[0].saldo_actual
-                    gains = self.edit_day_gain.text()
-                    expenses = self.edit_day_expenses.text()
-                    current_balance = float(previous_balance) + float(gains) - float(expenses)
-                    today = date.today()
-                    session.add(Caja(previous_balance,gains,expenses,current_balance,today))
-                    session.commit()
-                else:
-                    return
-        else:
             ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
-                                                "Solo podra cerrar Caja una sola vez, desea cerrar la Caja de hoy?",
-                                                QtGui.QMessageBox.Yes,
-                                                QtGui.QMessageBox.No)
+                                            "Desea cerrar la Caja?",
+                                            QtGui.QMessageBox.Yes,
+                                            QtGui.QMessageBox.No)
             if ok == QtGui.QMessageBox.Yes:
                 self.refresh_box_today()
                 self.last_query = (session.query(Caja)
@@ -330,6 +327,21 @@ class Administrator_Tab(QtGui.QWidget):
                 current_balance = float(previous_balance) + float(gains) - float(expenses)
                 today = date.today()
                 session.add(Caja(previous_balance,gains,expenses,current_balance,today))
+                session.commit()
+            else:
+                return
+        else:
+            ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
+                                                "Desea cerrar la Caja?",
+                                                QtGui.QMessageBox.Yes,
+                                                QtGui.QMessageBox.No)
+            if ok == QtGui.QMessageBox.Yes:
+                self.refresh_box_today()
+                gains = self.edit_day_gain.text()
+                expenses = self.edit_day_expenses.text()
+                current_balance = float(gains) - float(expenses)
+                today = date.today()
+                session.add(Caja(0,gains,expenses,current_balance,today))
                 session.commit()
             else:
                 return

@@ -84,12 +84,13 @@ class Inventory_Tab(QtGui.QWidget):
         self.table_items.setRowCount(0)
 
         self.table_items.setColumnCount(8)
+        self.table_items.resizeColumnsToContents();
         self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria', 
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock', 
                                                     'Detalle', 'Modificar'])
-        header = self.table_items.horizontalHeader()
-        header.setResizeMode(QHeaderView.Stretch)
+        #header = self.table_items.horizontalHeader()
+        #header.setResizeMode(QHeaderView.Stretch)
         self.stringRow = ''
 
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
@@ -166,6 +167,9 @@ class Inventory_Tab(QtGui.QWidget):
             self.stringRow = self.stringRow + str(product+1) + ','
 
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
+        self.table_items.resizeColumnsToContents();
+        #self.table_items.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        
 
     def initialize_results_group(self):
         self.layout_line_results = QtGui.QFormLayout()
