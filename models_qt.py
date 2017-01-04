@@ -97,3 +97,9 @@ class MyTableModel(QAbstractTableModel):
         self.arraydata = (session.query(Factura)
                         .filter(Factura.fecha.like(text_query)).all())
         self.layoutChanged.emit()
+
+    def searchCashDay(self, search_text=None):
+        text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
+        self.arraydata = (session.query(Caja)
+                        .filter(Caja.fecha.like(text_query)).all())
+        self.layoutChanged.emit()

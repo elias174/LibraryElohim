@@ -91,10 +91,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.button_detail_expense = QtGui.QPushButton("Detalles de Gastos", self)
         self.button_detail_expense.clicked.connect(self.detail_expense)
 
-        self.button_close_box = QtGui.QPushButton("Cerrar Caja de Hoy", self)
-        self.button_close_box.clicked.connect(self.close_box)
-
-        self.button_show_box = QtGui.QPushButton("Ver Caja del Dia", self)
+        self.button_show_box = QtGui.QPushButton("Estado de Caja del Dia", self)
         self.button_show_box.clicked.connect(self.show_box)
         self.button_show_box.hide()
         
@@ -130,7 +127,6 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_main.addWidget(self.button_add_table, 4, 1)
         self.layout_line_main.addLayout(self.layout_line_gain, 5, 1)
         self.layout_line_main.addLayout(self.layout_line_expenses, 6, 1)
-        self.layout_line_main.addWidget(self.button_close_box, 7, 1)
         self.layout_line_main.addWidget(self.button_show_box, 7, 1)
 
         self.layout_line_search.addStretch()
@@ -161,8 +157,10 @@ class Administrator_Tab(QtGui.QWidget):
         else:
             self.edit_day_expenses.setText(str(self.query_expenses))
 
-        if(self.query_gain_bill[1] is None):
+        if(self.query_gain_bill[1] is None and self.query_gain is None):
             self.edit_day_gain.setText('0.00')
+        elif(self.query_gain_bill[1] is None):
+            self.edit_day_gain.setText(str(self.query_gain))
         else:
             self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
         
@@ -186,8 +184,10 @@ class Administrator_Tab(QtGui.QWidget):
         else:
             self.edit_day_expenses.setText(str(self.query_expenses))
 
-        if(self.query_gain_bill[1] is None):
+        if(self.query_gain_bill[1] is None and self.query_gain is None):
             self.edit_day_gain.setText('0.00')
+        elif(self.query_gain_bill[1] is None):
+            self.edit_day_gain.setText(str(self.query_gain))
         else:
             self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
         
@@ -224,7 +224,6 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_date.hide()
         self.edit_search_name.hide()
         self.edit_search.show()
-        self.button_close_box.show()
         self.button_show_box.hide()
         self.button_add_expense.show()
         self.button_add_gain.show()
@@ -241,7 +240,6 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_search.hide()
         self.edit_search_name.hide()
         self.edit_date.show()
-        self.button_close_box.hide()
         self.button_show_box.show()
         self.button_add_expense.hide()
         self.button_add_gain.hide()
@@ -257,7 +255,6 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_date.hide()
         self.edit_search_name.show()
         self.edit_search.hide()
-        self.button_close_box.hide()
         self.button_show_box.hide()
         self.button_add_expense.hide()
         self.button_detail_expense.hide()
@@ -273,12 +270,16 @@ class Administrator_Tab(QtGui.QWidget):
         if window:
             session.add(Gasto(data['detalle'], data['monto'], data['fecha']))
             session.commit()
+            self.close_box(0,data['monto'],data['fecha'])
+        self.update_all_search()
 
     def add_gain(self):
         data, window = GenericFormDialog.get_data(Ingreso, self)
         if window:
             session.add(Ingreso(data['detalle'], data['monto'], data['fecha']))
             session.commit()
+            self.close_box(1,data['monto'],data['fecha'])
+        self.update_all_search()
         
     def detail_expense(self):
         if self.search_bill_today.isChecked():
@@ -309,42 +310,34 @@ class Administrator_Tab(QtGui.QWidget):
             msgBox.setWindowTitle("No Selecciono una Factura")
             msgBox.exec_()
 
-    def close_box(self):
+    def close_box(self, type_action, balance, current_day):
+        #type es 0 si es un gasto y 1 si es un ingreso
         self.last_query = (session.query(Caja)
                             .order_by(desc(Caja.id)).all())
-        if(len(self.last_query) != 0):
-            ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
-                                            "Desea cerrar la Caja?",
-                                            QtGui.QMessageBox.Yes,
-                                            QtGui.QMessageBox.No)
-            if ok == QtGui.QMessageBox.Yes:
-                self.refresh_box_today()
-                self.last_query = (session.query(Caja)
-                                    .order_by(desc(Caja.id)).all())
-                previous_balance = self.last_query[0].saldo_actual
-                gains = self.edit_day_gain.text()
-                expenses = self.edit_day_expenses.text()
-                current_balance = float(previous_balance) + float(gains) - float(expenses)
-                today = date.today()
-                session.add(Caja(previous_balance,gains,expenses,current_balance,today))
+        if(len(self.last_query) == 0):
+            previous_balance = 0
+            if(type_action):
+                current_balance = float(balance) + float(previous_balance)
+                today = current_day
+                session.add(Caja(previous_balance,balance,0,current_balance,today))
                 session.commit()
             else:
-                return
-        else:
-            ok = QtGui.QMessageBox.question(self, u'Cerrar Caja',
-                                                "Desea cerrar la Caja?",
-                                                QtGui.QMessageBox.Yes,
-                                                QtGui.QMessageBox.No)
-            if ok == QtGui.QMessageBox.Yes:
-                self.refresh_box_today()
-                gains = self.edit_day_gain.text()
-                expenses = self.edit_day_expenses.text()
-                current_balance = float(gains) - float(expenses)
-                today = date.today()
-                session.add(Caja(0,gains,expenses,current_balance,today))
+                current_balance = float(previous_balance) - float(balance) 
+                today = current_day
+                session.add(Caja(previous_balance,0,balance,current_balance,today))
+                session.commit()
+        else:    
+            previous_balance = self.last_query[0].saldo_actual
+            if(type_action):
+                current_balance = float(balance) + float(previous_balance)
+                today = current_day
+                session.add(Caja(previous_balance,balance,0,current_balance,today))
                 session.commit()
             else:
-                return
+                current_balance = float(previous_balance) - float(balance) 
+                today = current_day
+                session.add(Caja(previous_balance,0,balance,current_balance,today))
+                session.commit()
 
     def show_box(self):
         string = self.edit_date.date()
