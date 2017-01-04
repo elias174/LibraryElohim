@@ -103,6 +103,7 @@ class AdvLineEdit(QtGui.QLineEdit):
 class AdvDateEdit(QtGui.QDateEdit):
     def __init__(self, parent=None):
         super(AdvDateEdit, self).__init__(parent)
+        self.setDate(QtCore.QDate.currentDate())
         self.setCalendarPopup(True)
 
     def extract_value(self):
@@ -139,13 +140,21 @@ TYPES_MAP = {
 
 
 class GenericFormDialog(QtGui.QDialog):
-    def __init__(self, AlchemyModel, parent=None, object_edit=None):
+    def __init__(
+            self, AlchemyModel, parent=None, object_edit=None, fields=None):
+
+        def contains_fields(member):
+            if not fields:
+                return True
+            return member in fields
+
         self.parent = parent
         super(GenericFormDialog, self).__init__(parent)
         self.setWindowTitle('Nuevo %s' % (AlchemyModel.__name__))
         self.my_layout = QtGui.QFormLayout(self)
         foreign_keys = {k.parent.key: k.column.table
-                        for k in list(AlchemyModel.__table__.foreign_keys)}
+                        for k in list(AlchemyModel.__table__.foreign_keys)
+                        if contains_fields(k.parent.key)}
         for key, value in foreign_keys.iteritems():
             label = QtGui.QLabel(key)
             try:
@@ -177,7 +186,8 @@ class GenericFormDialog(QtGui.QDialog):
 
         members = AlchemyModel.__table__.columns
         for member in members:
-            if member.key in foreign_keys or member.key is 'id':
+            if not contains_fields(member.key) or (
+                            member.key in foreign_keys or member.key is 'id'):
                 continue
             label = QtGui.QLabel(member.key)
             type_member = type(member.type).__name__
@@ -220,9 +230,9 @@ class GenericFormDialog(QtGui.QDialog):
         return data
 
     @staticmethod
-    def get_data(AlchemyModel, parent=None, obj_edit=None):
+    def get_data(AlchemyModel, parent=None, obj_edit=None, fields=None):
         data = {}
-        dialog = GenericFormDialog(AlchemyModel, parent, obj_edit)
+        dialog = GenericFormDialog(AlchemyModel, parent, obj_edit, fields)
         if obj_edit:
             dialog.setWindowTitle('Editar %s' % (AlchemyModel.__name__))
         result = dialog.exec_()
