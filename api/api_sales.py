@@ -7,6 +7,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from api_printer import printer_render
 from models import *
+from decimal import Decimal
 
 Base = declarative_base()
 
@@ -51,6 +52,23 @@ class SaleApi(object):
         product.stock -= quantity
         session.add(detail)
 
+    def add_detail_service(self, id_service=None,
+                           type_service=None, quantity=1, canceled=False):
+        if not id_service:
+            service = Servicio(type_service, canceled, self.price_total)
+            session.add(service)
+            session.flush()
+            session.refresh(service)
+        else:
+            service = session.query(Servicio).get(id_service)
+            service.cancelado = canceled
+            service.monto += Decimal(self.price_total)
+
+        detail = Detalle(id_factura=self.factura.id, servicio=service.id,
+                         cantidad=quantity, precio_total=self.price_total)
+        self.details.append((detail, service))
+        session.add(detail)
+
     def save_sale(self):
         session.commit()
 
@@ -81,8 +99,7 @@ class SaleApi(object):
 
 
 def test_api():
-    sale_api = SaleApi(float(14.5))
+    sale_api = SaleApi(float(3.0), 2)
     sale_api.generate_factura()
-    sale_api.add_detail(3, 2)
-    sale_api.add_detail(4, 1)
+    sale_api.add_detail_service(type_service=None)
     sale_api.save_sale()

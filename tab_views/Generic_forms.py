@@ -1,6 +1,7 @@
 import sys
 import os
 import importlib
+
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -60,6 +61,7 @@ class AdvSpinBox(QtGui.QSpinBox):
     def __init__(self, parent=None):
         super(AdvSpinBox, self).__init__(parent)
         self.setRange(0, MAX_VALUE_INT)
+        self.setValue(int(1))
 
     def extract_value(self):
         return self.value()
@@ -69,6 +71,21 @@ class AdvSpinBox(QtGui.QSpinBox):
 
     def is_valid(self):
         return self.value() != 0
+
+
+class AdvCheckBox(QtGui.QCheckBox):
+    def __init__(self, parent=None):
+        super(AdvCheckBox, self).__init__(parent)
+        self.setChecked(False)
+
+    def extract_value(self):
+        return self.isChecked()
+
+    def set_value_object(self, data):
+        self.setChecked(bool(data))
+
+    def is_valid(self):
+        return True
 
 
 class AdvDoubleSpinBox(QtGui.QDoubleSpinBox):
@@ -136,12 +153,14 @@ TYPES_MAP = {
     'String': AdvLineEdit,
     'Foreign_Key': AdvComboBox,
     'LargeString': AdvTextEdit,
+    'Boolean': AdvCheckBox
 }
 
 
 class GenericFormDialog(QtGui.QDialog):
     def __init__(
-            self, AlchemyModel, parent=None, object_edit=None, fields=None):
+            self, AlchemyModel, parent=None, object_edit=None, fields=None,
+            custom_widgets=[]):
 
         def contains_fields(member):
             if not fields:
@@ -204,6 +223,10 @@ class GenericFormDialog(QtGui.QDialog):
         self.buttons = QtGui.QDialogButtonBox(
             QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel,
             QtCore.Qt.Horizontal, self)
+
+        for widget in custom_widgets:
+            self.my_layout.addRow(str(widget[0]), widget[1])
+
         self.buttons.accepted.connect(self.validate_form)
         self.buttons.rejected.connect(self.reject)
         self.my_layout.addRow(self.buttons)
@@ -219,20 +242,25 @@ class GenericFormDialog(QtGui.QDialog):
                    for i in range(self.my_layout.count())]
         data = {}
         for i in range(0, len(widgets)-1, 2):
-            if widgets[i+1].is_valid():
-                data[str(widgets[i].text())] = widgets[i+1].extract_value()
-            else:
-                errors = 'Campo %s Invalido' % str(widgets[i].text())
-                QtGui.QMessageBox.critical(self.parent, 'Error',
-                                           errors,
-                                           QtGui.QMessageBox.Ok)
-                return {}
+            try:
+                if widgets[i+1].is_valid():
+                    data[str(widgets[i].text())] = widgets[i+1].extract_value()
+                else:
+                    errors = 'Campo %s Invalido' % str(widgets[i].text())
+                    QtGui.QMessageBox.critical(self.parent, 'Error',
+                                               errors,
+                                               QtGui.QMessageBox.Ok)
+                    return {}
+            except AttributeError:
+                continue
         return data
 
     @staticmethod
-    def get_data(AlchemyModel, parent=None, obj_edit=None, fields=None):
+    def get_data(AlchemyModel, parent=None, obj_edit=None, fields=None,
+                 customs_widgets=[]):
         data = {}
-        dialog = GenericFormDialog(AlchemyModel, parent, obj_edit, fields)
+        dialog = GenericFormDialog(AlchemyModel, parent, obj_edit, fields,
+                                   customs_widgets)
         if obj_edit:
             dialog.setWindowTitle('Editar %s' % (AlchemyModel.__name__))
         result = dialog.exec_()
