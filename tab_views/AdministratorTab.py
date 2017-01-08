@@ -164,7 +164,6 @@ class Administrator_Tab(QtGui.QWidget):
         else:
             self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
         
-
     def refresh_box_day(self):
         string = self.edit_date.date()
         self.day = '%'+unicode(string.toString("yyyy-MM-dd").toUtf8(), encoding="UTF-8")+'%'
@@ -191,7 +190,6 @@ class Administrator_Tab(QtGui.QWidget):
         else:
             self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
         
-    #Actualizar todas las busqueda    
     def update_all_search(self):
         if self.search_bill_today.isChecked():
             string = self.edit_search.text()
@@ -270,7 +268,7 @@ class Administrator_Tab(QtGui.QWidget):
         if window:
             session.add(Gasto(data['detalle'], data['monto'], data['fecha']))
             session.commit()
-            self.close_box(0,data['monto'],data['fecha'])
+            self.close_box(0, data['monto'], data['fecha'])
         self.update_all_search()
 
     def add_gain(self):
@@ -278,24 +276,24 @@ class Administrator_Tab(QtGui.QWidget):
         if window:
             session.add(Ingreso(data['detalle'], data['monto'], data['fecha']))
             session.commit()
-            self.close_box(1,data['monto'],data['fecha'])
+            self.close_box(1, data['monto'], data['fecha'])
         self.update_all_search()
         
     def detail_expense(self):
         if self.search_bill_today.isChecked():
             today = str(date.today())
-            Detail_Expense(False,today).exec_()
+            Detail_Expense(False, today).exec_()
         if self.search_bill_day.isChecked():
             string = self.edit_date.date()
-            Detail_Expense(True,string).exec_()
+            Detail_Expense(True, string).exec_()
 
     def detail_gain(self):
         if self.search_bill_today.isChecked():
             today = str(date.today())
-            Detail_Gain(False,today).exec_()
+            Detail_Gain(False, today).exec_()
         if self.search_bill_day.isChecked():
             string = self.edit_date.date()
-            Detail_Gain(True,string).exec_()
+            Detail_Gain(True, string).exec_()
 
     def view_detail_product(self):
         try:
@@ -311,7 +309,6 @@ class Administrator_Tab(QtGui.QWidget):
             msgBox.exec_()
 
     def close_box(self, type_action, balance, current_day):
-        #type es 0 si es un gasto y 1 si es un ingreso
         self.last_query = (session.query(Caja)
                             .order_by(desc(Caja.id)).all())
         if(len(self.last_query) == 0):
@@ -319,26 +316,26 @@ class Administrator_Tab(QtGui.QWidget):
             if(type_action):
                 current_balance = float(balance) + float(previous_balance)
                 today = current_day
-                session.add(Caja(previous_balance,balance,0,current_balance,today))
+                session.add(Caja(previous_balance, balance, 0, current_balance, today))
                 session.commit()
             else:
                 current_balance = float(previous_balance) - float(balance) 
                 today = current_day
-                session.add(Caja(previous_balance,0,balance,current_balance,today))
+                session.add(Caja(previous_balance, 0, balance, current_balance, today))
                 session.commit()
         else:    
             previous_balance = self.last_query[0].saldo_actual
             if(type_action):
                 current_balance = float(balance) + float(previous_balance)
                 today = current_day
-                session.add(Caja(previous_balance,balance,0,current_balance,today))
+                session.add(Caja(previous_balance, balance, 0, current_balance, today))
                 session.commit()
             else:
                 current_balance = float(previous_balance) - float(balance) 
                 today = current_day
-                session.add(Caja(previous_balance,0,balance,current_balance,today))
+                session.add(Caja(previous_balance, 0, balance, current_balance, today))
                 session.commit()
 
     def show_box(self):
         string = self.edit_date.date()
-        Show_Box(string ,self).exec_()
+        Show_Box(string, self).exec_()

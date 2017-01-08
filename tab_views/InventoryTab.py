@@ -21,7 +21,6 @@ session = Session()
 
 class Inventory_Tab(QtGui.QWidget):
     change_table = QtCore.pyqtSignal()
-
     def __init__(self):
         super(Inventory_Tab, self).__init__()
 
@@ -48,8 +47,8 @@ class Inventory_Tab(QtGui.QWidget):
         data, window = GenericFormDialog.get_data(Producto, self)
         if window:
             session.add(Producto(data['categoria'], data['nombre'], 
-                                    data['precio_compra'],data['precio_venta'],
-                                    data['stock'],data['detalle']))
+                                    data['precio_compra'], data['precio_venta'],
+                                    data['stock'], data['detalle']))
             session.commit()
 
     def modify_product(self):
@@ -84,7 +83,7 @@ class Inventory_Tab(QtGui.QWidget):
         self.table_items.setRowCount(0)
 
         self.table_items.setColumnCount(8)
-        self.table_items.resizeColumnsToContents();
+        self.table_items.resizeColumnsToContents()
         self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria', 
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock', 
@@ -167,10 +166,8 @@ class Inventory_Tab(QtGui.QWidget):
             self.stringRow = self.stringRow + str(product+1) + ','
 
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
-        self.table_items.resizeColumnsToContents();
-        #self.table_items.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.table_items.resizeColumnsToContents()
         
-
     def initialize_results_group(self):
         self.layout_line_results = QtGui.QFormLayout()
 

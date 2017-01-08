@@ -16,10 +16,8 @@ metadata = MetaData(db)
 Session = sessionmaker(bind=db)
 session = Session()
 
-
 class Show_Box(QDialog):
     def __init__(self, string, parent=None):
-        #QDialog.__init__(self, parent)
         super(Show_Box, self).__init__(parent)
 
         self.layout_line_table = QtGui.QVBoxLayout()
@@ -39,13 +37,15 @@ class Show_Box(QDialog):
         self.tableview = QtGui.QTableView()
         self.tableview.setAlternatingRowColors(True)
         self.tableview.setModel(self.tablemodel)
-        self.tableview.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        self.tableview.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableview.resizeColumnsToContents()
 
         for row in xrange(self.tablemodel.rowCount()):
             self.tableview.openPersistentEditor(self.tablemodel.index(row, 3))
 
         string = string.toString("yyyy-MM-dd")
         self.tablemodel.searchCashDay(string)
+        self.tableview.resizeColumnsToContents()
 
         self.layout_line_table.addWidget(self.tableview)
         self.layout_line_date.addWidget(self.date)
@@ -57,8 +57,9 @@ class Show_Box(QDialog):
         self.grid.addWidget(self.acceptButton, 8, 0)
         self.setLayout(self.grid)
 
-        size = self.size()
         desktopSize = QDesktopWidget().screenGeometry()
+        self.setFixedSize(desktopSize.width() / 2, desktopSize.height() / 2)
+        size = self.size()
         top = (desktopSize.height() / 2)-(size.height() / 2)
         left = (desktopSize.width() / 2)-(size.width() / 2)
 
