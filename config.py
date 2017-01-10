@@ -7,3 +7,4 @@ from escpos.printer import Usb
 PRINTER = None
 NO_PRINT = True
 # PRINTER = Serial('COM1')
+TWO_COPIES = False

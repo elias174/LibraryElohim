@@ -7,7 +7,12 @@ from config import PRINTER, NO_PRINT
 
 def printer_render(context, color = "#000", bgcolor = "#FFF",
              fontfullpath=None, fontsize=19, leftpadding=3,
-             rightpadding=3, width=575):
+             rightpadding=3, width=575, img_default=None):
+
+    if img_default and not NO_PRINT:
+        PRINTER.image(img_default)
+        PRINTER.cut()
+        return
 
     text_to_draw = [
         '---------------------',
@@ -18,7 +23,7 @@ def printer_render(context, color = "#000", bgcolor = "#FFF",
         'Fecha: %s' % context['factura'].fecha.strftime('%m/%d/%Y'),
         'Cliente: %s %s' % (str(context['client'].id), context['client'].nombre),
         '\n',
-        'Productos Comprados:',
+        'Detalles:',
         '\n',
     ]
 
@@ -35,10 +40,11 @@ def printer_render(context, color = "#000", bgcolor = "#FFF",
         '\n'
     ]
     for detail in context['details']:
-        name = detail[1].nombre
         cantidad = str(detail[0].cantidad)
-        p_unidad = str(detail[1].precio_venta)
         total = str(detail[0].precio_total)
+        name = detail[1][0]
+        p_unidad = detail[1][1]
+
         text_products_draw.append('%s,%s,%s,%s' % (
             name[:23] + (name[:23] and '..'), cantidad, p_unidad, total))
 
@@ -89,3 +95,5 @@ def printer_render(context, color = "#000", bgcolor = "#FFF",
         return
     PRINTER.image(img)
     PRINTER.cut()
+
+    return img

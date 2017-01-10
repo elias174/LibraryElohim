@@ -384,7 +384,7 @@ class Sale_Tab(QtGui.QWidget):
                         return
                 sale.save_sale()
                 QtGui.QMessageBox.information(self, 'Finalizado', 'Venta Guardada')
-                sale.print_factura()
+                sale.print_factura(self)
                 QtGui.QMessageBox.information(self, 'Finalizado', 'Ticket Imprimido')
                 self.clear_table()
                 QtGui.QMessageBox.information(self, 'Finalizado', 'Venta Finalizada')
