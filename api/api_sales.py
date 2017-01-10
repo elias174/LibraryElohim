@@ -5,9 +5,15 @@ from datetime import datetime, timedelta, date
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
+from PyQt4 import QtGui, QtCore
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
 from api_printer import printer_render
 from models import *
+from config import TWO_COPIES, NO_PRINT
 from decimal import Decimal
+
 
 Base = declarative_base()
 
@@ -46,9 +52,12 @@ class SaleApi(object):
     def add_detail(self, id_product, quantity):
         product = session.query(Producto).get(id_product)
         assert quantity <= product.stock
-        detail = Detalle(self.factura.id, product.id, quantity,
-                         float(quantity * product.precio_venta))
-        self.details.append((detail, product))
+        detail = Detalle(id_factura=self.factura.id, producto=product.id,
+                         cantidad=quantity,
+                         precio_total=float(quantity * product.precio_venta))
+        self.details.append(
+            (detail, [product.nombre, str(product.precio_venta)])
+        )
         product.stock -= quantity
         session.add(detail)
 
@@ -59,20 +68,25 @@ class SaleApi(object):
             session.add(service)
             session.flush()
             session.refresh(service)
+            type_service_obj = session.query(TipoServicio).get(type_service)
         else:
             service = session.query(Servicio).get(id_service)
             service.cancelado = canceled
             service.monto += Decimal(self.price_total)
+            type_service_obj = session.query(TipoServicio).get(service.tipo)
 
         detail = Detalle(id_factura=self.factura.id, servicio=service.id,
                          cantidad=quantity, precio_total=self.price_total)
-        self.details.append((detail, service))
+
+        self.details.append(
+            (detail, [type_service_obj.nombre, str(self.price_total)])
+        )
         session.add(detail)
 
     def save_sale(self):
         session.commit()
 
-    def print_factura(self):
+    def print_factura(self, parent=None):
         client = session.query(Cliente).get(self.client_id)
         assert len(self.details) > 0
 
@@ -90,7 +104,18 @@ class SaleApi(object):
         # with open(file_output, 'w') as f:
         #     html = render_template('factura.txt', context)
         #     f.write(html)
-        printer_render(context, fontfullpath='DejaVuSans.ttf', fontsize=21)
+        if not TWO_COPIES or NO_PRINT:
+            printer_render(context, fontfullpath='DejaVuSans.ttf', fontsize=21)
+            return
+
+        img = printer_render(
+            context, fontfullpath='DejaVuSans.ttf', fontsize=21)
+        QtGui.QMessageBox.information(
+            parent, 'Finalizado', 'Ticket Imprimido, entregue este ticket')
+        printer_render(context, fontfullpath='DejaVuSans.ttf', fontsize=21,
+                       img_default=img)
+        QtGui.QMessageBox.information(
+            parent, 'Finalizado', 'Ticket Imprimido, Guarde ticket')
 
     @staticmethod
     def get_quantity_product(id_product):
