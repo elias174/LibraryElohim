@@ -6,6 +6,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
@@ -133,9 +134,10 @@ class ServicesTab(QtGui.QWidget):
         self.client_id = client_id
         self.last_query_services = (
             session.query(Detalle.servicio).distinct().join(Factura).
-            filter_by(cliente=self.client_id).all())
+            filter(Detalle.servicio.isnot(None), Factura.cliente == self.client_id).all())
         self.array_data = [session.query(Servicio).get(service)
                            for service in self.last_query_services]
+
         header_names = ['ID', 'Tipo', 'Cancelado', 'Monto Total']
         self.table_model_result = MyTableModel(
             Servicio, header_names, self, self.array_data)
