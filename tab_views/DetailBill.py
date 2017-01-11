@@ -58,8 +58,9 @@ class Detail_Bill(QDialog):
 
         self.setLayout(grid)
 
-        size = self.size()
         desktopSize = QDesktopWidget().screenGeometry()
+        self.setFixedSize(desktopSize.width() / 2, desktopSize.height() / 2)
+        size = self.size()
         top = (desktopSize.height() / 2)-(size.height() / 2)
         left = (desktopSize.width() / 2)-(size.width() / 2)
 
@@ -72,16 +73,14 @@ class Detail_Bill(QDialog):
         self.layout_line = QtGui.QFormLayout()
         #Creating table
         self.table_items = QtGui.QTableWidget(self)
-        self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.table_items.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
     
         self.table_items.setRowCount(len(self.query))
 
         self.table_items.setColumnCount(3)
+        self.table_items.resizeColumnsToContents()
         self.table_items.setHorizontalHeaderLabels(['Producto', 'Cantidad', 
                                                     'Precio Total'])
         header = self.table_items.horizontalHeader()
-        header.setResizeMode(QHeaderView.Stretch)
         self.stringRow = ''
 
         for detail in range(len(self.query)):
@@ -97,6 +96,6 @@ class Detail_Bill(QDialog):
 
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
         #addin table with the query
-
+        self.table_items.resizeColumnsToContents()
         self.layout_line.addRow(self.table_items)
         self.products_group.setLayout(self.layout_line)

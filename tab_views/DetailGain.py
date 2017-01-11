@@ -56,7 +56,7 @@ class Detail_Gain(QDialog):
         left = (desktopSize.width() / 2)-(size.width() / 2)
 
         self.move(left, top)
-        self.setWindowTitle('Ver Detalle de Gastos')
+        self.setWindowTitle('Ver Detalle de Ingreso')
         self.show()
         self.acceptButton.clicked.connect(self.close)
 
@@ -73,7 +73,7 @@ class Detail_Gain(QDialog):
         header.setResizeMode(QHeaderView.Stretch)
 
         self.query = (session.query(Ingreso)
-                        .filter(Gasto.fecha.like(self.day)).all())
+                        .filter(Ingreso.fecha.like(self.day)).all())
 
         self.table_items.setRowCount(len(self.query))
 
