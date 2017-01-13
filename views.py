@@ -29,25 +29,78 @@ sys.setdefaultencoding('utf8')
 class MainWindow(QtGui.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
-        #self.setMinimumSize(1000, 800)
         self.setWindowTitle("Sistema Pagos")
+        self.screenGeometry = QtGui.QApplication.desktop().availableGeometry()
 
-        central_layout = QtGui.QVBoxLayout()
-        tabs = QtGui.QTabWidget(self)
-        # tabs.setStyleSheet(
-        #     "QTabWidget::tab-bar {height: 30 px ;alignment : top;}")
+        central_layout = QtGui.QHBoxLayout()
+        self.left_list = QtGui.QListWidget()
+        qss_file = open('styles/styles_qstack.qss').read()
+        self.left_list.setStyleSheet(qss_file)
+        print self.screenGeometry.width() / 13
+        self.left_list.setMaximumWidth((self.screenGeometry.width() / 13) - 4)
+        self.left_list.setViewMode(QtGui.QListWidget.IconMode)
+        self.left_list.setResizeMode(QtGui.QListWidget.Adjust)
+        self.left_list.setIconSize(QtCore.QSize(70, 70))
+        self.left_list.setUniformItemSizes(True)
+
+        self.sale_widget_item = QtGui.QListWidgetItem(
+            QtGui.QIcon('icons/stationer.png'), 'Ventas')
+        self.sale_widget_item.setTextAlignment(QtCore.Qt.AlignCenter)
+        self.sale_widget_item.setToolTip('Ventas: Realizar Ventas de Libreria')
+
+        self.service_widget_item = QtGui.QListWidgetItem(
+            QtGui.QIcon('icons/service.png'), 'Servicios')
+        self.service_widget_item.setTextAlignment(QtCore.Qt.AlignCenter)
+        self.service_widget_item.setToolTip(
+            'Inventario: Realizar Pagos Matricula, Alimentacion, etc')
+
+        self.inventory_widget_item = QtGui.QListWidgetItem(
+            QtGui.QIcon('icons/inventory.png'), 'Inventario')
+        self.inventory_widget_item.setTextAlignment(QtCore.Qt.AlignCenter)
+
+        self.administrator_widget_item = QtGui.QListWidgetItem(
+            QtGui.QIcon('icons/bill.png'), 'Facturas')
+        self.administrator_widget_item.setTextAlignment(QtCore.Qt.AlignCenter)
+
+        self.left_list.insertItem(0, self.sale_widget_item)
+        self.left_list.insertItem(1, self.service_widget_item)
+        self.left_list.insertItem(2, self.inventory_widget_item)
+        self.left_list.insertItem(3, self.administrator_widget_item)
+
         tab_sells = Sale_Tab()
         tab_services = ServicesTab()
-        tab_invontary = Inventory_Tab()
+        tab_inventary = Inventory_Tab()
         tab_administrator = Administrator_Tab()
 
-        tabs.addTab(tab_sells, 'Ventas')
-        tabs.addTab(tab_services, 'Servicios (Matriculas, Otros)')
-        tabs.addTab(tab_invontary, 'Inventario')
-        tabs.addTab(tab_administrator, 'Administrador de Ventas')
+        self.stack_widget = QtGui.QStackedWidget()
+        self.stack_widget.addWidget(tab_sells)
+        self.stack_widget.addWidget(tab_services)
+        self.stack_widget.addWidget(tab_inventary)
+        self.stack_widget.addWidget(tab_administrator)
 
-        central_layout.addWidget(tabs)
+        central_layout.addWidget(self.left_list)
+        central_layout.addWidget(self.stack_widget)
         self.setLayout(central_layout)
+
+        self.left_list.currentRowChanged.connect(self.change_display)
+
+        # tabs = QtGui.QTabWidget(self)
+        # # tabs.setStyleSheet(
+        # #     "QTabWidget::tab-bar {height: 30 px ;alignment : top;}")
+        # tab_sells = Sale_Tab()
+        # tab_services = ServicesTab()
+        # tab_invontary = Inventory_Tab()
+        # tab_administrator = Administrator_Tab()
+        #
+        # tabs.addTab(tab_sells, 'Ventas')
+        # tabs.addTab(tab_services, 'Servicios (Matriculas, Otros)')
+        # tabs.addTab(tab_invontary, 'Inventario')
+        # tabs.addTab(tab_administrator, 'Administrador de Ventas')
+        #
+        # central_layout.addWidget(tabs)
+
+    def change_display(self, i):
+        self.stack_widget.setCurrentIndex(i)
 
     def closeEvent(self, event):
         event.ignore()

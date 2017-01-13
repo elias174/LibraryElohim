@@ -310,8 +310,8 @@ class Administrator_Tab(QtGui.QWidget):
         try:
             indexes = self.tableview.selectedIndexes()
             for index in indexes:
-                product_id = self.tablemodel.get_id_object_alchemy(index.row())
-            Detail_Bill(product_id, self).exec_()
+                factura_id = self.tablemodel.get_id_object_alchemy(index.row())
+            Detail_Bill(factura_id, self).exec_()
         except:
             msgBox = QtGui.QMessageBox()
             msgBox.setText('Por favor seleccione una Factura')
