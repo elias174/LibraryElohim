@@ -10,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from models import *
 from plugins.models_qt import MyTableModel
 from tab_views.SaleTab import Sale_Tab
-from tab_views.FastSaleTab import Fast_Sale_Tab
+from tab_views.ServicesTab import ServicesTab
 from tab_views.InventoryTab import Inventory_Tab
 from tab_views.AdministratorTab import Administrator_Tab
 
@@ -34,14 +34,15 @@ class MainWindow(QtGui.QWidget):
 
         central_layout = QtGui.QVBoxLayout()
         tabs = QtGui.QTabWidget(self)
-
+        # tabs.setStyleSheet(
+        #     "QTabWidget::tab-bar {height: 30 px ;alignment : top;}")
         tab_sells = Sale_Tab()
-        tab_rapid_sell = Fast_Sale_Tab()
+        tab_services = ServicesTab()
         tab_invontary = Inventory_Tab()
         tab_administrator = Administrator_Tab()
 
         tabs.addTab(tab_sells, 'Ventas')
-        tabs.addTab(tab_rapid_sell, 'Venta Rapida')
+        tabs.addTab(tab_services, 'Servicios (Matriculas, Otros)')
         tabs.addTab(tab_invontary, 'Inventario')
         tabs.addTab(tab_administrator, 'Administrador de Ventas')
 

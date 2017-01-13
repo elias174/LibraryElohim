@@ -35,6 +35,12 @@ Categoria = Table('Categoria', metadata,
                   Column('descripcion', String(60)),
                   )
 
+TipoServicio = Table('TipoServicio', metadata,
+                     Column('id', Integer, primary_key=True, autoincrement=True),
+                     Column('nombre', String(40), nullable=False),
+                     Column('descripcion', String(60)),
+                     )
+
 Producto = Table('Producto', metadata,
                  Column('id', Integer, primary_key=True, autoincrement=True),
                  Column('categoria', Integer, ForeignKey('Categoria.id')),
@@ -48,10 +54,20 @@ Producto = Table('Producto', metadata,
 Detalle = Table('Detalle', metadata,
                 Column('id', Integer, primary_key=True),
                 Column('factura', Integer, ForeignKey('Factura.id')),
-                Column('producto', Integer, ForeignKey('Producto.id')),
+                Column('producto', Integer, ForeignKey('Producto.id'),
+                       nullable=True),
+                Column('servicio', Integer, ForeignKey('Servicio.id'),
+                       nullable=True),
                 Column('cantidad', Integer, nullable=False),
                 Column('precio_total', Numeric(15, 2), nullable=False),
                 )
+
+Servicio = Table('Servicio', metadata,
+                 Column('id', Integer, primary_key=True),
+                 Column('tipo', Integer, ForeignKey('TipoServicio.id')),
+                 Column('cancelado', Boolean, default=False, nullable=False),
+                 Column('monto', Numeric(15, 2), nullable=False),
+                 )
 
 Gasto = Table('Gasto', metadata,
               Column('id', Integer, primary_key=True, autoincrement=True),
@@ -121,6 +137,17 @@ class Categoria(Base):
         self.descripcion = descripcion
 
 
+class TipoServicio(Base):
+    __tablename__ = 'TipoServicio'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    nombre = Column(String(40), nullable=False)
+    descripcion = Column(String(60))
+
+    def __init__(self, nombre, descripcion):
+        self.nombre = nombre
+        self.descripcion = descripcion
+
+
 class Producto(Base):
     __tablename__ = 'Producto'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -144,15 +171,31 @@ class Detalle(Base):
     __tablename__ = 'Detalle'
     id = Column(Integer, primary_key=True, autoincrement=True)
     factura = Column(Integer, ForeignKey('Factura.id'))
-    producto = Column(Integer, ForeignKey('Producto.id'))
+    producto = Column(Integer, ForeignKey('Producto.id'), nullable=True)
+    servicio = Column(Integer, ForeignKey('Servicio.id'), nullable=True)
     cantidad = Column(Integer, nullable=False)
     precio_total = Column(Numeric(15, 2), nullable=False)
 
-    def __init__(self, id_factura, producto, cantidad, precio_total):
+    def __init__(self, id_factura, cantidad, precio_total,
+                 producto=None, servicio=None):
         self.factura = id_factura
         self.producto = producto
+        self.servicio = servicio
         self.cantidad = cantidad
         self.precio_total = precio_total
+
+
+class Servicio(Base):
+    __tablename__ = 'Servicio'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tipo = Column(Integer, ForeignKey('TipoServicio.id'))
+    cancelado = Column(Boolean, default=False, nullable=False)
+    monto = Column(Numeric(15, 2), nullable=False)
+
+    def __init__(self, tipo, cancelado, monto):
+        self.tipo = tipo
+        self.cancelado = cancelado
+        self.monto = monto
 
 
 class Gasto(Base):
