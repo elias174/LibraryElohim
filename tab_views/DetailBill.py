@@ -85,7 +85,6 @@ class Detail_Bill(QDialog):
 
         for detail in range(len(self.query)):
             product = session.query(Producto).get(self.query[detail].producto)
-            print product.nombre
             self.table_items.setItem(detail, 0,
                                      QtGui.QTableWidgetItem(str(product.nombre)))
             self.table_items.setItem(detail, 1,

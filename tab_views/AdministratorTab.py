@@ -152,41 +152,52 @@ class Administrator_Tab(QtGui.QWidget):
         self.query_gain = (session.query(func.sum(Ingreso.monto)).\
                             filter(Ingreso.fecha.like(self.day)).scalar())
 
-        if(self.query_expenses is None):
+        if not self.query_expenses:
             self.edit_day_expenses.setText("0.00")
         else:
             self.edit_day_expenses.setText(str(self.query_expenses))
 
-        if(self.query_gain_bill[1] is None and self.query_gain is None):
+        if not self.query_gain_bill[1] and not self.query_gain:
             self.edit_day_gain.setText('0.00')
-        elif(self.query_gain_bill[1] is None):
+        elif not self.query_gain_bill[1]:
             self.edit_day_gain.setText(str(self.query_gain))
+        elif not self.query_gain:
+            self.edit_day_gain.setText(str(self.query_gain_bill[1]))
         else:
-            self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
+            self.edit_day_gain.setText(
+                str(self.query_gain_bill[1] + self.query_gain))
         
     def refresh_box_day(self):
         string = self.edit_date.date()
-        self.day = '%'+unicode(string.toString("yyyy-MM-dd").toUtf8(), encoding="UTF-8")+'%'
 
-        self.query_gain_bill = (session.query(Detalle, func.sum(Detalle.precio_total))
-                            .join(Factura).\
-                            filter(Factura.fecha.like(self.day)).first())
+        self.day = (
+            '%' +
+            unicode(string.toString("yyyy-MM-dd").toUtf8(), encoding="UTF-8") +
+            '%'
+        )
 
-        self.query_gain = (session.query(func.sum(Ingreso.monto)).\
-                            filter(Ingreso.fecha.like(self.day)).scalar())
+        self.query_gain_bill = (
+            session.query(Detalle, func.sum(Detalle.precio_total)).
+            join(Factura).filter(Factura.fecha.like(self.day)).first())
 
-        self.query_expenses = (session.query(func.sum(Gasto.monto))
-                                .filter(Gasto.fecha.like(self.day)).scalar())
+        self.query_gain = (session.query(func.sum(Ingreso.monto)).
+                           filter(Ingreso.fecha.like(self.day)).scalar())
 
-        if(self.query_expenses is None):
+        self.query_expenses = (session.query(func.sum(Gasto.monto)).
+                               filter(Gasto.fecha.like(self.day)).scalar())
+
+        if self.query_expenses is None:
             self.edit_day_expenses.setText("0.00")
         else:
             self.edit_day_expenses.setText(str(self.query_expenses))
 
-        if(self.query_gain_bill[1] is None and self.query_gain is None):
+        if not self.query_gain_bill[1] and not self.query_gain:
             self.edit_day_gain.setText('0.00')
-        elif(self.query_gain_bill[1] is None):
+
+        elif not self.query_gain_bill[1]:
             self.edit_day_gain.setText(str(self.query_gain))
+        elif not self.query_gain:
+            self.edit_day_gain.setText(str(self.query_gain_bill[1]))
         else:
             self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
         
