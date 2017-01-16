@@ -14,6 +14,7 @@ from AddExpense import Add_Expense
 from DetailExpense import Detail_Expense
 from DetailGain import Detail_Gain
 from DetailBill import Detail_Bill
+from DetailBillService import Detail_Bill_Service
 from Generic_forms import GenericFormDialog
 from ShowBox import Show_Box
 
@@ -95,15 +96,12 @@ class Administrator_Tab(QtGui.QWidget):
         self.button_show_box.clicked.connect(self.show_box)
         self.button_show_box.hide()
         
-        header_names = ['ID', 'Factura', 'Fecha']
+        header_names = ['ID', 'Cliente', 'Fecha']
         self.tablemodel = MyTableModel(Factura, header_names, self)
         self.tableview = QtGui.QTableView()
         self.tableview.setAlternatingRowColors(True)
         self.tableview.setModel(self.tablemodel)
         self.tableview.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
-
-        for row in xrange(self.tablemodel.rowCount()):
-            self.tableview.openPersistentEditor(self.tablemodel.index(row, 3))
 
         self.layout_line_radio.addWidget(self.search_bill_today)
         self.layout_line_radio.addWidget(self.search_bill_day)
@@ -266,6 +264,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_search.hide()
         self.button_show_box.hide()
         self.button_add_expense.hide()
+        self.button_add_gain.hide()
         self.button_detail_expense.hide()
         self.button_detail_gain.hide()
         self.edit_day_gain.hide()
@@ -309,9 +308,20 @@ class Administrator_Tab(QtGui.QWidget):
     def view_detail_product(self):
         try:
             indexes = self.tableview.selectedIndexes()
-            for index in indexes:
-                product_id = self.tablemodel.get_id_object_alchemy(index.row())
-            Detail_Bill(product_id, self).exec_()
+            if(len(indexes)>1):
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText('Por favor seleccione solo una Factura')
+                msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
+                msgBox.setWindowTitle("Varias Facturas seleccionadas")
+                msgBox.exec_()
+            else:
+                bill_id = self.tablemodel.get_id_object_alchemy(indexes[0].row())
+                query_bill_type = (session.query(Detalle)
+                        .filter(Detalle.factura == bill_id).first())
+                if(query_bill_type.producto is not None):
+                    Detail_Bill(bill_id, self).exec_()
+                elif(query_bill_type.servicio is not None):
+                    Detail_Bill_Service(bill_id, self).exec_()
         except:
             msgBox = QtGui.QMessageBox()
             msgBox.setText('Por favor seleccione una Factura')
