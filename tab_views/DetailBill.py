@@ -24,18 +24,24 @@ class Detail_Bill(QDialog):
         self.query = (session.query(Detalle)
                         .filter(Detalle.factura == self.product_id).all())
 
-        self.query_bill = (session.query(Factura)
-                        .filter(Factura.id == self.product_id).first())
+        self.query_bill = (session.query(Factura, Cliente)
+                        .join(Cliente)
+                        .filter(Factura.id == self.product_id)
+                        .filter(Factura.cliente == Cliente.id).first())
         
         self.acceptButton = QPushButton("Aceptar", self)
 
+        client = QLabel('Cliente')
         bill = QLabel('Factura')
         date = QLabel('Fecha')
 
+        self.edit_client = QLineEdit()
+        self.edit_client.setText(str(self.query_bill[1].nombre))
+        self.edit_client.setDisabled(True)
         self.edit_bill = QLineEdit()
         self.edit_bill.setText(str(self.product_id))
         self.edit_bill.setDisabled(True)
-        self.edit_date = QDateEdit(self.query_bill.fecha)
+        self.edit_date = QDateEdit(self.query_bill[0].fecha)
         self.edit_date.setDisplayFormat(('yyyy-MM-dd'))
         self.edit_date.setDisabled(True)
 
@@ -45,6 +51,8 @@ class Detail_Bill(QDialog):
         grid = QGridLayout()
         self.layout_line_bill = QtGui.QHBoxLayout()
         self.layout_line_date = QtGui.QHBoxLayout()
+        self.layout_line_bill.addWidget(client)
+        self.layout_line_bill.addWidget(self.edit_client)
         self.layout_line_bill.addWidget(bill)
         self.layout_line_bill.addWidget(self.edit_bill)
         self.layout_line_date.addWidget(date)

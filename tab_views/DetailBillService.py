@@ -17,9 +17,8 @@ session = Session()
 
 
 class Detail_Bill_Service(QDialog):
-    def __init__(self, object_id, client,parent = None):
+    def __init__(self, object_id,parent = None):
         super(Detail_Bill_Service, self).__init__(parent)
-        self.name_client = client
         self.product_id = object_id
         #SELECT cancelado, monto, nombre FROM Detalle JOIN Servicio ON(Detalle.servicio = Servicio.id) JOIN TipoServicio ON Servicio.tipo = TipoServicio.id
         self.query = (session.query(Detalle, Servicio, TipoServicio)
@@ -54,7 +53,6 @@ class Detail_Bill_Service(QDialog):
         self.initializate_products_group()
 
         grid = QGridLayout()
-        self.layout_line_client = QtGui.QHBoxLayout()
         self.layout_line_bill = QtGui.QHBoxLayout()
         self.layout_line_date = QtGui.QHBoxLayout()
         self.layout_line_bill.addWidget(client)
@@ -63,11 +61,10 @@ class Detail_Bill_Service(QDialog):
         self.layout_line_bill.addWidget(self.edit_bill)
         self.layout_line_date.addWidget(date)
         self.layout_line_date.addWidget(self.edit_date)
-        grid.addLayout(self.layout_line_client, 1, 0)
-        grid.addLayout(self.layout_line_bill, 2, 0)
-        grid.addLayout(self.layout_line_date, 3, 0)
-        grid.addWidget(self.products_group, 4, 0)
-        grid.addWidget(self.acceptButton, 6, 0)
+        grid.addLayout(self.layout_line_bill, 1, 0)
+        grid.addLayout(self.layout_line_date, 2, 0)
+        grid.addWidget(self.products_group, 3, 0)
+        grid.addWidget(self.acceptButton, 5, 0)
 
         self.setLayout(grid)
 
@@ -89,10 +86,10 @@ class Detail_Bill_Service(QDialog):
     
         self.table_items.setRowCount(len(self.query))
 
-        self.table_items.setColumnCount(3)
+        self.table_items.setColumnCount(4)
         self.table_items.resizeColumnsToContents()
-        self.table_items.setHorizontalHeaderLabels(['Servicio','Monto', 
-                                                    'Estado'])
+        self.table_items.setHorizontalHeaderLabels(['Servicio','Monto de Factura', 
+                                                    'Monto Total', 'Estado'])
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header = self.table_items.horizontalHeader()
         self.stringRow = ''
@@ -101,8 +98,10 @@ class Detail_Bill_Service(QDialog):
             self.table_items.setItem(detail, 0,
                                      QtGui.QTableWidgetItem(str(self.query[detail][2].nombre)))
             self.table_items.setItem(detail, 1,
-                                     QtGui.QTableWidgetItem(str(self.query[detail][1].monto)))
+                                     QtGui.QTableWidgetItem(str(self.query[detail][0].precio_total)))
             self.table_items.setItem(detail, 2,
+                                     QtGui.QTableWidgetItem(str(self.query[detail][1].monto)))
+            self.table_items.setItem(detail, 3,
                                      QtGui.QTableWidgetItem(str("No Cancelado" 
                                         if self.query[detail][1].cancelado == False 
                                         else "Cancelado")))
