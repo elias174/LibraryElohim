@@ -9,7 +9,7 @@ from models import *
 
 Base = declarative_base()
 
-db = create_engine('sqlite:///dataBase.db', echo = False)
+db = create_engine('sqlite:///dataBase.db', echo=False)
 metadata = MetaData(db)
 
 Session = sessionmaker(bind=db)
@@ -17,21 +17,24 @@ session = Session()
 
 
 class Detail_Bill_Service(QDialog):
-    def __init__(self, object_id,parent = None):
+
+    def __init__(self, object_id, parent=None):
         super(Detail_Bill_Service, self).__init__(parent)
         self.product_id = object_id
-        #SELECT cancelado, monto, nombre FROM Detalle JOIN Servicio ON(Detalle.servicio = Servicio.id) JOIN TipoServicio ON Servicio.tipo = TipoServicio.id
+        # SELECT cancelado, monto, nombre FROM Detalle JOIN Servicio
+        # ON(Detalle.servicio = Servicio.id) JOIN TipoServicio ON Servicio.tipo
+        # = TipoServicio.id
         self.query = (session.query(Detalle, Servicio, TipoServicio)
-                        .join(Servicio)
-                        .join(TipoServicio)
-                        .filter(Detalle.factura == self.product_id)
-                        .filter(Detalle.servicio == Servicio.id)
-                        .filter(Servicio.tipo == TipoServicio.id).all())
+                      .join(Servicio)
+                      .join(TipoServicio)
+                      .filter(Detalle.factura == self.product_id)
+                      .filter(Detalle.servicio == Servicio.id)
+                      .filter(Servicio.tipo == TipoServicio.id).all())
 
         self.query_bill = (session.query(Factura, Cliente)
-                        .join(Cliente)
-                        .filter(Factura.id == self.product_id)
-                        .filter(Factura.cliente == Cliente.id).first())
+                           .join(Cliente)
+                           .filter(Factura.id == self.product_id)
+                           .filter(Factura.cliente == Cliente.id).first())
 
         self.acceptButton = QPushButton("Aceptar", self)
 
@@ -71,24 +74,24 @@ class Detail_Bill_Service(QDialog):
         desktopSize = QDesktopWidget().screenGeometry()
         self.setFixedSize(desktopSize.width() / 2, desktopSize.height() / 2)
         size = self.size()
-        top = (desktopSize.height() / 2)-(size.height() / 2)
-        left = (desktopSize.width() / 2)-(size.width() / 2)
+        top = (desktopSize.height() / 2) - (size.height() / 2)
+        left = (desktopSize.width() / 2) - (size.width() / 2)
 
         self.move(left, top)
         self.setWindowTitle('Detalle de Factura')
         self.show()
         self.acceptButton.clicked.connect(self.close)
-        
+
     def initializate_products_group(self):
         self.layout_line = QtGui.QFormLayout()
-        #Creating table
+        # Creating table
         self.table_items = QtGui.QTableWidget(self)
-    
+
         self.table_items.setRowCount(len(self.query))
 
         self.table_items.setColumnCount(4)
         self.table_items.resizeColumnsToContents()
-        self.table_items.setHorizontalHeaderLabels(['Servicio','Monto de Factura', 
+        self.table_items.setHorizontalHeaderLabels(['Servicio', 'Monto de Factura',
                                                     'Monto Total', 'Estado'])
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header = self.table_items.horizontalHeader()
@@ -102,13 +105,14 @@ class Detail_Bill_Service(QDialog):
             self.table_items.setItem(detail, 2,
                                      QtGui.QTableWidgetItem(str(self.query[detail][1].monto)))
             self.table_items.setItem(detail, 3,
-                                     QtGui.QTableWidgetItem(str("No Cancelado" 
-                                        if self.query[detail][1].cancelado == False 
-                                        else "Cancelado")))
-            self.stringRow = self.stringRow + str(detail+1) + ','
+                                     QtGui.QTableWidgetItem(str("No Cancelado"
+                                                                if self.query[detail][1].cancelado == False
+                                                                else "Cancelado")))
+            self.stringRow = self.stringRow + str(detail + 1) + ','
 
-        self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
-        #addin table with the query
+        self.table_items.setVerticalHeaderLabels(
+            QString(self.stringRow).split(','))
+        # addin table with the query
         self.table_items.resizeColumnsToContents()
         self.layout_line.addRow(self.table_items)
         self.products_group.setLayout(self.layout_line)

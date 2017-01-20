@@ -12,7 +12,7 @@ from Generic_forms import GenericFormDialog
 
 Base = declarative_base()
 
-db = create_engine('sqlite:///dataBase.db', echo = False)
+db = create_engine('sqlite:///dataBase.db', echo=False)
 metadata = MetaData(db)
 
 Session = sessionmaker(bind=db)
@@ -21,6 +21,7 @@ session = Session()
 
 class Inventory_Tab(QtGui.QWidget):
     change_table = QtCore.pyqtSignal()
+
     def __init__(self):
         super(Inventory_Tab, self).__init__()
 
@@ -46,9 +47,9 @@ class Inventory_Tab(QtGui.QWidget):
     def add_new_product(self):
         data, window = GenericFormDialog.get_data(Producto, self)
         if window:
-            session.add(Producto(data['categoria'], data['nombre'], 
-                                    data['precio_compra'], data['precio_venta'],
-                                    data['stock'], data['detalle']))
+            session.add(Producto(data['categoria'], data['nombre'],
+                                 data['precio_compra'], data['precio_venta'],
+                                 data['stock'], data['detalle']))
             session.commit()
 
     def modify_product(self):
@@ -76,7 +77,7 @@ class Inventory_Tab(QtGui.QWidget):
     def initialize_product_group(self):
         self.layout_line = QtGui.QVBoxLayout()
 
-        #Creating table
+        # Creating table
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
@@ -84,20 +85,23 @@ class Inventory_Tab(QtGui.QWidget):
 
         self.table_items.setColumnCount(8)
         self.table_items.resizeColumnsToContents()
-        self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria', 
+        self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria',
                                                     'Nombre', 'Precio Compra',
-                                                    'Precio Venta', 'Stock', 
+                                                    'Precio Venta', 'Stock',
                                                     'Detalle', 'Modificar'])
         #header = self.table_items.horizontalHeader()
-        #header.setResizeMode(QHeaderView.Stretch)
+        # header.setResizeMode(QHeaderView.Stretch)
         self.stringRow = ''
 
-        self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
+        self.table_items.setVerticalHeaderLabels(
+            QString(self.stringRow).split(','))
 
-        self.NewProductoButton = QtGui.QPushButton("Agregar Nuevo Producto", self)
+        self.NewProductoButton = QtGui.QPushButton(
+            "Agregar Nuevo Producto", self)
         self.NewProductoButton.clicked.connect(self.add_new_product)
 
-        self.NewCategoryButton = QtGui.QPushButton("Agregar Nueva Categoria", self)
+        self.NewCategoryButton = QtGui.QPushButton(
+            "Agregar Nueva Categoria", self)
         self.NewCategoryButton.clicked.connect(self.create_Category)
 
         #self.layout_line.addRow(self.label_search, self.edit_search)
@@ -108,18 +112,18 @@ class Inventory_Tab(QtGui.QWidget):
         self.refresh_table()
 
     def clear_table(self):
-        self.table_items.clear();
-        self.table_items.setRowCount(0);
+        self.table_items.clear()
+        self.table_items.setRowCount(0)
         self.table_items.setColumnCount(8)
-        self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria', 
+        self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria',
                                                     'Nombre', 'Precio Compra',
-                                                    'Precio Venta', 'Stock', 
+                                                    'Precio Venta', 'Stock',
                                                     'Detalle', 'Modificar'])
 
     def refresh_table(self, string=None):
         self.clear_table()
         if string:
-            text_query = '%'+unicode(string.toUtf8(), encoding="UTF-8")+'%'
+            text_query = '%' + unicode(string.toUtf8(), encoding="UTF-8") + '%'
             if self.search_name.isChecked():
                 self.query = (session.query(Producto).filter(
                     Producto.nombre.like(text_query)).all())
@@ -160,14 +164,16 @@ class Inventory_Tab(QtGui.QWidget):
                                      QtGui.QTableWidgetItem(str(self.query[product].detalle)))
             buttonModify = QtGui.QPushButton()
             buttonModify.clicked.connect(self.modify_product)
-            buttonModify.setStyleSheet("background-color: rgba(255, 255, 255, 0);")
+            buttonModify.setStyleSheet(
+                "background-color: rgba(255, 255, 255, 0);")
             buttonModify.setIcon(QtGui.QIcon('icons/Icon_edit.png'))
             self.table_items.setCellWidget(product, 7, buttonModify)
-            self.stringRow = self.stringRow + str(product+1) + ','
+            self.stringRow = self.stringRow + str(product + 1) + ','
 
-        self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
+        self.table_items.setVerticalHeaderLabels(
+            QString(self.stringRow).split(','))
         self.table_items.resizeColumnsToContents()
-        
+
     def initialize_results_group(self):
         self.layout_line_results = QtGui.QFormLayout()
 
@@ -182,7 +188,8 @@ class Inventory_Tab(QtGui.QWidget):
 
         self.layout_line_results.addRow(self.label_search, self.edit_search)
         self.layout_line_results.addRow(self.search_name, self.search_category)
-        self.layout_line_results.addRow(self.search_min_stock, self.search_max_stock)
+        self.layout_line_results.addRow(
+            self.search_min_stock, self.search_max_stock)
         self.search_group.setLayout(self.layout_line_results)
         self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
 
