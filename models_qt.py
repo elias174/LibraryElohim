@@ -140,7 +140,7 @@ class MyTableModel(QAbstractTableModel):
         text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
         today = '%'+str(date.today())+'%'
         self.arraydata = (session.query(Factura)
-                        .filter(Factura.id.like(text_query)) \
+                        .filter(Factura.id.like(text_query))
                         .filter(Factura.fecha.like(today)).all())
         self.layoutChanged.emit()
 

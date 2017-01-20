@@ -21,9 +21,7 @@ class Detail_Bill_Service(QDialog):
     def __init__(self, object_id, parent=None):
         super(Detail_Bill_Service, self).__init__(parent)
         self.product_id = object_id
-        # SELECT cancelado, monto, nombre FROM Detalle JOIN Servicio
-        # ON(Detalle.servicio = Servicio.id) JOIN TipoServicio ON Servicio.tipo
-        # = TipoServicio.id
+        
         self.query = (session.query(Detalle, Servicio, TipoServicio)
                       .join(Servicio)
                       .join(TipoServicio)

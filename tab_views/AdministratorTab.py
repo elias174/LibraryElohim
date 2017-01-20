@@ -149,11 +149,11 @@ class Administrator_Tab(QtGui.QWidget):
                                .filter(Gasto.fecha.like(self.day)).scalar())
 
         self.query_gain_bill = (session.query(Detalle, func.sum(Detalle.precio_total))
-                                .join(Factura).
-                                filter(Factura.fecha.like(self.day)).first())
+                                .join(Factura)
+                                .filter(Factura.fecha.like(self.day)).first())
 
-        self.query_gain = (session.query(func.sum(Ingreso.monto)).
-                           filter(Ingreso.fecha.like(self.day)).scalar())
+        self.query_gain = (session.query(func.sum(Ingreso.monto))
+                                .filter(Ingreso.fecha.like(self.day)).scalar())
 
         if not self.query_expenses:
             self.edit_day_expenses.setText("0.00")
@@ -183,11 +183,11 @@ class Administrator_Tab(QtGui.QWidget):
             session.query(Detalle, func.sum(Detalle.precio_total)).
             join(Factura).filter(Factura.fecha.like(self.day)).first())
 
-        self.query_gain = (session.query(func.sum(Ingreso.monto)).
-                           filter(Ingreso.fecha.like(self.day)).scalar())
+        self.query_gain = (session.query(func.sum(Ingreso.monto))
+                                .filter(Ingreso.fecha.like(self.day)).scalar())
 
-        self.query_expenses = (session.query(func.sum(Gasto.monto)).
-                               filter(Gasto.fecha.like(self.day)).scalar())
+        self.query_expenses = (session.query(func.sum(Gasto.monto))
+                                .filter(Gasto.fecha.like(self.day)).scalar())
 
         if self.query_expenses is None:
             self.edit_day_expenses.setText("0.00")

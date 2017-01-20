@@ -103,7 +103,6 @@ class Detail_Bill(QDialog):
 
         self.table_items.setVerticalHeaderLabels(
             QString(self.stringRow).split(','))
-        # addin table with the query
         self.table_items.resizeColumnsToContents()
         self.layout_line.addRow(self.table_items)
         self.products_group.setLayout(self.layout_line)

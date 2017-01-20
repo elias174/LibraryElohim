@@ -26,9 +26,7 @@ class Inventory_Tab(QtGui.QWidget):
         super(Inventory_Tab, self).__init__()
 
         self.screenGeometry = QtGui.QApplication.desktop().availableGeometry()
-        # Initialize Layout
 
-        # Signal to check total
         self.central_layout = QtGui.QGridLayout()
 
         self.control_singleton = False
@@ -80,19 +78,15 @@ class Inventory_Tab(QtGui.QWidget):
         # Creating table
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
-
         self.table_items.setRowCount(0)
-
         self.table_items.setColumnCount(8)
         self.table_items.resizeColumnsToContents()
         self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria',
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock',
                                                     'Detalle', 'Modificar'])
-        #header = self.table_items.horizontalHeader()
-        # header.setResizeMode(QHeaderView.Stretch)
-        self.stringRow = ''
 
+        self.stringRow = ''
         self.table_items.setVerticalHeaderLabels(
             QString(self.stringRow).split(','))
 
@@ -104,7 +98,6 @@ class Inventory_Tab(QtGui.QWidget):
             "Agregar Nueva Categoria", self)
         self.NewCategoryButton.clicked.connect(self.create_Category)
 
-        #self.layout_line.addRow(self.label_search, self.edit_search)
         self.layout_line.addWidget(self.table_items)
         self.layout_line.addWidget(self.NewProductoButton)
         self.layout_line.addWidget(self.NewCategoryButton)
