@@ -49,6 +49,7 @@ class Inventory_Tab(QtGui.QWidget):
                                  data['precio_compra'], data['precio_venta'],
                                  data['stock'], data['detalle']))
             session.commit()
+        self.update_table_search()
 
     def modify_product(self):
         button = qApp.focusWidget()
@@ -64,13 +65,14 @@ class Inventory_Tab(QtGui.QWidget):
                 product.detalle = data['detalle']
                 product.stock = data['stock']
                 session.commit()
-                self.refresh_table()
+                self.update_table_search()
 
     def create_Category(self):
         data, window = GenericFormDialog.get_data(Categoria, self)
         if window:
             session.add(Categoria(data['nombre'], data['descripcion']))
             session.commit()
+        self.update_table_search()
 
     def initialize_product_group(self):
         self.layout_line = QtGui.QVBoxLayout()
@@ -185,6 +187,13 @@ class Inventory_Tab(QtGui.QWidget):
             self.search_min_stock, self.search_max_stock)
         self.search_group.setLayout(self.layout_line_results)
         self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
+        self.search_name.toggled.connect(self.update_table_search)
+        self.search_category.toggled.connect(self.update_table_search)
+        self.search_min_stock.toggled.connect(self.update_table_search)
+        self.search_max_stock.toggled.connect(self.update_table_search)
 
     def on_search_table_edit_changed(self, string):
         self.refresh_table(string)
+
+    def update_table_search(self):
+        self.refresh_table(self.edit_search.text())
