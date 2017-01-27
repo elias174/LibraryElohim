@@ -20,7 +20,6 @@ Cliente = Table('Cliente', metadata,
                 Column('apellido', String(40), nullable=False),
                 Column('direccion', String(60)),
                 Column('fecha_nacimiento', Date),
-                Column('telefono', Integer),
                 )
 
 Factura = Table('Factura', metadata,
@@ -105,14 +104,12 @@ class Cliente(Base):
     apellido = Column(String(40), nullable=False)
     direccion = Column(String(60))
     fecha_nacimiento = Column(Date)
-    telefono = Column(Integer)
 
-    def __init__(self, nombre, apellido, direccion, fecha_nacimiento, telefono):
+    def __init__(self, nombre, apellido, direccion, fecha_nacimiento):
         self.nombre = nombre
         self.apellido = apellido
         self.direccion = direccion
         self.fecha_nacimiento = fecha_nacimiento
-        self.telefono = telefono
 
 
 class Factura(Base):

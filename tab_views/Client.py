@@ -20,7 +20,7 @@ class ClientDialog(QtGui.QDialog):
         self.label = QtGui.QLabel('Buscar Cliente')
         self.line_edit_search = QtGui.QLineEdit()
         header_names = ['ID', 'Nombre', 'Apellido', 'Direccion',
-                        'Fecha Nacimiento', 'Telefono']
+                        'Fecha Nacimiento']
         self.tablemodel = MyTableModel(Cliente, header_names, self)
         self.tableview = QtGui.QTableView()
         self.tableview.setModel(self.tablemodel)
@@ -56,7 +56,6 @@ class ClientDialog(QtGui.QDialog):
                 data['apellido'],
                 data['direccion'],
                 data['fecha_nacimiento'],
-                data['telefono'],
             )
             session.add(new_client)
             session.commit()
