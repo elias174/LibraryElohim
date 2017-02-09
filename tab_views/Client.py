@@ -3,9 +3,7 @@ import os
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
 from models_qt import MyTableModel
 from Generic_forms import GenericFormDialog

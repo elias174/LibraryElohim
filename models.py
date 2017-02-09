@@ -4,14 +4,12 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+from config import ALCHEMY_BASE, ALCHEMY_METADATA, ALCHEMY_SESSION
 
-db = create_engine('sqlite:///dataBase.db', echo=False)
-metadata = MetaData(db)
+Base = ALCHEMY_BASE
+metadata = ALCHEMY_METADATA
+session = ALCHEMY_SESSION
 
-Session = sessionmaker(bind=db)
-
-session = Session()
 
 Cliente = Table('Cliente', metadata,
                 Column('id', Integer, Sequence('some_id_seq', start=1,
@@ -43,7 +41,7 @@ TipoServicio = Table('TipoServicio', metadata,
 Producto = Table('Producto', metadata,
                  Column('id', Integer, primary_key=True, autoincrement=True),
                  Column('categoria', Integer, ForeignKey('Categoria.id')),
-                 Column('nombre', String(40), nullable=False),
+                 Column('nombre', String(60), nullable=False),
                  Column('precio_compra', Numeric(15, 2)),
                  Column('precio_venta', Numeric(15, 2), nullable=False),
                  Column('stock', Integer, nullable=False),

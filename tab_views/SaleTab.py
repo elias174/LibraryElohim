@@ -1,25 +1,16 @@
 import sys
 import os
+
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
 
 from models import *
 from models_qt import MyTableModel
 from Client import ClientDialog
-
-sys.path.append(os.path.abspath(os.path.join('..', 'api')))
 from api.api_sales import SaleApi
-# Base = declarative_base()
-# 
-# db = create_engine('sqlite:///dataBase.db', echo = False)
-# metadata = MetaData(db)
-# 
-# Session = sessionmaker(bind=db)
-# session = Session()
+
 
 LIMIT_RESULTS = 20
 

@@ -2,25 +2,13 @@ import sys
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
-from collections import namedtuple
-from datetime import datetime, timedelta, date
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
-from models import *
-from plugins.models_qt import MyTableModel
+
 from tab_views.SaleTab import Sale_Tab
 from tab_views.ServicesTab import ServicesTab
 from tab_views.InventoryTab import Inventory_Tab
 from tab_views.AdministratorTab import Administrator_Tab
 
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo=False, encoding='utf8')
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
+from models import *
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -36,7 +24,9 @@ class MainWindow(QtGui.QWidget):
         self.left_list = QtGui.QListWidget()
         qss_file = open('styles/styles_qstack.qss').read()
         self.left_list.setStyleSheet(qss_file)
-        print self.screenGeometry.width() / 13
+        self.left_list.setMovement(QtGui.QListView.Static)
+        central_layout.setContentsMargins(0, 0, 0, 0)
+
         self.left_list.setMaximumWidth((self.screenGeometry.width() / 13) - 4)
         self.left_list.setViewMode(QtGui.QListWidget.IconMode)
         self.left_list.setResizeMode(QtGui.QListWidget.Adjust)
@@ -108,13 +98,15 @@ class MainWindow(QtGui.QWidget):
                                         "Seguro?",
                                         QtGui.QMessageBox.Yes,
                                         QtGui.QMessageBox.No)
-        if ok:
+        if ok == QtGui.QMessageBox.Yes:
             event.accept()
+        else:
+            return
 
 if __name__ == '__main__':
-    app = QtGui.QApplication([])
+    app = QtGui.QApplication(sys.argv)
     mw = MainWindow()
     screenGeometry = QtGui.QApplication.desktop().availableGeometry()
     mw.resize(screenGeometry.width(), screenGeometry.height())
     mw.showMaximized()
-    app.exec_()
+    sys.exit(app.exec_())

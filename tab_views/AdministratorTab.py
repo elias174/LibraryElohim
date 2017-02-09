@@ -10,21 +10,11 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
 from models_qt import MyTableModel
-from AddExpense import Add_Expense
 from DetailExpense import Detail_Expense
 from DetailGain import Detail_Gain
 from DetailBill import Detail_Bill
 from Generic_forms import GenericFormDialog
 from ShowBox import Show_Box
-
-
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo = False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
 
 
 class Administrator_Tab(QtGui.QWidget):

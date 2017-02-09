@@ -14,22 +14,9 @@ from models import *
 from config import TWO_COPIES, NO_PRINT
 from decimal import Decimal
 
-
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo=False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
-
 ID_CLIENT_ANONYMOUS = 1
 
 PATH = os.path.dirname(os.path.abspath(__file__))
-# TEMPLATE_ENVIRONMENT = Environment(
-#     autoescape=False,
-#     loader=FileSystemLoader(os.path.join(PATH, 'templates')),
-#     trim_blocks=False)
 
 
 class SaleApi(object):
@@ -105,14 +92,14 @@ class SaleApi(object):
         #     html = render_template('factura.txt', context)
         #     f.write(html)
         if not TWO_COPIES or NO_PRINT:
-            printer_render(context, fontfullpath='DejaVuSans.ttf', fontsize=21)
+            printer_render(context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21)
             return
 
         img = printer_render(
-            context, fontfullpath='DejaVuSans.ttf', fontsize=21)
+            context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21)
         QtGui.QMessageBox.information(
             parent, 'Finalizado', 'Ticket Imprimido, entregue este ticket')
-        printer_render(context, fontfullpath='DejaVuSans.ttf', fontsize=21,
+        printer_render(context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21,
                        img_default=img)
         QtGui.QMessageBox.information(
             parent, 'Finalizado', 'Ticket Imprimido, Guarde ticket')

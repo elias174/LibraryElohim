@@ -9,15 +9,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from models import *
 import sys
 
-
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo=False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
-
 # class MyWindow(QWidget):
 #     def __init__(self, *args):
 #         QWidget.__init__(self, *args)
