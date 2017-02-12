@@ -30,3 +30,24 @@ If we dont have a printer, use the flag no print as True:
 ```
 NO_PRINT = True
 ```
+
+### Configure MYSQL (MariaDB)
+#### Windows
+First download the next packages:
+
+MariaDB 64 bits: https://downloads.mariadb.org/mariadb/10.1.21/
+Download and install mysql drivers: 
+
+First install C connector:
+http://dev.mysql.com/downloads/file.php?id=378025
+
+Now install the connector python
+http://arquivos.victorjabur.com/python/modules/MySQL-python-1.2.3.win-amd64-py2.7.exe
+
+#### Linux
+Install all packages necessary for MariaDB or MySQL, and install the connector with
+```
+sudo apt-get install python-mysqldb
+
+sudo apt-get install build-essential python-dev libmysqlclient-dev
+```
