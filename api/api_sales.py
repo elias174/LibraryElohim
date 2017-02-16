@@ -27,7 +27,7 @@ class SaleApi(object):
         self.factura = None
 
     def generate_factura(self):
-        self.factura = Factura(self.client_id, datetime.utcnow())
+        self.factura = Factura(self.client_id, datetime.now())
         session.add(self.factura)
         session.flush()
         session.refresh(self.factura)

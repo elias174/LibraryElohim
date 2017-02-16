@@ -16,8 +16,7 @@ Cliente = Table('Cliente', metadata,
                                                increment=1), primary_key=True),
                 Column('nombre', String(40), nullable=False),
                 Column('apellido', String(40), nullable=False),
-                Column('direccion', String(60)),
-                Column('fecha_nacimiento', Date),
+                Column('dni', String(60)),
                 )
 
 Factura = Table('Factura', metadata,
@@ -89,7 +88,7 @@ Ingreso = Table('Ingreso', metadata,
               Column('fecha', Date, nullable=False)
               )
 
-metadata.create_all()
+# metadata.create_all()
 
 ''' Creacion de las relacion y modelos''' 
 
@@ -100,14 +99,12 @@ class Cliente(Base):
                 primary_key=True)
     nombre = Column(String(40), nullable=False)
     apellido = Column(String(40), nullable=False)
-    direccion = Column(String(60))
-    fecha_nacimiento = Column(Date)
+    dni = Column(String(60))
 
-    def __init__(self, nombre, apellido, direccion, fecha_nacimiento):
+    def __init__(self, nombre, apellido, dni):
         self.nombre = nombre
         self.apellido = apellido
-        self.direccion = direccion
-        self.fecha_nacimiento = fecha_nacimiento
+        self.dni = dni
 
 
 class Factura(Base):
@@ -147,7 +144,7 @@ class Producto(Base):
     __tablename__ = 'Producto'
     id = Column(Integer, primary_key=True, autoincrement=True)
     categoria = Column(Integer, ForeignKey('Categoria.id'))
-    nombre = Column(String(40), nullable=False)
+    nombre = Column(String(60), nullable=False)
     precio_compra = Column(Numeric(15, 2))
     precio_venta = Column(Numeric(15, 2), nullable=False)
     stock = Column(Integer, nullable=False)

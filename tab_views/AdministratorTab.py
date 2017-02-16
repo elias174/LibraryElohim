@@ -190,7 +190,7 @@ class Administrator_Tab(QtGui.QWidget):
             self.edit_day_gain.setText(str(self.query_gain_bill[1]))
         else:
             self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
-        
+
     def update_all_search(self):
         if self.search_bill_today.isChecked():
             string = self.edit_search.text()
@@ -297,17 +297,17 @@ class Administrator_Tab(QtGui.QWidget):
             Detail_Gain(True, string).exec_()
 
     def view_detail_product(self):
-        try:
+        # try:
             indexes = self.tableview.selectedIndexes()
             for index in indexes:
                 factura_id = self.tablemodel.get_id_object_alchemy(index.row())
             Detail_Bill(factura_id, self).exec_()
-        except:
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText('Por favor seleccione una Factura')
-            msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
-            msgBox.setWindowTitle("No Selecciono una Factura")
-            msgBox.exec_()
+        # except:
+        #     msgBox = QtGui.QMessageBox()
+        #     msgBox.setText('Por favor seleccione una Factura')
+        #     msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
+        #     msgBox.setWindowTitle("No Selecciono una Factura")
+        #     msgBox.exec_()
 
     def close_box(self, type_action, balance, current_day):
         self.last_query = (session.query(Caja)

@@ -1,4 +1,3 @@
-import sys
 from  datetime import date
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
@@ -7,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, relationship, mapper
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
-import sys
+
 
 # class MyWindow(QWidget):
 #     def __init__(self, *args):
@@ -90,10 +89,10 @@ class MyTableModel(QAbstractTableModel):
                 ret = obj_foreign.nombre
             except AttributeError:
                 ret = value
-            return unicode(ret)
+            return ret
 
         ret = (str(getattr(row, self.columns_name[index.column()])))
-        return unicode(self.MAPPER_TYPES.get(ret, ret))
+        return self.MAPPER_TYPES.get(ret, ret)
 
     def get_id_object_alchemy(self, row):
         id_product = getattr(self.arraydata[row], self.columns_name[0])

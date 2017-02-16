@@ -66,6 +66,7 @@ class ResultsButtonGroup(QtGui.QButtonGroup):
 
 class Sale_Tab(QtGui.QWidget):
     change_table = QtCore.pyqtSignal()
+    sale_realeased = QtCore.pyqtSignal(float)
 
     def __init__(self):
         super(Sale_Tab, self).__init__()
@@ -241,11 +242,15 @@ class Sale_Tab(QtGui.QWidget):
                 widget_spin = self.table_items.cellWidget(row_item, 1)
                 val = (widget_spin.value() + 1)
                 if SaleApi.get_quantity_product(product.id) >= val:
+                    # to avoid that other function tries to change the value
+                    widget_spin.blockSignals(True)
                     widget_spin.setValue(val)
                     qty = float(val)
                     new_value = str(float(self.table_items.item(row_item, 3).text()) * qty)
                     self.table_items.item(row_item, 4).setText(new_value)
                     self.change_table.emit()
+                    widget_spin.blockSignals(False)
+                    return
                 else:
                     QtGui.QMessageBox.critical(self,
                                                'Error',
@@ -379,6 +384,7 @@ class Sale_Tab(QtGui.QWidget):
                 QtGui.QMessageBox.information(self, 'Finalizado', 'Ticket Imprimido')
                 self.clear_table()
                 QtGui.QMessageBox.information(self, 'Finalizado', 'Venta Finalizada')
+                self.sale_realeased.emit(price_total)
 
             else:
                 QtGui.QMessageBox.critical(self, 'Error',
