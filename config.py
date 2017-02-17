@@ -23,7 +23,8 @@ database_name = 'libreria_elohim'
 
 ALCHEMY_BASE = declarative_base()
 
-# you can change the database engine
+# you can change the database engine (for ex if you use sqlite)
+# its recommended use mysql for major performance
 db = create_engine('mysql://%s:%s@%s/%s' % (user_db, password_db, host, database_name), echo=False)
 ALCHEMY_METADATA = MetaData(db)
 Session = sessionmaker(bind=db, autoflush=True, autocommit=False, expire_on_commit=True)
