@@ -40,8 +40,9 @@ class Detail_Gain(QDialog):
 
         self.setLayout(grid)
 
-        size = self.size()
         desktopSize = QDesktopWidget().screenGeometry()
+        self.setFixedSize(desktopSize.width() / 2, desktopSize.height() / 2)
+        size = self.size()
         top = (desktopSize.height() / 2)-(size.height() / 2)
         left = (desktopSize.width() / 2)-(size.width() / 2)
 

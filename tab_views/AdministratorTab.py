@@ -65,7 +65,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_day_gain.setDisabled(True)
         self.edit_day_expenses = QtGui.QLineEdit(self)
         self.edit_day_expenses.setDisabled(True)
-        
+
         self.button_add_table = QtGui.QPushButton('Ver Detalle de Factura')
         self.button_add_table.clicked.connect(self.view_detail_product)
 
@@ -75,25 +75,25 @@ class Administrator_Tab(QtGui.QWidget):
         self.button_add_expense = QtGui.QPushButton("Agregar Gasto", self)
         self.button_add_expense.clicked.connect(self.add_expense)
 
-        self.button_detail_gain = QtGui.QPushButton("Detalles de Ingresos", self)
+        self.button_detail_gain = QtGui.QPushButton(
+            "Detalles de Ingresos", self)
         self.button_detail_gain.clicked.connect(self.detail_gain)
 
-        self.button_detail_expense = QtGui.QPushButton("Detalles de Gastos", self)
+        self.button_detail_expense = QtGui.QPushButton(
+            "Detalles de Gastos", self)
         self.button_detail_expense.clicked.connect(self.detail_expense)
 
-        self.button_show_box = QtGui.QPushButton("Estado de Caja del Dia", self)
+        self.button_show_box = QtGui.QPushButton(
+            "Estado de Caja del Dia", self)
         self.button_show_box.clicked.connect(self.show_box)
         self.button_show_box.hide()
-        
-        header_names = ['ID', 'Factura', 'Fecha']
+
+        header_names = ['ID', 'Cliente', 'Fecha']
         self.tablemodel = MyTableModel(Factura, header_names, self)
         self.tableview = QtGui.QTableView()
         self.tableview.setAlternatingRowColors(True)
         self.tableview.setModel(self.tablemodel)
         self.tableview.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
-
-        for row in xrange(self.tablemodel.rowCount()):
-            self.tableview.openPersistentEditor(self.tablemodel.index(row, 3))
 
         self.layout_line_radio.addWidget(self.search_bill_today)
         self.layout_line_radio.addWidget(self.search_bill_day)
@@ -126,21 +126,23 @@ class Administrator_Tab(QtGui.QWidget):
         self.update_all_search()
         self.search_group.setLayout(self.layout_line_main)
         self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
-        self.edit_search_name.textChanged.connect(self.on_search_table_by_name_changed)
-        self.edit_date.dateChanged.connect(self.on_search_table_by_date_changed)
+        self.edit_search_name.textChanged.connect(
+            self.on_search_table_by_name_changed)
+        self.edit_date.dateChanged.connect(
+            self.on_search_table_by_date_changed)
 
     def refresh_box_today(self):
         self.day = '%' + str(date.today()) + '%'
 
         self.query_expenses = (session.query(func.sum(Gasto.monto))
-                                .filter(Gasto.fecha.like(self.day)).scalar())
+                               .filter(Gasto.fecha.like(self.day)).scalar())
 
         self.query_gain_bill = (session.query(Detalle, func.sum(Detalle.precio_total))
-                            .join(Factura).\
-                            filter(Factura.fecha.like(self.day)).first())
+                                .join(Factura)
+                                .filter(Factura.fecha.like(self.day)).first())
 
-        self.query_gain = (session.query(func.sum(Ingreso.monto)).\
-                            filter(Ingreso.fecha.like(self.day)).scalar())
+        self.query_gain = (session.query(func.sum(Ingreso.monto))
+                                .filter(Ingreso.fecha.like(self.day)).scalar())
 
         if not self.query_expenses:
             self.edit_day_expenses.setText("0.00")
@@ -156,7 +158,7 @@ class Administrator_Tab(QtGui.QWidget):
         else:
             self.edit_day_gain.setText(
                 str(self.query_gain_bill[1] + self.query_gain))
-        
+
     def refresh_box_day(self):
         string = self.edit_date.date()
 
@@ -170,11 +172,11 @@ class Administrator_Tab(QtGui.QWidget):
             session.query(Detalle, func.sum(Detalle.precio_total)).
             join(Factura).filter(Factura.fecha.like(self.day)).first())
 
-        self.query_gain = (session.query(func.sum(Ingreso.monto)).
-                           filter(Ingreso.fecha.like(self.day)).scalar())
+        self.query_gain = (session.query(func.sum(Ingreso.monto))
+                                .filter(Ingreso.fecha.like(self.day)).scalar())
 
-        self.query_expenses = (session.query(func.sum(Gasto.monto)).
-                               filter(Gasto.fecha.like(self.day)).scalar())
+        self.query_expenses = (session.query(func.sum(Gasto.monto))
+                                .filter(Gasto.fecha.like(self.day)).scalar())
 
         if self.query_expenses is None:
             self.edit_day_expenses.setText("0.00")
@@ -189,7 +191,8 @@ class Administrator_Tab(QtGui.QWidget):
         elif not self.query_gain:
             self.edit_day_gain.setText(str(self.query_gain_bill[1]))
         else:
-            self.edit_day_gain.setText(str(self.query_gain_bill[1] + self.query_gain))
+            self.edit_day_gain.setText(
+                str(self.query_gain_bill[1] + self.query_gain))
 
     def update_all_search(self):
         if self.search_bill_today.isChecked():
@@ -218,7 +221,7 @@ class Administrator_Tab(QtGui.QWidget):
             string = string.toString("yyyy-MM-dd")
             self.tablemodel.searchBillDay(string)
             self.refresh_box_day()
-        
+
     def add_searcher(self):
         self.edit_date.hide()
         self.edit_search_name.hide()
@@ -256,6 +259,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_search.hide()
         self.button_show_box.hide()
         self.button_add_expense.hide()
+        self.button_add_gain.hide()
         self.button_detail_expense.hide()
         self.button_detail_gain.hide()
         self.edit_day_gain.hide()
@@ -279,7 +283,7 @@ class Administrator_Tab(QtGui.QWidget):
             session.commit()
             self.close_box(1, data['monto'], data['fecha'])
         self.update_all_search()
-        
+
     def detail_expense(self):
         if self.search_bill_today.isChecked():
             today = str(date.today())
@@ -297,44 +301,48 @@ class Administrator_Tab(QtGui.QWidget):
             Detail_Gain(True, string).exec_()
 
     def view_detail_product(self):
-        # try:
+        try:
             indexes = self.tableview.selectedIndexes()
             for index in indexes:
                 factura_id = self.tablemodel.get_id_object_alchemy(index.row())
             Detail_Bill(factura_id, self).exec_()
-        # except:
-        #     msgBox = QtGui.QMessageBox()
-        #     msgBox.setText('Por favor seleccione una Factura')
-        #     msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
-        #     msgBox.setWindowTitle("No Selecciono una Factura")
-        #     msgBox.exec_()
+        except:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText('Por favor seleccione una Factura')
+            msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
+            msgBox.setWindowTitle("No Selecciono una Factura")
+            msgBox.exec_()
 
     def close_box(self, type_action, balance, current_day):
         self.last_query = (session.query(Caja)
-                            .order_by(desc(Caja.id)).all())
+                           .order_by(desc(Caja.id)).all())
         if(len(self.last_query) == 0):
             previous_balance = 0
             if(type_action):
                 current_balance = float(balance) + float(previous_balance)
                 today = current_day
-                session.add(Caja(previous_balance, balance, 0, current_balance, today))
+                session.add(Caja(previous_balance, balance,
+                                 0, current_balance, today))
                 session.commit()
             else:
-                current_balance = float(previous_balance) - float(balance) 
+                current_balance = float(previous_balance) - float(balance)
                 today = current_day
-                session.add(Caja(previous_balance, 0, balance, current_balance, today))
+                session.add(Caja(previous_balance, 0,
+                                 balance, current_balance, today))
                 session.commit()
-        else:    
+        else:
             previous_balance = self.last_query[0].saldo_actual
             if(type_action):
                 current_balance = float(balance) + float(previous_balance)
                 today = current_day
-                session.add(Caja(previous_balance, balance, 0, current_balance, today))
+                session.add(Caja(previous_balance, balance,
+                                 0, current_balance, today))
                 session.commit()
             else:
-                current_balance = float(previous_balance) - float(balance) 
+                current_balance = float(previous_balance) - float(balance)
                 today = current_day
-                session.add(Caja(previous_balance, 0, balance, current_balance, today))
+                session.add(Caja(previous_balance, 0,
+                                 balance, current_balance, today))
                 session.commit()
 
     def show_box(self):

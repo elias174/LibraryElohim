@@ -14,26 +14,32 @@ class Detail_Bill(QDialog):
     }
 
     def __init__(self, object_id, parent = None):
-        #QDialog.__init__(self, parent)
+        # QDialog.__init__(self, parent)
         super(Detail_Bill, self).__init__(parent)
         self.product_id = object_id
 
         self.query = (session.query(Detalle)
-                        .filter(Detalle.factura == self.product_id).all())
+                      .filter(Detalle.factura == self.product_id).all())
 
-        self.query_bill = (session.query(Factura)
-                        .filter(Factura.id == self.product_id).first())
+        self.query_bill = (session.query(Factura, Cliente)
+                           .join(Cliente)
+                           .filter(Factura.id == self.product_id)
+                           .filter(Factura.cliente == Cliente.id).first())
 
         self.control_singleton = False
         self.acceptButton = QPushButton("Aceptar", self)
 
+        client = QLabel('Cliente')
         bill = QLabel('Factura')
         date = QLabel('Fecha')
 
+        self.edit_client = QLineEdit()
+        self.edit_client.setText(str(self.query_bill[1].nombre))
+        self.edit_client.setDisabled(True)
         self.edit_bill = QLineEdit()
         self.edit_bill.setText(str(self.product_id))
         self.edit_bill.setDisabled(True)
-        self.edit_date = QDateEdit(self.query_bill.fecha)
+        self.edit_date = QDateEdit(self.query_bill[0].fecha)
         self.edit_date.setDisplayFormat(('yyyy-MM-dd'))
         self.edit_date.setDisabled(True)
 
@@ -43,6 +49,8 @@ class Detail_Bill(QDialog):
         grid = QGridLayout()
         self.layout_line_bill = QtGui.QHBoxLayout()
         self.layout_line_date = QtGui.QHBoxLayout()
+        self.layout_line_bill.addWidget(client)
+        self.layout_line_bill.addWidget(self.edit_client)
         self.layout_line_bill.addWidget(bill)
         self.layout_line_bill.addWidget(self.edit_bill)
         self.layout_line_date.addWidget(date)
@@ -57,23 +65,25 @@ class Detail_Bill(QDialog):
         desktopSize = QDesktopWidget().screenGeometry()
         self.setFixedSize(desktopSize.width() / 2, desktopSize.height() / 2)
         size = self.size()
-        top = (desktopSize.height() / 2)-(size.height() / 2)
-        left = (desktopSize.width() / 2)-(size.width() / 2)
+        top = (desktopSize.height() / 2) - (size.height() / 2)
+        left = (desktopSize.width() / 2) - (size.width() / 2)
 
         self.move(left, top)
         self.setWindowTitle('Ver Detalle de Factura')
         self.show()
         self.acceptButton.clicked.connect(self.close)
-        
+
     def initializate_products_group(self):
         self.layout_line = QtGui.QFormLayout()
-        #Creating table
+        # Creating table
         self.table_items = QtGui.QTableWidget(self)
-    
+
         self.table_items.setRowCount(len(self.query))
 
         self.table_items.setColumnCount(3)
         self.table_items.resizeColumnsToContents()
+
+        self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header = self.table_items.horizontalHeader()
         self.stringRow = ''
         for detail in range(len(self.query)):
@@ -102,8 +112,8 @@ class Detail_Bill(QDialog):
 
             self.stringRow = self.stringRow + str(detail+1) + ','
 
-        self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
-        #addin table with the query
+        self.table_items.setVerticalHeaderLabels(
+            QString(self.stringRow).split(','))
         self.table_items.resizeColumnsToContents()
         self.layout_line.addRow(self.table_items)
         self.products_group.setLayout(self.layout_line)
