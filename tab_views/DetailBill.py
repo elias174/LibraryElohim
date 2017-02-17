@@ -2,23 +2,19 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
-
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo=False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
 
 
 class Detail_Bill(QDialog):
 
-    def __init__(self, object_id, parent=None):
+    MAPPER_BOOLEAN_TYPES = {
+        'False': 'No',
+        'True': 'Si'
+    }
+
+    def __init__(self, object_id, parent = None):
+        # QDialog.__init__(self, parent)
         super(Detail_Bill, self).__init__(parent)
         self.product_id = object_id
 
@@ -30,6 +26,7 @@ class Detail_Bill(QDialog):
                            .filter(Factura.id == self.product_id)
                            .filter(Factura.cliente == Cliente.id).first())
 
+        self.control_singleton = False
         self.acceptButton = QPushButton("Aceptar", self)
 
         client = QLabel('Cliente')
@@ -85,21 +82,35 @@ class Detail_Bill(QDialog):
 
         self.table_items.setColumnCount(3)
         self.table_items.resizeColumnsToContents()
-        self.table_items.setHorizontalHeaderLabels(['Producto', 'Cantidad',
-                                                    'Precio Total'])
+
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header = self.table_items.horizontalHeader()
         self.stringRow = ''
-
         for detail in range(len(self.query)):
-            product = session.query(Producto).get(self.query[detail].producto)
-            self.table_items.setItem(detail, 0,
-                                     QtGui.QTableWidgetItem(str(product.nombre)))
-            self.table_items.setItem(detail, 1,
-                                     QtGui.QTableWidgetItem(str(self.query[detail].cantidad)))
-            self.table_items.setItem(detail, 2,
-                                     QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
-            self.stringRow = self.stringRow + str(detail + 1) + ','
+            try:
+                self.table_items.setHorizontalHeaderLabels(['Producto', 'Cantidad',
+                                                            'Precio Total'])
+                product = session.query(Producto).get(self.query[detail].producto)
+                self.table_items.setItem(detail, 0,
+                                         QtGui.QTableWidgetItem(str(product.nombre)))
+                self.table_items.setItem(detail, 1,
+                                         QtGui.QTableWidgetItem(str(self.query[detail].cantidad)))
+                self.table_items.setItem(detail, 2,
+                                         QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
+            except TypeError:
+                service = session.query(Servicio).get(self.query[detail].servicio)
+                self.table_items.setHorizontalHeaderLabels(['Servicio', 'Cancelado',
+                                                            'Precio Total'])
+                tipo = session.query(TipoServicio).get(service.tipo)
+                self.table_items.setItem(detail, 0,
+                                         QtGui.QTableWidgetItem(str(tipo.nombre)))
+                self.table_items.setItem(detail, 1,
+                                         QtGui.QTableWidgetItem(
+                                             self.MAPPER_BOOLEAN_TYPES[str(service.cancelado)]))
+                self.table_items.setItem(detail, 2,
+                                         QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
+
+            self.stringRow = self.stringRow + str(detail+1) + ','
 
         self.table_items.setVerticalHeaderLabels(
             QString(self.stringRow).split(','))

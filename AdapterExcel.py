@@ -3,19 +3,14 @@ import openpyxl
 
 from models import *
 
-from datetime import datetime, timedelta
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo=False, encoding='utf8')
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-
-session = Session()
+# Base = declarative_base()
+#
+# db = create_engine('sqlite:///dataBase.db', echo=False, encoding='utf8')
+# metadata = MetaData(db)
+#
+# Session = sessionmaker(bind=db)
+#
+# session = Session()
 
 reload(sys)
 sys.setdefaultencoding('utf8')

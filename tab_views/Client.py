@@ -3,9 +3,7 @@ import os
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
 from models_qt import MyTableModel
 from Generic_forms import GenericFormDialog
@@ -19,8 +17,7 @@ class ClientDialog(QtGui.QDialog):
         self.layout = QtGui.QFormLayout(self)
         self.label = QtGui.QLabel('Buscar Cliente')
         self.line_edit_search = QtGui.QLineEdit()
-        header_names = ['ID', 'Nombre', 'Apellido', 'Direccion',
-                        'Fecha Nacimiento']
+        header_names = ['ID', 'Nombre', 'Apellido', 'DNI']
         self.tablemodel = MyTableModel(Cliente, header_names, self)
         self.tableview = QtGui.QTableView()
         self.tableview.setModel(self.tablemodel)
@@ -54,8 +51,7 @@ class ClientDialog(QtGui.QDialog):
             new_client = Cliente(
                 data['nombre'],
                 data['apellido'],
-                data['direccion'],
-                data['fecha_nacimiento'],
+                data['dni'],
             )
             session.add(new_client)
             session.commit()

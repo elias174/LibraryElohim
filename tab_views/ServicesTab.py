@@ -5,17 +5,17 @@ import types
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
 from models_qt import MyTableModel
 from Generic_forms import GenericFormDialog, AdvComboBox, AdvCheckBox
 from api.api_sales import SaleApi
+# from config import ALCHEMY_SESSION as session
 
 
 class ServicesTab(QtGui.QWidget):
+
+    service_payment_realeased = QtCore.pyqtSignal(float)
 
     def __init__(self):
         super(ServicesTab, self).__init__()
@@ -31,8 +31,7 @@ class ServicesTab(QtGui.QWidget):
 
         self.line_edit_search = QtGui.QLineEdit()
 
-        header_names = ['ID', 'Nombre', 'Apellido', 'Direccion',
-                        'Fecha Nacimiento']
+        header_names = ['ID', 'Nombre', 'Apellido', 'DNI']
         self.tablemodel = MyTableModel(Cliente, header_names, self)
         self.tableview = QtGui.QTableView()
         self.tableview.setModel(self.tablemodel)
@@ -163,8 +162,7 @@ class ServicesTab(QtGui.QWidget):
             new_client = Cliente(
                 data['nombre'],
                 data['apellido'],
-                data['direccion'],
-                data['fecha_nacimiento'],
+                data['dni'],
             )
             session.add(new_client)
             session.commit()
@@ -256,6 +254,7 @@ class ServicesTab(QtGui.QWidget):
             session.commit()
 
             self.tableview_results.model().refresh_data(self.array_data)
+            self.service_payment_realeased.emit()
 
     def new_service_payment(self):
         if not self.exist_client:
@@ -293,6 +292,7 @@ class ServicesTab(QtGui.QWidget):
             self.array_data = [session.query(Servicio).get(service)
                                for service in self.last_query_services]
             self.tableview_results.model().refresh_data(self.array_data)
+            self.service_payment_realeased.emit(float(data_payment['precio_total']))
 
 
 

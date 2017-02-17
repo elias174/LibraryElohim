@@ -2,21 +2,9 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
-from AddNewProduct import Add_New_Product
-from ModifyProduct import Modify_Product
 from Generic_forms import GenericFormDialog
-
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo=False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
 
 
 class Inventory_Tab(QtGui.QWidget):

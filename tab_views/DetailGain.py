@@ -3,18 +3,8 @@ from  datetime import date
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
-
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo = False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
 
 
 class Detail_Gain(QDialog):

@@ -10,22 +10,11 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
 from models_qt import MyTableModel
-from AddExpense import Add_Expense
 from DetailExpense import Detail_Expense
 from DetailGain import Detail_Gain
 from DetailBill import Detail_Bill
-from DetailBillService import Detail_Bill_Service
 from Generic_forms import GenericFormDialog
 from ShowBox import Show_Box
-
-
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo=False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
 
 
 class Administrator_Tab(QtGui.QWidget):
@@ -42,7 +31,7 @@ class Administrator_Tab(QtGui.QWidget):
         self.central_layout.addWidget(self.search_group, 0, 0)
         self.initialize_search_group()
         self.setLayout(self.central_layout)
-
+        
     def initialize_search_group(self):
         self.layout_line_main = QtGui.QGridLayout()
         self.layout_line_radio = QtGui.QHBoxLayout()
@@ -314,27 +303,13 @@ class Administrator_Tab(QtGui.QWidget):
     def view_detail_product(self):
         try:
             indexes = self.tableview.selectedIndexes()
-            if(len(indexes) > 1):
-                msgBox = QtGui.QMessageBox()
-                msgBox.setText('Por favor seleccione solo una Factura')
-                msgBox.addButton(QtGui.QPushButton('Aceptar'),
-                                 QtGui.QMessageBox.YesRole)
-                msgBox.setWindowTitle("Varias Facturas seleccionadas")
-                msgBox.exec_()
-            else:
-                bill_id = self.tablemodel.get_id_object_alchemy(indexes[
-                                                                0].row())
-                query_bill_type = (session.query(Detalle)
-                                   .filter(Detalle.factura == bill_id).first())
-                if(query_bill_type.producto is not None):
-                    Detail_Bill(bill_id, self).exec_()
-                elif(query_bill_type.servicio is not None):
-                    Detail_Bill_Service(bill_id, self).exec_()
+            for index in indexes:
+                factura_id = self.tablemodel.get_id_object_alchemy(index.row())
+            Detail_Bill(factura_id, self).exec_()
         except:
             msgBox = QtGui.QMessageBox()
             msgBox.setText('Por favor seleccione una Factura')
-            msgBox.addButton(QtGui.QPushButton('Aceptar'),
-                             QtGui.QMessageBox.YesRole)
+            msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
             msgBox.setWindowTitle("No Selecciono una Factura")
             msgBox.exec_()
 

@@ -5,14 +5,6 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from models import *
 
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo=False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
-
 
 def gainings_by_month(year, month = None, day = None):
     if not month and not day:

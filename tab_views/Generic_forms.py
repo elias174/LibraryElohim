@@ -1,22 +1,9 @@
-import sys
-import os
-import importlib
-
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship, mapper
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
+from sqlalchemy.orm import mapper
 from models import *
-
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo=False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
 
 MAX_VALUE_INT = 100000000
 MAX_VALUE_FLOAT = 1000000000.0
@@ -212,7 +199,7 @@ class GenericFormDialog(QtGui.QDialog):
             type_member = type(member.type).__name__
             # print dir(member.type)
             if type_member is 'String':
-                if member.type.length > 50:
+                if member.type.length > 70:
                     type_member = 'LargeString'
             widget = TYPES_MAP[type_member]()
             if object_edit:

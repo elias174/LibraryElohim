@@ -2,19 +2,10 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
 from models_qt import MyTableModel
 
-Base = declarative_base()
-
-db = create_engine('sqlite:///dataBase.db', echo = False)
-metadata = MetaData(db)
-
-Session = sessionmaker(bind=db)
-session = Session()
 
 class Show_Box(QDialog):
     def __init__(self, string, parent=None):
