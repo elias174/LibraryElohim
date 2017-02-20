@@ -28,11 +28,6 @@ class Show_Box(QDialog):
         self.tableview = QtGui.QTableView()
         self.tableview.setAlternatingRowColors(True)
         self.tableview.setModel(self.tablemodel)
-        self.tableview.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableview.resizeColumnsToContents()
-
-        for row in xrange(self.tablemodel.rowCount()):
-            self.tableview.openPersistentEditor(self.tablemodel.index(row, 3))
 
         string = string.toString("yyyy-MM-dd")
         self.tablemodel.searchCashDay(string)
