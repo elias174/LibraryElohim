@@ -106,6 +106,7 @@ class Detail_Bill(QDialog):
                 self.table_items.setItem(detail, 2,
                                          QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
                 total_price += self.query[detail].precio_total
+                self.edit_total_price.setText(str(total_price))
             except TypeError:
                 service = session.query(Servicio).get(self.query[detail].servicio)
                 self.table_items.setHorizontalHeaderLabels(['Servicio', 'Cancelado',
@@ -118,10 +119,10 @@ class Detail_Bill(QDialog):
                                              self.MAPPER_BOOLEAN_TYPES[str(service.cancelado)]))
                 self.table_items.setItem(detail, 2,
                                          QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
+                self.edit_total_price.setText(str(self.query[detail].precio_total))
 
             self.stringRow = self.stringRow + str(detail+1) + ','
 
-        self.edit_total_price.setText(str(total_price))
         self.table_items.setVerticalHeaderLabels(
             QString(self.stringRow).split(','))
         self.table_items.resizeColumnsToContents()
