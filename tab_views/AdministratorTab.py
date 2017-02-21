@@ -287,18 +287,18 @@ class Administrator_Tab(QtGui.QWidget):
     def detail_expense(self):
         if self.search_bill_today.isChecked():
             today = str(date.today())
-            Detail_Expense(False, today).exec_()
+            Detail_Expense(False, today, self).exec_()
         if self.search_bill_day.isChecked():
             string = self.edit_date.date()
-            Detail_Expense(True, string).exec_()
+            Detail_Expense(True, string, self).exec_()
 
     def detail_gain(self):
         if self.search_bill_today.isChecked():
             today = str(date.today())
-            Detail_Gain(False, today).exec_()
+            Detail_Gain(False, today, self).exec_()
         if self.search_bill_day.isChecked():
             string = self.edit_date.date()
-            Detail_Gain(True, string).exec_()
+            Detail_Gain(True, string, self).exec_()
 
     def view_detail_product(self):
         try:
