@@ -51,5 +51,4 @@ class Show_Box(QDialog):
 
         self.move(left, top)
         self.setWindowTitle('Ver Caja')
-        self.show()
         self.acceptButton.clicked.connect(self.close)

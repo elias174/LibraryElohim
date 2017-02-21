@@ -48,7 +48,6 @@ class Detail_Expense(QDialog):
 
         self.move(left, top)
         self.setWindowTitle('Ver Detalle de Gastos')
-        self.show()
         self.acceptButton.clicked.connect(self.close)
 
     def initializate_expenses_group(self):

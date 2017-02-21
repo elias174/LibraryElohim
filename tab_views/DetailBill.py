@@ -77,7 +77,6 @@ class Detail_Bill(QDialog):
 
         self.move(left, top)
         self.setWindowTitle('Ver Detalle de Factura')
-        self.show()
         self.acceptButton.clicked.connect(self.close)
 
     def initializate_products_group(self):
