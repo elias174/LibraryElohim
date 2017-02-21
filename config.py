@@ -17,7 +17,7 @@ TWO_COPIES = False
 # you need change the parameters for the db
 
 user_db = 'root'
-password_db = 'pirata'
+password_db = 'sergio092005'
 host = 'localhost'
 database_name = 'libreria_elohim'
 

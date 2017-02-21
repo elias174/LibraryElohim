@@ -32,6 +32,7 @@ class Detail_Bill(QDialog):
         client = QLabel('Cliente')
         bill = QLabel('Factura')
         date = QLabel('Fecha')
+        price = QLabel('Precio Total')
 
         self.edit_client = QLineEdit()
         self.edit_client.setText(str(self.query_bill[1].nombre))
@@ -42,6 +43,8 @@ class Detail_Bill(QDialog):
         self.edit_date = QDateEdit(self.query_bill[0].fecha)
         self.edit_date.setDisplayFormat(('yyyy-MM-dd'))
         self.edit_date.setDisabled(True)
+        self.edit_total_price = QLineEdit()
+        self.edit_total_price.setDisabled(True)
 
         self.products_group = QtGui.QGroupBox(str("Productos"), self)
         self.initializate_products_group()
@@ -49,15 +52,19 @@ class Detail_Bill(QDialog):
         grid = QGridLayout()
         self.layout_line_bill = QtGui.QHBoxLayout()
         self.layout_line_date = QtGui.QHBoxLayout()
+        self.layout_line_price = QtGui.QHBoxLayout()
         self.layout_line_bill.addWidget(client)
         self.layout_line_bill.addWidget(self.edit_client)
         self.layout_line_bill.addWidget(bill)
         self.layout_line_bill.addWidget(self.edit_bill)
         self.layout_line_date.addWidget(date)
         self.layout_line_date.addWidget(self.edit_date)
+        self.layout_line_price.addWidget(price)
+        self.layout_line_price.addWidget(self.edit_total_price)
         grid.addLayout(self.layout_line_bill, 1, 0)
         grid.addLayout(self.layout_line_date, 2, 0)
         grid.addWidget(self.products_group, 3, 0)
+        grid.addLayout(self.layout_line_price, 4, 0)
         grid.addWidget(self.acceptButton, 5, 0)
 
         self.setLayout(grid)
@@ -85,6 +92,7 @@ class Detail_Bill(QDialog):
 
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header = self.table_items.horizontalHeader()
+        total_price = 0
         self.stringRow = ''
         for detail in range(len(self.query)):
             try:
@@ -97,6 +105,8 @@ class Detail_Bill(QDialog):
                                          QtGui.QTableWidgetItem(str(self.query[detail].cantidad)))
                 self.table_items.setItem(detail, 2,
                                          QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
+                total_price += self.query[detail].precio_total
+                self.edit_total_price.setText(str(total_price))
             except TypeError:
                 service = session.query(Servicio).get(self.query[detail].servicio)
                 self.table_items.setHorizontalHeaderLabels(['Servicio', 'Cancelado',
@@ -109,6 +119,7 @@ class Detail_Bill(QDialog):
                                              self.MAPPER_BOOLEAN_TYPES[str(service.cancelado)]))
                 self.table_items.setItem(detail, 2,
                                          QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
+                self.edit_total_price.setText(str(self.query[detail].precio_total))
 
             self.stringRow = self.stringRow + str(detail+1) + ','
 
