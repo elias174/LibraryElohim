@@ -3,11 +3,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from datetime import date
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.sql import func
-from sqlalchemy.sql import text
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+
 from models import *
 from models_qt import MyTableModel
 from DetailExpense import Detail_Expense
@@ -15,6 +11,7 @@ from DetailGain import Detail_Gain
 from DetailBill import Detail_Bill
 from Generic_forms import GenericFormDialog
 from ShowBox import Show_Box
+from GenerateReport import ReportExportDialog
 
 
 class Administrator_Tab(QtGui.QWidget):
@@ -28,10 +25,24 @@ class Administrator_Tab(QtGui.QWidget):
         self.central_layout = QtGui.QGridLayout()
         self.search_group = QtGui.QGroupBox(str("Busqueda"), self)
         self.control_singleton = False
-        self.central_layout.addWidget(self.search_group, 0, 0)
+        self.toolbar = QtGui.QToolBar('Options', self)
+        self.toolbar.setStyleSheet("border: none")
+        self.toolbar.setIconSize(QtCore.QSize(51, 51))
+
+        self.icon_excel = QtGui.QPixmap('icons/excel')
+        self.action_export_excel = self.toolbar.addAction(
+            QtGui.QIcon(self.icon_excel), 'Generar Informe Excel', self.export_excel)
+
+        self.central_layout.addWidget(self.toolbar, 0, 0)
+        self.central_layout.addWidget(self.search_group, 1, 0)
         self.initialize_search_group()
         self.setLayout(self.central_layout)
-        
+
+    def export_excel(self):
+        ReportExportDialog.get_report_xlsx(self.screenGeometry, self)
+        # dialog_report = ReportExportDialog(self.screenGeometry, self)
+        # dialog_report.exec_()
+
     def initialize_search_group(self):
         self.layout_line_main = QtGui.QGridLayout()
         self.layout_line_radio = QtGui.QHBoxLayout()

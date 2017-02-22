@@ -9,7 +9,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from api_printer import printer_render
+from api_printer import printer_render, TimeOutPrinter, flush_printer
 from models import *
 from config import TWO_COPIES, NO_PRINT
 from decimal import Decimal
@@ -92,15 +92,64 @@ class SaleApi(object):
         #     html = render_template('factura.txt', context)
         #     f.write(html)
         if not TWO_COPIES or NO_PRINT:
-            printer_render(context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21)
+            while True:
+                try:
+                    printer_render(context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21)
+                except TimeOutPrinter:
+                    ok = QtGui.QMessageBox.question(parent, u'Sin repuesta Impresora',
+                                                    u'Al parecer la impresora esta fallando'
+                                                    u', asegurate de que este conectada y con papel dentro\n'
+                                                    u'Deseas volver a intentar? (Si escoges NO se guardara la venta, pero no se'
+                                                    u'imprimira ticket)',
+                                                    QtGui.QMessageBox.Yes,
+                                                    QtGui.QMessageBox.No)
+                    if ok == QtGui.QMessageBox.Yes:
+                        continue
+                    else:
+                        flush_printer()
+                        return
+                break
             return
 
-        img = printer_render(
-            context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21)
+        while True:
+            try:
+                img = printer_render(
+                context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21)
+            except TimeOutPrinter:
+                ok = QtGui.QMessageBox.question(parent, u'Sin repuesta Impresora',
+                                                u'Al parecer la impresora esta fallando'
+                                                u', asegurate de que este conectada y con papel dentro\n'
+                                                u'Deseas volver a intentar? (Si escoges NO se guardara la venta, pero no se'
+                                                u'imprimira ticket)',
+                                                QtGui.QMessageBox.Yes,
+                                                QtGui.QMessageBox.No)
+                if ok == QtGui.QMessageBox.Yes:
+                    continue
+                else:
+                    flush_printer()
+                    return
+            break
         QtGui.QMessageBox.information(
             parent, 'Finalizado', 'Ticket Imprimido, entregue este ticket')
-        printer_render(context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21,
-                       img_default=img)
+
+        while True:
+            try:
+                printer_render(context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21,
+                               img_default=img)
+            except TimeOutPrinter:
+                ok = QtGui.QMessageBox.question(parent, u'Sin repuesta Impresora',
+                                                u'Al parecer la impresora esta fallando'
+                                                u', asegurate de que este conectada y con papel dentro\n'
+                                                u'Deseas volver a intentar? (Si escoges NO se guardara la venta, pero no se'
+                                                u'imprimira ticket)',
+                                                QtGui.QMessageBox.Yes,
+                                                QtGui.QMessageBox.No)
+                if ok == QtGui.QMessageBox.Yes:
+                    continue
+                else:
+                    flush_printer()
+                    return
+            break
         QtGui.QMessageBox.information(
             parent, 'Finalizado', 'Ticket Imprimido, Guarde ticket')
 
