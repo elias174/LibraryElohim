@@ -93,6 +93,9 @@ class Sale_Tab(QtGui.QWidget):
         self.change_table.connect(self.update_total)
         self.setLayout(self.central_layout)
 
+    def update_last_query(self):
+        self.last_query = (session.query(Producto).limit(LIMIT_RESULTS).all())
+
     def initialize_sale_group(self):
         self.layout_line = QtGui.QFormLayout()
         # First Line
@@ -109,7 +112,6 @@ class Sale_Tab(QtGui.QWidget):
         self.table_items.setHorizontalHeaderLabels(["ID", "Cantidad", "Producto",
                                                     "P.Unidad", "P.Total",
                                                     "Eliminar"])
-
 
         self.sale_group.setMaximumWidth(self.screenGeometry.width() / 2)
         self.sale_group.setLayout(self.layout_line)
@@ -388,6 +390,8 @@ class Sale_Tab(QtGui.QWidget):
                 self.clear_table()
                 QtGui.QMessageBox.information(self, 'Finalizado', 'Venta Finalizada')
                 self.sale_realeased.emit(price_total)
+                self.update_last_query()
+                self.button_group.refresh(self.last_query)
 
             else:
                 QtGui.QMessageBox.critical(self, 'Error',

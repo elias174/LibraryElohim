@@ -13,7 +13,7 @@ PRINTER = None
 NO_PRINT = True
 # PRINTER = Serial('COM1')
 TWO_COPIES = False
-
+TIME_OUT_PRINTER = 7
 # you need change the parameters for the db
 
 user_db = 'root'

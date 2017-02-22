@@ -1,15 +1,61 @@
+import sys
+import stopit
+import threading
+import functools
+import logging
+
 from PIL import ImageFont
 from PIL import Image
 from PIL import ImageDraw
+from PyQt4 import QtCore
+from serial.serialutil import SerialException
 
-from config import PRINTER, NO_PRINT
+from config import PRINTER, NO_PRINT, TIME_OUT_PRINTER
 
 
+class TimeOutPrinter(Exception):
+    pass
+
+
+def timeout(duration, default=None):
+    def decorator(func):
+        class InterruptableThread(threading.Thread):
+            def __init__(self, args, kwargs):
+                threading.Thread.__init__(self)
+                self.args = args
+                self.kwargs = kwargs
+                self.result = default
+                self.daemon = True
+
+            def run(self):
+                try:
+                    self.result = func(*self.args, **self.kwargs)
+                except Exception:
+                    pass
+
+        @functools.wraps(func)
+        def wrap(*args, **kwargs):
+            it = InterruptableThread(args, kwargs)
+            it.start()
+            it.join(duration)
+            if it.isAlive():
+                raise TimeOutPrinter
+            return it.result
+        return wrap
+    return decorator
+
+
+@timeout(TIME_OUT_PRINTER)
 def printer_render(context, color = "#000", bgcolor = "#FFF",
              fontfullpath=None, fontsize=19, leftpadding=3,
-             rightpadding=3, width=575, img_default=None):
+             rightpadding=3, width=575, img_default=None, no_print=NO_PRINT):
 
-    if img_default and not NO_PRINT:
+    # try:
+    #     PRINTER.device.open()
+    # except:
+    #     raise TIME_OUT_PRINTER
+
+    if img_default and not no_print:
         PRINTER.image(img_default)
         PRINTER.cut()
         return
@@ -90,10 +136,17 @@ def printer_render(context, color = "#000", bgcolor = "#FFF",
         draw.text((leftpadding, y), line, color, font=font)
         y += line_height
 
-    if NO_PRINT:
+    if no_print:
         img.show()
         return
+
     PRINTER.image(img)
     PRINTER.cut()
 
     return img
+
+
+def flush_printer():
+    PRINTER.device.flush()
+    PRINTER.device.flushInput()
+    PRINTER.device.flushOutput()
