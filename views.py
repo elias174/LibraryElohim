@@ -72,6 +72,7 @@ class MainWindow(QtGui.QWidget):
         central_layout.addWidget(self.left_list)
         central_layout.addWidget(self.stack_widget)
         self.setLayout(central_layout)
+        self.setWindowIcon(QtGui.QIcon('icons/principal.png'))
 
         self.left_list.currentRowChanged.connect(self.change_display)
         self.tab_sells.sale_realeased.connect(self.update_administrator_tab)
