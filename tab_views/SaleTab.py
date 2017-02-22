@@ -176,7 +176,9 @@ class Sale_Tab(QtGui.QWidget):
         def view_table():
             self.tableview = QTableView()
             self.button_add_table = QtGui.QPushButton('Aniadir')
+            self.tableview.setAlternatingRowColors(True)
             self.tableview.setModel(self.tablemodel)
+            self.tableview.resizeColumnsToContents()
             QtGui.QWidget().setLayout(self.layout_results)
             self.layout_results = QtGui.QVBoxLayout()
             self.layout_results.addWidget(self.tableview)
@@ -341,6 +343,7 @@ class Sale_Tab(QtGui.QWidget):
 
         self.table_items.setCellWidget(self.i, 5, button)
 
+        self.table_items.resizeColumnsToContents()
         self.change_table.emit()
 
     def update_total(self):

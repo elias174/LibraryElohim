@@ -34,11 +34,12 @@ class ServicesTab(QtGui.QWidget):
         header_names = ['ID', 'Nombre', 'Apellido', 'DNI']
         self.tablemodel = MyTableModel(Cliente, header_names, self)
         self.tableview = QtGui.QTableView()
+        self.tableview.setAlternatingRowColors(True)
         self.tableview.setModel(self.tablemodel)
         self.tableview.setMaximumHeight(self.screenGeometry.height() / 6)
-        self.tableview.setColumnWidth(1, self.screenGeometry.width() *0.3)
-        self.tableview.setColumnWidth(3, self.screenGeometry.width() * 0.2)
-        self.tableview.setColumnWidth(4, self.screenGeometry.width() * 0.15)
+        self.tableview.setColumnWidth(1, self.screenGeometry.width() * 0.3)
+        self.tableview.setColumnWidth(2, self.screenGeometry.width() * 0.3)
+        self.tableview.setColumnWidth(3, self.screenGeometry.width() * 0.15)
 
         self.button_new_type_service = QtGui.QPushButton('Nuevo Servicio')
         self.button_new_type_service.setMaximumWidth(
@@ -141,6 +142,7 @@ class ServicesTab(QtGui.QWidget):
         self.table_model_result = MyTableModel(
             Servicio, header_names, self, self.array_data)
         self.tableview_results.setModel(self.table_model_result)
+        self.tableview_results.resizeColumnsToContents()
         self.exist_client = True
 
     def auto_complete_client_search(self, string):
@@ -254,7 +256,7 @@ class ServicesTab(QtGui.QWidget):
             session.commit()
 
             self.tableview_results.model().refresh_data(self.array_data)
-            self.service_payment_realeased.emit()
+            self.service_payment_realeased.emit(float(data_pay['precio_total']))
 
     def new_service_payment(self):
         if not self.exist_client:

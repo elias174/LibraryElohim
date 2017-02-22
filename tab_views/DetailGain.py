@@ -48,7 +48,6 @@ class Detail_Gain(QDialog):
 
         self.move(left, top)
         self.setWindowTitle('Ver Detalle de Ingreso')
-        self.show()
         self.acceptButton.clicked.connect(self.close)
 
     def initializate_expenses_group(self):
