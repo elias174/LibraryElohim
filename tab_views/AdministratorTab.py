@@ -39,7 +39,8 @@ class Administrator_Tab(QtGui.QWidget):
         self.setLayout(self.central_layout)
 
     def export_excel(self):
-        ReportExportDialog.get_report_xlsx(self.screenGeometry, self)
+        QtGui.QMessageBox.critical(self, 'Bajo Desarrollo', 'Caracteritica aun no finalizada')
+        # ReportExportDialog.get_report_xlsx(self.screenGeometry, self)
         # dialog_report = ReportExportDialog(self.screenGeometry, self)
         # dialog_report.exec_()
 
