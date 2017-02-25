@@ -39,10 +39,8 @@ class Administrator_Tab(QtGui.QWidget):
         self.setLayout(self.central_layout)
 
     def export_excel(self):
-        QtGui.QMessageBox.critical(self, 'Bajo Desarrollo', 'Caracteritica aun no finalizada')
-        # ReportExportDialog.get_report_xlsx(self.screenGeometry, self)
-        # dialog_report = ReportExportDialog(self.screenGeometry, self)
-        # dialog_report.exec_()
+        dialog_report = ReportExportDialog(self.screenGeometry, self)
+        dialog_report.exec_()
 
     def initialize_search_group(self):
         self.layout_line_main = QtGui.QGridLayout()
