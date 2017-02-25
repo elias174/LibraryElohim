@@ -21,7 +21,7 @@ class Administrator_Tab(QtGui.QWidget):
         super(Administrator_Tab, self).__init__()
 
         self.screenGeometry = QtGui.QApplication.desktop().availableGeometry()
-        self.last_query = (session.query(Producto).limit(12).all())
+        self.last_query = (session.query(Producto).limit(20).all())
         self.central_layout = QtGui.QGridLayout()
         self.search_group = QtGui.QGroupBox(str("Busqueda"), self)
         self.control_singleton = False
