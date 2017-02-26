@@ -43,7 +43,7 @@ class SaleApi(object):
                          cantidad=quantity,
                          precio_total=float(quantity * product.precio_venta))
         self.details.append(
-            (detail, [product.nombre, str(product.precio_venta)])
+            (detail, [str(product.id), product.nombre, str(product.precio_venta)])
         )
         product.stock -= quantity
         session.add(detail)
@@ -66,7 +66,7 @@ class SaleApi(object):
                          cantidad=quantity, precio_total=self.price_total)
 
         self.details.append(
-            (detail, [type_service_obj.nombre, str(self.price_total)])
+            (detail, [str(type_service_obj.id), type_service_obj.nombre, str(self.price_total)])
         )
         session.add(detail)
 

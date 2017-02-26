@@ -17,7 +17,7 @@ TIME_OUT_PRINTER = 7
 # you need change the parameters for the db
 
 user_db = 'root'
-password_db = 'sergio092005'
+password_db = ''
 host = 'localhost'
 database_name = 'libreria_elohim'
 

@@ -75,7 +75,7 @@ def printer_render(context, color = "#000", bgcolor = "#FFF",
 
     text_products_draw = [
         '-' * 81,
-        'Nombre,Cant.,P.Unidad,P.Total',
+        'COD,Nombre,Cant.,P.Unidad,P.Total',
         '-' * 81
     ]
 
@@ -86,13 +86,14 @@ def printer_render(context, color = "#000", bgcolor = "#FFF",
         '\n'
     ]
     for detail in context['details']:
+        cod = str(detail[1][0])
         cantidad = str(detail[0].cantidad)
         total = str(detail[0].precio_total)
-        name = detail[1][0]
-        p_unidad = detail[1][1]
+        name = detail[1][1]
+        p_unidad = detail[1][2]
 
-        text_products_draw.append('%s,%s,%s,%s' % (
-            name[:23] + (name[:23] and '..'), cantidad, p_unidad, total))
+        text_products_draw.append('%s,%s,%s,%s,%s' % (
+            cod, (name[:16] + (name[:16] and '..')), cantidad, p_unidad, total))
 
     font = (
         ImageFont.load_default() if fontfullpath is None else
@@ -116,9 +117,10 @@ def printer_render(context, color = "#000", bgcolor = "#FFF",
 
     headers = text_products_draw[1].split(',')
     draw.text((leftpadding, y), headers[0], color, font=font)
-    draw.text((leftpadding + 300, y), headers[1], color, font=font)
-    draw.text((leftpadding + 380, y), headers[2], color, font=font)
-    draw.text((leftpadding + 490, y), headers[3], color, font=font)
+    draw.text((leftpadding + 60, y), headers[1], color, font=font)
+    draw.text((leftpadding + 300, y), headers[2], color, font=font)
+    draw.text((leftpadding + 380, y), headers[3], color, font=font)
+    draw.text((leftpadding + 490, y), headers[4], color, font=font)
     y += line_height
 
     draw.text((leftpadding, y), text_products_draw[2], color, font=font)
@@ -127,9 +129,10 @@ def printer_render(context, color = "#000", bgcolor = "#FFF",
     for line in text_products_draw[3:]:
         products = line.split(',')
         draw.text((leftpadding, y), products[0], color, font=font)
-        draw.text((leftpadding + 300, y), products[1], color, font=font)
-        draw.text((leftpadding + 380, y), products[2], color, font=font)
-        draw.text((leftpadding + 490, y), products[3], color, font=font)
+        draw.text((leftpadding + 60, y), products[1], color, font=font)
+        draw.text((leftpadding + 300, y), products[2], color, font=font)
+        draw.text((leftpadding + 380, y), products[3], color, font=font)
+        draw.text((leftpadding + 490, y), products[4], color, font=font)
         y += line_height
 
     for line in text_finished:

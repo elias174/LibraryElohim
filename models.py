@@ -88,7 +88,14 @@ Ingreso = Table('Ingreso', metadata,
               Column('fecha', Date, nullable=False)
               )
 
-# metadata.create_all()
+Lista = Table('Lista', metadata,
+              Column('id', Integer, primary_key=True, autoincrement=True),
+              Column('nombre', String(80)),
+              Column('elementos', Text(2500)),
+              )
+
+# This line it's temporal until the alembic configuration it's done
+metadata.create_all()
 
 ''' Creacion de las relacion y modelos''' 
 
@@ -201,6 +208,17 @@ class Gasto(Base):
         self.detalle = detalle
         self.monto = monto
         self.fecha = fecha
+
+
+class Lista(Base):
+    __tablename__ = 'Lista'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    nombre = Column(String(80))
+    elementos = Column(Text(1500))
+
+    def __init__(self, nombre, elementos):
+        self.nombre = nombre
+        self.elementos = elementos
 
 
 class Caja(Base):

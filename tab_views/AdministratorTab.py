@@ -29,18 +29,27 @@ class Administrator_Tab(QtGui.QWidget):
         self.toolbar.setStyleSheet("border: none")
         self.toolbar.setIconSize(QtCore.QSize(51, 51))
 
+        self.icon_gainings = QtGui.QPixmap('icons/gainings')
+        self.action_export_excel = self.toolbar.addAction(
+            QtGui.QIcon(self.icon_gainings),
+            'Mostrar Reporte Ganancias', self.report_gainings_table)
         self.icon_excel = QtGui.QPixmap('icons/excel')
         self.action_export_excel = self.toolbar.addAction(
-            QtGui.QIcon(self.icon_excel), 'Generar Informe Excel', self.export_excel)
+            QtGui.QIcon(self.icon_excel),
+            'Exportar Reporte Ganancias Excel', self.export_excel)
 
         self.central_layout.addWidget(self.toolbar, 0, 0)
         self.central_layout.addWidget(self.search_group, 1, 0)
         self.initialize_search_group()
         self.setLayout(self.central_layout)
 
+    def report_gainings_table(self):
+        ReportExportDialog.get_report(screensize=self.screenGeometry,
+                                      type_report='table', parent=self)
+
     def export_excel(self):
-        dialog_report = ReportExportDialog(self.screenGeometry, self)
-        dialog_report.exec_()
+        ReportExportDialog.get_report(screensize=self.screenGeometry,
+                                      type_report='xlsx', parent=self)
 
     def initialize_search_group(self):
         self.layout_line_main = QtGui.QGridLayout()

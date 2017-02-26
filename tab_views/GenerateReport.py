@@ -38,7 +38,13 @@ class ReportExportDialog(QtGui.QDialog):
         'Diciembre': 12
     }
 
-    def __init__(self, screen_size, parent=None):
+    def __init__(self, screen_size, type_report, parent=None):
+
+        self.TYPE_REPORTS = {
+            'xlsx': self.export_xlsx,
+            'table': self.report_table
+        }
+
         super(ReportExportDialog, self).__init__(parent)
         self.layout = QtGui.QFormLayout(self)
         self.type = type
@@ -70,7 +76,7 @@ class ReportExportDialog(QtGui.QDialog):
         self.buttons = QtGui.QDialogButtonBox(
             QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel,
             QtCore.Qt.Horizontal, self)
-        self.buttons.accepted.connect(self.export_xlsx)
+        self.buttons.accepted.connect(self.TYPE_REPORTS[type_report])
         self.buttons.rejected.connect(self.reject)
 
         self.layout.addRow('Anio', self.combobox_year)
@@ -104,7 +110,8 @@ class ReportExportDialog(QtGui.QDialog):
             if str(self.combobox_month.currentText()) != '-' else None
         )
         validated_data['day'] = (int(self.combobox_day.currentText())
-                                 if self.combobox_day.currentText() != '-' else None)
+                                 if self.combobox_day.currentText() != '-'
+                                 else None)
         validated_data['type'] = str(self.combobox_type.currentText())
         return validated_data
 
@@ -120,8 +127,22 @@ class ReportExportDialog(QtGui.QDialog):
         file_name = QtGui.QFileDialog.getSaveFileName(self, 'Guardar XLSX', QtCore.QDir.homePath(),
                                                       "Excel (*.xlsx )")
         gainings_api.export_xlsx(file_name)
-        self.create_table_report(gainings_api.result_query, validated_data)
 
-    def create_table_report(self, query, validated_data):
-        dialog = Generate_Table_Report(query, validated_data, self)
+    def report_table(self):
+        validated_data = self.get_valid_data()
+        gainings_api = GainingsApi()
+        try:
+            gainings_api.gainings_by_date(**validated_data)
+        except AssertionError:
+            QtGui.QMessageBox.warning(self, 'Atencion',
+                                      'No existen Registros', QtGui.QMessageBox.Ok)
+            return
+        dialog = Generate_Table_Report(gainings_api.result_query,
+                                       validated_data, self)
         dialog.exec_()
+
+    @staticmethod
+    def get_report(screensize, type_report, parent=None):
+        dialog_date = ReportExportDialog(
+            screen_size=screensize, parent=parent, type_report=type_report)
+        dialog_date.exec_()
