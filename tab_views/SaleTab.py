@@ -1,3 +1,4 @@
+import ast
 import sys
 import os
 
@@ -8,6 +9,7 @@ from PyQt4.QtGui import *
 
 from models import *
 from models_qt import MyTableModel
+from Generic_forms import GenericFormDialog, AdvComboBox
 from Client import ClientDialog
 from api.api_sales import SaleApi
 
@@ -134,9 +136,32 @@ class Sale_Tab(QtGui.QWidget):
         self.button_client.clicked.connect(self.open_dialog_client)
 
         self.button_generate_sale = QtGui.QPushButton('Realizar Venta')
+        self.button_clean_table = QtGui.QPushButton('Limpiar')
+
+        self.label_list = QtGui.QLabel('Administrar Listas:')
+        self.button_save_list = QtGui.QPushButton('Guardar como Lista')
+        self.button_load_list = QtGui.QPushButton('Cargar Lista')
+        self.button_erase_list = QtGui.QPushButton('Eliminar una Lista')
+
+        self.button_load_list.clicked.connect(self.load_list)
+        self.button_save_list.clicked.connect(self.save_list)
         self.button_generate_sale.clicked.connect(self.realease_sale)
+        self.button_clean_table.clicked.connect(self.clear_table)
+        self.button_erase_list.clicked.connect(self.erase_list)
+
         self.layout_line.addRow(self.table_items)
         self.layout_line.addRow(self.button_generate_sale)
+        self.layout_line.addRow(self.button_clean_table)
+
+        self.group_list = QtGui.QGroupBox('Administrar Listas')
+
+        self.layout_lists = QtGui.QHBoxLayout()
+        self.layout_lists.addWidget(self.button_save_list)
+        self.layout_lists.addWidget(self.button_load_list)
+        self.layout_lists.addWidget(self.button_erase_list)
+        self.group_list.setLayout(self.layout_lists)
+
+        self.layout_line.addRow(self.group_list)
 
     def initialize_search_group(self):
         self.layout_line_search = QtGui.QFormLayout()
@@ -294,9 +319,16 @@ class Sale_Tab(QtGui.QWidget):
         self.table_items.removeRow(index.row())
         self.change_table.emit()
 
-    def add_product_table(self, product):
+    def add_product_table(self, product, quantity=1):
+        stock_product = SaleApi.get_quantity_product(product.id)
+        if stock_product < quantity:
+            QMessageBox.critical(
+                self,
+                'Error',
+                'No tenemos Stock para %s no es posible agregarlo' % product.nombre,
+                QtGui.QMessageBox.Ok)
+            return
         self.i = self.table_items.rowCount()
-
         self.table_items.insertRow(self.i)
 
         button = QtGui.QPushButton()
@@ -317,9 +349,9 @@ class Sale_Tab(QtGui.QWidget):
             self.change_table.emit()
 
         spinbox = QtGui.QSpinBox()
-        spinbox.setValue(1)
+        spinbox.setValue(quantity)
         spinbox.setMinimum(1)
-        spinbox.setMaximum(SaleApi.get_quantity_product(product.id))
+        spinbox.setMaximum(stock_product)
 
         spinbox.valueChanged.connect(quantity_changed)
 
@@ -359,6 +391,131 @@ class Sale_Tab(QtGui.QWidget):
             self.table_items.removeRow(0)
         self.table_items.setRowCount(0)
         self.change_table.emit()
+
+    def save_list(self):
+
+        if self.table_items.rowCount() < 1:
+            QtGui.QMessageBox.critical(self, 'Error',
+                                       'Debe agregar por lo menos un producto',
+                                       QtGui.QMessageBox.Ok)
+            return
+
+        message = QtGui.QMessageBox(self)
+        message.setText('Como desea guardar la lista?')
+        message.setIcon(QtGui.QMessageBox.Question)
+        button_update = QtGui.QPushButton('Actualizar')
+        message.addButton(button_update, QtGui.QMessageBox.ActionRole)
+        button_new = QtGui.QPushButton('Crear Nuevo')
+        message.addButton(button_new, QtGui.QMessageBox.ActionRole)
+        message.addButton(QtGui.QMessageBox.Cancel)
+
+        message.exec_()
+
+        if message.clickedButton() == button_update:
+            lists = ['%s %s' % (str(e.id), str(e.nombre))
+                    for e in session.query(Lista).all()]
+            if len(lists) < 1:
+                QtGui.QMessageBox.critical(self, 'Error',
+                                           'No existen listas guardadas',
+                                           QtGui.QMessageBox.Ok)
+                return
+            combo = AdvComboBox(self)
+            combo.addItems(lists)
+            data, result = GenericFormDialog.get_data(
+                Lista, parent=self, fields=[''],
+                customs_widgets=[('Lista', combo)], title='Actualizar Lista'
+            )
+            if result:
+                question = QtGui.QMessageBox.question(
+                    self, 'Confirmar',
+                    'Desea sobreescribir esta lista?',
+                    QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                if question == QtGui.QMessageBox.No:
+                    return
+                id_list = data['Lista']
+                elements = str(self.extract_id_quantity_table())
+                current_list = session.query(Lista).get(id_list)
+                current_list.elementos = elements
+                session.commit()
+                QtGui.QMessageBox.information(self, 'Finalizado',
+                                              'Lista guardada')
+
+        elif message.clickedButton() == button_new:
+            data, result = GenericFormDialog.get_data(
+                Lista, parent=self, fields=['nombre'])
+            if result:
+                name_list = data['nombre']
+                elements = str(self.extract_id_quantity_table())
+                new_list = Lista(name_list, elements)
+                session.add(new_list)
+                session.commit()
+                QtGui.QMessageBox.information(self, 'Finalizado',
+                                              'Lista guardada')
+
+    def load_list(self):
+        lists = ['%s %s' % (str(e.id), str(e.nombre))
+                 for e in session.query(Lista).all()]
+        if len(lists) < 1:
+            QtGui.QMessageBox.critical(self, 'Error',
+                                       'No existen listas guardadas',
+                                       QtGui.QMessageBox.Ok)
+            return
+        combo = AdvComboBox(self)
+        combo.addItems(lists)
+        data, result = GenericFormDialog.get_data(
+            Lista, parent=self, fields=[''],
+            customs_widgets=[('Lista', combo)], title='Cargar Lista'
+        )
+        if result:
+            question = QtGui.QMessageBox.question(
+                self, 'Confirmar', 'Cargar esta lista eliminara los productos '
+                                   'agregados, desea continuar?',
+                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.No:
+                return
+            id_list = data['Lista']
+            current_list = session.query(Lista).get(id_list)
+            elements = ast.literal_eval(current_list.elementos)
+            not_availables = []
+            for e in elements:
+                self.add_product_table(session.query(Producto).get(e[0]), e[1])
+
+    def erase_list(self):
+        lists = ['%s %s' % (str(e.id), str(e.nombre))
+                 for e in session.query(Lista).all()]
+        if len(lists) < 1:
+            QtGui.QMessageBox.critical(self, 'Error',
+                                       'No existen listas guardadas',
+                                       QtGui.QMessageBox.Ok)
+            return
+        combo = AdvComboBox(self)
+        combo.addItems(lists)
+        data, result = GenericFormDialog.get_data(
+            Lista, parent=self, fields=[''],
+            customs_widgets=[('Lista', combo)], title='Borrar una Lista'
+        )
+        if result:
+            id_list = data['Lista']
+            current_list = session.query(Lista).get(id_list)
+            question = QtGui.QMessageBox.question(
+                self, 'Confirmar', 'Eliminar Lista: %s?' % current_list.nombre,
+                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.No:
+                return
+            session.delete(current_list)
+            session.commit()
+            QtGui.QMessageBox.information(self, 'Finalizado',
+                                          'Lista Eliminada')
+
+    def extract_id_quantity_table(self):
+        data = []
+        index_id = 0
+        index_quantity = 1
+        for row in xrange(self.table_items.rowCount()):
+            item_id = int(self.table_items.item(row, index_id).text())
+            quantity = self.table_items.cellWidget(row, index_quantity).value()
+            data.append((item_id, quantity))
+        return data
 
     def realease_sale(self):
         result = QtGui.QMessageBox.question(self, 'Confirmar',

@@ -138,6 +138,7 @@ TYPES_MAP = {
     'Date': AdvDateEdit,
     'Numeric': AdvDoubleSpinBox,
     'String': AdvLineEdit,
+    'Text': AdvTextEdit,
     'Foreign_Key': AdvComboBox,
     'LargeString': AdvTextEdit,
     'Boolean': AdvCheckBox
@@ -244,12 +245,16 @@ class GenericFormDialog(QtGui.QDialog):
 
     @staticmethod
     def get_data(AlchemyModel, parent=None, obj_edit=None, fields=None,
-                 customs_widgets=[]):
+                 customs_widgets=[], title=''):
         data = {}
         dialog = GenericFormDialog(AlchemyModel, parent, obj_edit, fields,
                                    customs_widgets)
         if obj_edit:
             dialog.setWindowTitle('Editar %s' % (AlchemyModel.__name__))
+
+        if title is not '':
+            dialog.setWindowTitle('%s' % title)
+
         result = dialog.exec_()
         if result == QtGui.QDialog.Accepted:
             data = dialog.get_all_data()
