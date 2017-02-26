@@ -16,6 +16,10 @@ How orm we use sqlalchemy
 Escpos is the interface for use a ticket printer Epson (but the magic is in PIL)
 
 ### Configuring the project
+We have a config_DEFAULT.py it's the default configuration that you need copy and use for your own configuration
+```
+cp config_DEFAULT.py config.py
+```
 
 Before to develop please set in config.py the interface for the printer:
 
@@ -25,7 +29,7 @@ Ex:
 PRINTER = Usb(0x04b8, 0x0e15)
 ```
 
-If we dont have a printer, use the flag no print as True:
+If we dont have a printer, use the flag no print as True, and TWO_COPIES as False:
 
 ```
 NO_PRINT = True
