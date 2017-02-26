@@ -48,8 +48,12 @@ class Administrator_Tab(QtGui.QWidget):
                                       type_report='table', parent=self)
 
     def export_excel(self):
-        ReportExportDialog.get_report(screensize=self.screenGeometry,
-                                      type_report='xlsx', parent=self)
+        # ReportExportDialog.get_report(screensize=self.screenGeometry,
+        #                               type_report='xlsx', parent=self)
+        QtGui.QMessageBox.warning(
+            self, 'En desarrollo', 'Caracteristica aun en desarrollo',
+            QtGui.QMessageBox.Yes
+        )
 
     def initialize_search_group(self):
         self.layout_line_main = QtGui.QGridLayout()

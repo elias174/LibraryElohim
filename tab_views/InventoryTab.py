@@ -3,6 +3,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+from api.AdapterExcel import Adapter_XLSX, NotFilledError
 from models import *
 from Generic_forms import GenericFormDialog
 
@@ -22,13 +23,48 @@ class Inventory_Tab(QtGui.QWidget):
         self.product_group = QtGui.QGroupBox(str("Productos"), self)
         self.search_group = QtGui.QGroupBox(str("Busqueda"), self)
 
-        self.central_layout.addWidget(self.search_group, 0, 0)
-        self.central_layout.addWidget(self.product_group, 1, 0)
+        self.toolbar = QtGui.QToolBar('Options', self)
+        self.toolbar.setStyleSheet("border: none")
+        self.toolbar.setIconSize(QtCore.QSize(51, 51))
+
+        self.icon_gainings = QtGui.QPixmap('icons/import_excel')
+        self.action_export_excel = self.toolbar.addAction(
+            QtGui.QIcon(self.icon_gainings),
+            'Importar Productos desde archivo Excel',
+            self.import_from_excel_file)
+
+        self.central_layout.addWidget(self.toolbar, 0, 0)
+        self.central_layout.addWidget(self.search_group, 1, 0)
+        self.central_layout.addWidget(self.product_group, 2, 0)
 
         self.initialize_product_group()
         self.initialize_results_group()
 
         self.setLayout(self.central_layout)
+
+    def import_from_excel_file(self):
+        QtGui.QMessageBox.warning(
+            self,
+            'Atencion',
+            'Asegurese de que todas las celdas segun el estandar que se le '
+            'informo esten llenadas correctamente. Tenga en cuenta que si '
+            'se encuentran valores duplicados seran aniadidos doble vez'
+            'La hoja que se tomara en cuenta es la primera del Libro',
+            QtGui.QMessageBox.Ok
+        )
+        file_name = QtGui.QFileDialog.getOpenFileName(
+            self, 'Cargar XLSX', QtCore.QDir.homePath(), "Excel (*.xlsx )")
+        if not file_name:
+            return
+        api_xlsx = Adapter_XLSX(str(file_name))
+        try:
+            api_xlsx.save_products()
+        except NotFilledError as e:
+            QtGui.QMessageBox.critical(
+                self, 'Error', str(e.message), QtGui.QMessageBox.Ok)
+            return
+        QtGui.QMessageBox.information(self, 'Finalizado', 'Producto Aniadidos')
+        self.update_table_search()
 
     def add_new_product(self):
         data, window = GenericFormDialog.get_data(Producto, self)
@@ -110,6 +146,9 @@ class Inventory_Tab(QtGui.QWidget):
             if self.search_name.isChecked():
                 self.query = (session.query(Producto).filter(
                     Producto.nombre.like(text_query)).all())
+            elif self.search_id.isChecked():
+                self.query = (session.query(Producto).filter(
+                    Producto.id.like(text_query)).all())
             elif self.search_category.isChecked():
                 self.query = (session.query(Producto).join(Categoria).filter(
                     Categoria.nombre.like(text_query)).all())
@@ -164,18 +203,22 @@ class Inventory_Tab(QtGui.QWidget):
         self.edit_search = QtGui.QLineEdit(self)
 
         self.search_name = QRadioButton("Buscar por nombre")
+        self.search_id = QRadioButton("Buscar por ID (Codigo)")
         self.search_name.setChecked(True)
         self.search_category = QRadioButton("Buscar por Categoria")
         self.search_min_stock = QRadioButton("Buscar los de Menor Stock")
         self.search_max_stock = QRadioButton("Buscar los de Mayor Stock")
 
         self.layout_line_results.addRow(self.label_search, self.edit_search)
-        self.layout_line_results.addRow(self.search_name, self.search_category)
+        self.layout_line_results.addRow(self.search_name, self.search_id)
         self.layout_line_results.addRow(
             self.search_min_stock, self.search_max_stock)
+        self.layout_line_results.addRow(self.search_category)
+
         self.search_group.setLayout(self.layout_line_results)
         self.edit_search.textChanged.connect(self.on_search_table_edit_changed)
         self.search_name.toggled.connect(self.update_table_search)
+        self.search_id.toggled.connect(self.update_table_search)
         self.search_category.toggled.connect(self.update_table_search)
         self.search_min_stock.toggled.connect(self.update_table_search)
         self.search_max_stock.toggled.connect(self.update_table_search)
@@ -184,4 +227,10 @@ class Inventory_Tab(QtGui.QWidget):
         self.refresh_table(string)
 
     def update_table_search(self):
+        if (self.search_max_stock.isChecked()
+           or self.search_min_stock.isChecked()
+           or self.search_id.isChecked()):
+            self.edit_search.setValidator(QtGui.QIntValidator())
+        else:
+            self.edit_search.setValidator(QtGui.QRegExpValidator())
         self.refresh_table(self.edit_search.text())
