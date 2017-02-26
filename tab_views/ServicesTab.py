@@ -25,11 +25,14 @@ class ServicesTab(QtGui.QWidget):
         self.exist_client = False
 
         self.layout = QtGui.QFormLayout(self)
+        self.layout_line_client = QtGui.QHBoxLayout()
         self.screenGeometry = QtGui.QApplication.desktop().availableGeometry()
 
-        self.label = QtGui.QLabel('Cliente:')
+        self.label = QtGui.QLabel('Nombre')
+        self.last_name = QtGui.QLabel('Apellido')
 
         self.line_edit_search = QtGui.QLineEdit()
+        self.line_edit_last_name = QtGui.QLineEdit()
 
         header_names = ['ID', 'Nombre', 'Apellido', 'DNI']
         self.tablemodel = MyTableModel(Cliente, header_names, self)
@@ -67,6 +70,8 @@ class ServicesTab(QtGui.QWidget):
 
         self.line_edit_search.textChanged.connect(
             self.auto_complete_client_search)
+        self.line_edit_last_name.textChanged.connect(
+            self.auto_complete_last_name_search)
         self.button_search_client.clicked.connect(
             self.search_client_clicked)
         self.button_new_type_service.clicked.connect(
@@ -110,8 +115,12 @@ class ServicesTab(QtGui.QWidget):
         verticalSpacer_2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum,
                                              QSizePolicy.Expanding)
 
+        self.layout_line_client.addWidget(self.label)
+        self.layout_line_client.addWidget(self.line_edit_search)
+        self.layout_line_client.addWidget(self.last_name)
+        self.layout_line_client.addWidget(self.line_edit_last_name)
         self.layout.addRow(self.first_contain_layout)
-        self.layout.addRow(self.label, self.line_edit_search)
+        self.layout.addRow(self.layout_line_client)
         self.layout.addRow(self.tableview)
         self.layout.addRow(self.third_contain_layout)
         self.layout.addItem(verticalSpacer)
@@ -146,7 +155,10 @@ class ServicesTab(QtGui.QWidget):
         self.exist_client = True
 
     def auto_complete_client_search(self, string):
-        self.tablemodel.setFilter('nombre', string)
+        self.tablemodel.searchClient(string, self.line_edit_last_name.text())
+
+    def auto_complete_last_name_search(self, string):
+        self.tablemodel.searchClient(self.line_edit_search.text(), string)
 
     def new_service(self):
         data, result = GenericFormDialog.get_data(TipoServicio, self)

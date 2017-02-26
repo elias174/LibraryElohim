@@ -21,7 +21,7 @@ class Administrator_Tab(QtGui.QWidget):
         super(Administrator_Tab, self).__init__()
 
         self.screenGeometry = QtGui.QApplication.desktop().availableGeometry()
-        self.last_query = (session.query(Producto).limit(12).all())
+        self.last_query = (session.query(Producto).limit(20).all())
         self.central_layout = QtGui.QGridLayout()
         self.search_group = QtGui.QGroupBox(str("Busqueda"), self)
         self.control_singleton = False
@@ -39,10 +39,8 @@ class Administrator_Tab(QtGui.QWidget):
         self.setLayout(self.central_layout)
 
     def export_excel(self):
-        QtGui.QMessageBox.critical(self, 'Bajo Desarrollo', 'Caracteritica aun no finalizada')
-        # ReportExportDialog.get_report_xlsx(self.screenGeometry, self)
-        # dialog_report = ReportExportDialog(self.screenGeometry, self)
-        # dialog_report.exec_()
+        dialog_report = ReportExportDialog(self.screenGeometry, self)
+        dialog_report.exec_()
 
     def initialize_search_group(self):
         self.layout_line_main = QtGui.QGridLayout()

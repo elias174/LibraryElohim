@@ -9,6 +9,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from api.api_gainings import GainingsApi
+from GenerateTableReport import Generate_Table_Report
 
 
 # Dialog to export report xlsx format
@@ -37,7 +38,7 @@ class ReportExportDialog(QtGui.QDialog):
         'Diciembre': 12
     }
 
-    def __init__(self, screen_size, type, parent=None):
+    def __init__(self, screen_size, parent=None):
         super(ReportExportDialog, self).__init__(parent)
         self.layout = QtGui.QFormLayout(self)
         self.type = type
@@ -69,7 +70,7 @@ class ReportExportDialog(QtGui.QDialog):
         self.buttons = QtGui.QDialogButtonBox(
             QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel,
             QtCore.Qt.Horizontal, self)
-        self.buttons.accepted.connect(self.accept)
+        self.buttons.accepted.connect(self.export_xlsx)
         self.buttons.rejected.connect(self.reject)
 
         self.layout.addRow('Anio', self.combobox_year)
@@ -107,10 +108,6 @@ class ReportExportDialog(QtGui.QDialog):
         validated_data['type'] = str(self.combobox_type.currentText())
         return validated_data
 
-    def accept(self):
-        if self.type == 'product':
-            self.export_xlsx()
-
     def export_xlsx(self):
         validated_data = self.get_valid_data()
         gainings_api = GainingsApi()
@@ -123,9 +120,8 @@ class ReportExportDialog(QtGui.QDialog):
         file_name = QtGui.QFileDialog.getSaveFileName(self, 'Guardar XLSX', QtCore.QDir.homePath(),
                                                       "Excel (*.xlsx )")
         gainings_api.export_xlsx(file_name)
-        print file_name
+        self.create_table_report(gainings_api.result_query, validated_data)
 
-    @staticmethod
-    def get_report_xlsx(screen_size, parent=None):
-        dialog = ReportExportDialog(screen_size, 'product', parent)
+    def create_table_report(self, query, validated_data):
+        dialog = Generate_Table_Report(query, validated_data, self)
         dialog.exec_()

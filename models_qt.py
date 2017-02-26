@@ -110,7 +110,7 @@ class MyTableModel(QAbstractTableModel):
             self.custom_query.filter(obj_column.like(text_query)).all()
             if self.exist_custom_query
             else
-            session.query(self.model_alchemy).filter(obj_column.like(text_query)).all()
+            session.query(self.model_alchemy).filter(obj_column.like(text_query)).limit(20).all()
         )
         self.layoutChanged.emit()
 
@@ -131,17 +131,25 @@ class MyTableModel(QAbstractTableModel):
         today = '%'+str(date.today())+'%'
         self.arraydata = (session.query(Factura)
                         .filter(Factura.id.like(text_query))
-                        .filter(Factura.fecha.like(today)).all())
+                        .filter(Factura.fecha.like(today)).limit(30).all())
         self.layoutChanged.emit()
 
     def searchBillDay(self, search_text=None):
         text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
         self.arraydata = (session.query(Factura)
-                        .filter(Factura.fecha.like(text_query)).all())
+                        .filter(Factura.fecha.like(text_query)).limit(30).all())
         self.layoutChanged.emit()
 
     def searchCashDay(self, search_text=None):
         text_query = '%'+unicode(search_text.toUtf8(), encoding="UTF-8")+'%'
         self.arraydata = (session.query(Caja)
                         .filter(Caja.fecha.like(text_query)).all())
+        self.layoutChanged.emit()
+
+    def searchClient(self, search_name=None, search_last_name=None):
+        name = '%'+unicode(search_name.toUtf8(), encoding="UTF-8")+'%'
+        last_name = '%'+unicode(search_last_name.toUtf8(), encoding="UTF-8")+'%'
+        self.arraydata = (session.query(Cliente)
+                        .filter((Cliente.nombre.like(name)) & 
+                        (Cliente.apellido.like(last_name)))).limit(20).all()
         self.layoutChanged.emit()
