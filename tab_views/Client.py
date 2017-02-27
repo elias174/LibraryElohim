@@ -12,16 +12,25 @@ sys.path.append(os.path.abspath(os.path.join('..', 'api')))
 
 #Client Dialog
 class ClientDialog(QtGui.QDialog):
-    def __init__(self, screen_size, parent=None):
+    def __init__(self, parent=None):
         super(ClientDialog, self).__init__(parent)
         self.layout = QtGui.QFormLayout(self)
-        self.label = QtGui.QLabel('Buscar Cliente')
+        self.label = QtGui.QLabel('Nombre')
+        self.last_name = QtGui.QLabel('Apellido')
+        self.layout_line_client = QtGui.QHBoxLayout()
         self.line_edit_search = QtGui.QLineEdit()
+        self.line_edit_last_name = QtGui.QLineEdit()
+        screen_size = QtGui.QApplication.desktop().availableGeometry()
+
         header_names = ['ID', 'Nombre', 'Apellido', 'DNI']
         self.tablemodel = MyTableModel(Cliente, header_names, self)
         self.tableview = QtGui.QTableView()
         self.tableview.setModel(self.tablemodel)
-        self.layout.addRow(self.label, self.line_edit_search)
+        self.layout_line_client.addWidget(self.label)
+        self.layout_line_client.addWidget(self.line_edit_search)
+        self.layout_line_client.addWidget(self.last_name)
+        self.layout_line_client.addWidget(self.line_edit_last_name)
+        self.layout.addRow(self.layout_line_client)
 
         self.button_new_client = QtGui.QPushButton('Nuevo Cliente')
         self.button_new_client.setMaximumWidth(screen_size.height()/6)
@@ -37,13 +46,18 @@ class ClientDialog(QtGui.QDialog):
         self.buttons.rejected.connect(self.reject)
         self.button_new_client.clicked.connect(self.new_client)
         self.line_edit_search.textChanged.connect(self.search_client)
+        self.line_edit_last_name.textChanged.connect(
+            self.last_name_search)
 
         self.layout.addRow(self.buttons)
         self.setLayout(self.layout)
         self.setWindowTitle('Clientes Administrador')
 
-    def search_client(self, text):
-        self.tablemodel.setFilter('nombre', text)
+    def search_client(self, string):
+        self.tablemodel.searchClient(string, self.line_edit_last_name.text())
+
+    def last_name_search(self, string):
+        self.tablemodel.searchClient(self.line_edit_search.text(), string)
 
     def new_client(self):
         data, result = GenericFormDialog.get_data(Cliente, self)
