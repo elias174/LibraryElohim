@@ -19,6 +19,9 @@ sys.setdefaultencoding('utf8')
 class NotFilledError(Exception):
     pass
 
+class ExportXLSXError(Exception):
+    pass
+
 
 class Adapter_XLSX:
     def __init__(self, file_name):
@@ -40,8 +43,8 @@ class Adapter_XLSX:
             return category
 
     def generate_sheet(self, name_file):
-        wb = openpyxl.load_workbook(name_file)
-        self.sheet = wb.get_sheet_by_name(wb.get_sheet_names()[0])
+        self.wb = openpyxl.load_workbook(name_file)
+        self.sheet = self.wb.get_sheet_by_name(self.wb.get_sheet_names()[0])
 
     def extract_data(self):
         # assert(self.categoria)
@@ -89,3 +92,33 @@ class Adapter_XLSX:
         for producto in self.productos:
             session.add(producto)
         session.commit()
+
+    @staticmethod
+    def export_products_xlsx(filename):
+        products = (session.query(Producto).order_by(Producto.categoria).all())
+        if len(products) < 1:
+            raise ExportXLSXError('No tiene inventario registrado')
+        try:
+            wb = openpyxl.Workbook()
+            sheet = wb.active
+            sheet.title = 'InventarioLibreria'
+            sheet['A1'].value = 'ID'
+            sheet['B1'].value = 'Nombre'
+            sheet['C1'].value = 'Cantidad'
+            sheet['D1'].value = 'P.Compra'
+            sheet['E1'].value = 'P.Venta'
+            sheet['F1'].value = 'Categoria'
+            index = 2
+            for product in products:
+                sheet['A' + str(index)].value = product.id
+                sheet['B' + str(index)].value = str(product.nombre).decode('iso-8859-1')
+                sheet['C' + str(index)].value = product.stock
+                sheet['D' + str(index)].value = float(product.precio_compra)
+                sheet['E' + str(index)].value = float(product.precio_venta)
+                sheet['F' + str(index)].value = (
+                    session.query(Categoria).get(product.categoria).nombre)
+                index += 1
+
+            wb.save(filename=filename)
+        except:
+            raise ExportXLSXError('Algo Salio Mal, lo sentimos')
