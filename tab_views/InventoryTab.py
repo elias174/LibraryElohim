@@ -145,10 +145,10 @@ class Inventory_Tab(QtGui.QWidget):
             text_query = '%' + unicode(string.toUtf8(), encoding="UTF-8") + '%'
             if self.search_name.isChecked():
                 self.query = (session.query(Producto).filter(
-                    Producto.nombre.like(text_query)).all())
+                    Producto.nombre.like(text_query)).limit(20).all())
             elif self.search_id.isChecked():
                 self.query = (session.query(Producto).filter(
-                    Producto.id.like(text_query)).all())
+                    Producto.id.like(text_query)).limit(20).all())
             elif self.search_category.isChecked():
                 self.query = (session.query(Producto).join(Categoria).filter(
                     Categoria.nombre.like(text_query)).all())
