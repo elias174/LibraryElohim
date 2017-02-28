@@ -96,6 +96,7 @@ class SaleApi(object):
                 try:
                     printer_render(context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21)
                 except TimeOutPrinter:
+                    flush_printer()
                     ok = QtGui.QMessageBox.question(parent, u'Sin repuesta Impresora',
                                                     u'Al parecer la impresora esta fallando'
                                                     u', asegurate de que este conectada y con papel dentro\n'
@@ -116,6 +117,7 @@ class SaleApi(object):
                 img = printer_render(
                 context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21)
             except TimeOutPrinter:
+                flush_printer()
                 ok = QtGui.QMessageBox.question(parent, u'Sin repuesta Impresora',
                                                 u'Al parecer la impresora esta fallando'
                                                 u', asegurate de que este conectada y con papel dentro\n'
@@ -137,6 +139,7 @@ class SaleApi(object):
                 printer_render(context, fontfullpath='fonts/DejaVuSans.ttf', fontsize=21,
                                img_default=img)
             except TimeOutPrinter:
+                flush_printer()
                 ok = QtGui.QMessageBox.question(parent, u'Sin repuesta Impresora',
                                                 u'Al parecer la impresora esta fallando'
                                                 u', asegurate de que este conectada y con papel dentro\n'
