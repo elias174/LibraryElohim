@@ -3,7 +3,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from api.AdapterExcel import Adapter_XLSX, NotFilledError
+from api.AdapterExcel import Adapter_XLSX, NotFilledError, ExportXLSXError
 from models import *
 from Generic_forms import GenericFormDialog
 
@@ -27,6 +27,12 @@ class Inventory_Tab(QtGui.QWidget):
         self.toolbar.setStyleSheet("border: none")
         self.toolbar.setIconSize(QtCore.QSize(51, 51))
 
+        self.icon_export = QtGui.QPixmap('icons/export_table')
+        self.action_export_excel = self.toolbar.addAction(
+            QtGui.QIcon(self.icon_export),
+            'Exportar Productos a Archivo XLSX',
+            self.export_to_excel)
+
         self.icon_gainings = QtGui.QPixmap('icons/import_excel')
         self.action_export_excel = self.toolbar.addAction(
             QtGui.QIcon(self.icon_gainings),
@@ -41,6 +47,19 @@ class Inventory_Tab(QtGui.QWidget):
         self.initialize_results_group()
 
         self.setLayout(self.central_layout)
+
+    def export_to_excel(self):
+        file_name = QtGui.QFileDialog.getSaveFileName(
+            self, 'Guardar XLSX', QtCore.QDir.homePath(), "Excel (*.xlsx )")
+        if not file_name:
+            return
+        try:
+            Adapter_XLSX.export_products_xlsx(str(file_name))
+        except ExportXLSXError as e:
+            QtGui.QMessageBox.critical(
+                self, 'Error', str(e.message), QtGui.QMessageBox.Ok)
+            return
+        QtGui.QMessageBox.information(self, 'Finalizado', 'Archivo Exportado Verifique')
 
     def import_from_excel_file(self):
         QtGui.QMessageBox.warning(
