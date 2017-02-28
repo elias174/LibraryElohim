@@ -87,6 +87,7 @@ class ReportExportDialog(QtGui.QDialog):
 
         self.layout.addRow(self.buttons)
         self.setLayout(self.layout)
+        self.setWindowTitle('Elegir Fecha')
         self.setFixedSize(self.sizeHint())
 
     def update_days(self):

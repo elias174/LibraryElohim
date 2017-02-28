@@ -39,10 +39,11 @@ class Generate_Table_Report(QDialog):
         total_avail = QLabel('Utilidad Total')
 
         self.edit_day = QLineEdit()
-        self.edit_day.setText(str(validated_data['day']))
+        self.edit_day.setText(
+            str(validated_data['day'] if validated_data['day'] else ''))
         self.edit_day.setDisabled(True)
         self.edit_month = QLineEdit()
-        self.edit_month.setText(self.MONTHS[validated_data['month']])
+        self.edit_month.setText(self.MONTHS.get(validated_data['month'], ''))
         self.edit_month.setDisabled(True)
         self.edit_year = QLineEdit()
         self.edit_year.setText(str(validated_data['year']))
