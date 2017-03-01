@@ -59,9 +59,6 @@ class Detail_Expense(QDialog):
         self.table_items.setColumnCount(2)
         self.table_items.setHorizontalHeaderLabels(['Detalle', 'Cantidad'])
 
-        header = self.table_items.horizontalHeader()
-        header.setResizeMode(QHeaderView.Stretch)
-
         self.query = (session.query(Gasto)
                         .filter(Gasto.fecha.like(self.day)).all())
 
@@ -76,6 +73,7 @@ class Detail_Expense(QDialog):
             self.stringRow = self.stringRow + str(detail+1) + ','
 
         self.table_items.setVerticalHeaderLabels(QString(self.stringRow).split(','))
+        self.table_items.resizeColumnsToContents()
 
         self.layout_line.addRow(self.table_items)
         self.expenses_group.setLayout(self.layout_line)

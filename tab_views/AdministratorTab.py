@@ -294,16 +294,32 @@ class Administrator_Tab(QtGui.QWidget):
     def add_expense(self):
         data, window = GenericFormDialog.get_data(Gasto, self)
         if window:
+            question = QtGui.QMessageBox.question(
+                self, 'Confirmar',
+                'Desea agregar este gasto?',
+                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.No:
+                return
             session.add(Gasto(data['detalle'], data['monto'], data['fecha']))
             session.commit()
+            QtGui.QMessageBox.information(self, 'Finalizado',
+                                            'Gasto guardado')
             self.close_box(0, data['monto'], data['fecha'])
         self.update_all_search()
 
     def add_gain(self):
         data, window = GenericFormDialog.get_data(Ingreso, self)
         if window:
+            question = QtGui.QMessageBox.question(
+                self, 'Confirmar',
+                'Desea agregar este ingreso?',
+                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.No:
+                return
             session.add(Ingreso(data['detalle'], data['monto'], data['fecha']))
             session.commit()
+            QtGui.QMessageBox.information(self, 'Finalizado',
+                                            'Ingreso guardado')
             self.close_box(1, data['monto'], data['fecha'])
         self.update_all_search()
 

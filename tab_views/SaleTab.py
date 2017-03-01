@@ -473,6 +473,7 @@ class Sale_Tab(QtGui.QWidget):
                 QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
             if question == QtGui.QMessageBox.No:
                 return
+            self.clear_table()
             id_list = data['Lista']
             current_list = session.query(Lista).get(id_list)
             elements = ast.literal_eval(current_list.elementos)

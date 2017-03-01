@@ -88,10 +88,18 @@ class Inventory_Tab(QtGui.QWidget):
     def add_new_product(self):
         data, window = GenericFormDialog.get_data(Producto, self)
         if window:
+            question = QtGui.QMessageBox.question(
+                self, 'Confirmar',
+                'Desea crear este producto?',
+                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.No:
+                return
             session.add(Producto(data['categoria'], data['nombre'],
                                  data['precio_compra'], data['precio_venta'],
                                  data['stock'], data['detalle']))
             session.commit()
+            QtGui.QMessageBox.information(self, 'Finalizado',
+                                            'Producto creado')
         self.update_table_search()
 
     def modify_product(self):
@@ -101,6 +109,12 @@ class Inventory_Tab(QtGui.QWidget):
             product = self.query[index.row()]
             data, window = GenericFormDialog.get_data(Producto, self, product)
             if window:
+                question = QtGui.QMessageBox.question(
+                    self, 'Confirmar',
+                    'Desea modificar este producto?',
+                    QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                if question == QtGui.QMessageBox.No:
+                    return
                 product.categoria = data['categoria']
                 product.precio_compra = data['precio_compra']
                 product.precio_venta = data['precio_venta']
@@ -108,13 +122,23 @@ class Inventory_Tab(QtGui.QWidget):
                 product.detalle = data['detalle']
                 product.stock = data['stock']
                 session.commit()
+                QtGui.QMessageBox.information(self, 'Finalizado',
+                                            'Producto modificado')
                 self.update_table_search()
 
     def create_Category(self):
         data, window = GenericFormDialog.get_data(Categoria, self)
         if window:
+            question = QtGui.QMessageBox.question(
+                self, 'Confirmar',
+                'Desea crear esta categoria?',
+                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if question == QtGui.QMessageBox.No:
+                return
             session.add(Categoria(data['nombre'], data['descripcion']))
             session.commit()
+            QtGui.QMessageBox.information(self, 'Finalizado',
+                                            'Categoria '+data['nombre']+' creada')
         self.update_table_search()
 
     def initialize_product_group(self):

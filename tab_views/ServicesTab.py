@@ -268,6 +268,7 @@ class ServicesTab(QtGui.QWidget):
             session.commit()
 
             self.tableview_results.model().refresh_data(self.array_data)
+            self.tableview_results.resizeColumnsToContents()
             self.service_payment_realeased.emit(float(data_pay['precio_total']))
 
     def new_service_payment(self):
@@ -306,6 +307,7 @@ class ServicesTab(QtGui.QWidget):
             self.array_data = [session.query(Servicio).get(service)
                                for service in self.last_query_services]
             self.tableview_results.model().refresh_data(self.array_data)
+            self.tableview_results.resizeColumnsToContents()
             self.service_payment_realeased.emit(float(data_payment['precio_total']))
 
 
