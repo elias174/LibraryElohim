@@ -29,6 +29,7 @@ class Adapter_XLSX:
         self.productos = []
         self.dict_data = {}
         self.generate_sheet(file_name)
+        self.modified = False
 
     def get_or_create_category(self, name):
         instance = session.query(Categoria).filter_by(nombre=name).first()
@@ -49,12 +50,24 @@ class Adapter_XLSX:
     def extract_data(self):
         # assert(self.categoria)
         for row in range(2, self.sheet.max_row + 1):
-            articulo = self.sheet['A' + str(row)].value
-            marca = self.sheet['B' + str(row)].value
+            id = self.sheet['A' + str(row)].value
+            articulo = self.sheet['B' + str(row)].value
             cantidad = self.sheet['C' + str(row)].value
             p_compra = self.sheet['D' + str(row)].value
             p_venta = self.sheet['E' + str(row)].value
             categoria = self.sheet['F' + str(row)].value
+
+            if id and isinstance(id, long):
+                product = session.query(Producto).get(int(id))
+                if not product:
+                    raise NotFilledError(
+                        'Revisar fila %s columna ID no valido' % str(row))
+                if cantidad < 0:
+                    raise NotFilledError(
+                        'Revisar fila %s columna Cantidad' % str(row))
+                product.stock += int(cantidad)
+                self.modified = True
+                continue
 
             if not articulo:
                 raise NotFilledError(
@@ -70,8 +83,6 @@ class Adapter_XLSX:
                     'Revisar fila %s columna P.Venta' % str(row))
 
             articulo = articulo.capitalize()
-            if marca:
-                articulo = '%s %s' % (articulo, marca.capitalize())
             categoria_id = self.default_categoria.id
             if categoria:
                 categoria_id = self.get_or_create_category(categoria).id
@@ -87,7 +98,7 @@ class Adapter_XLSX:
 
     def save_products(self):
         self.extract_data()
-        if len(self.productos) <= 0:
+        if len(self.productos) <= 0 and not self.modified:
             raise NotFilledError('No existe ningun Producto en su XLSX')
         for producto in self.productos:
             session.add(producto)
