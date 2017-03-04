@@ -86,6 +86,11 @@ class Inventory_Tab(QtGui.QWidget):
         self.update_table_search()
 
     def add_new_product(self):
+        category = session.query(Categoria.nombre).count()
+        if category == 0:
+            QtGui.QMessageBox.information(self, 'Error',
+                                            'Primero debe crear una categoria')
+            return
         data, window = GenericFormDialog.get_data(Producto, self)
         if window:
             question = QtGui.QMessageBox.question(
