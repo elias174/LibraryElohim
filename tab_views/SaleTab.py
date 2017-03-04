@@ -369,8 +369,9 @@ class Sale_Tab(QtGui.QWidget):
         product_price_sale.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
         self.table_items.setItem(self.i, 3, product_price_sale)
 
-        product_price_sale_total = QtGui.QTableWidgetItem(str(product.precio_venta))
+        product_price_sale_total = QtGui.QTableWidgetItem(str(product.precio_venta * quantity))
         product_price_sale_total.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+
         self.table_items.setItem(self.i, 4, product_price_sale_total)
 
         self.table_items.setCellWidget(self.i, 5, button)
