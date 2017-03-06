@@ -131,6 +131,25 @@ class Inventory_Tab(QtGui.QWidget):
                                             'Producto modificado')
                 self.update_table_search()
 
+    def modify_stock(self):
+        button = qApp.focusWidget()
+        index = self.table_items.indexAt(button.pos())
+        if index.isValid():
+            product = self.query[index.row()]
+            data, window = GenericFormDialog.get_data(Producto, self, product, ['stock'], title='Modificar Stock')
+            if window:
+                question = QtGui.QMessageBox.question(
+                    self, 'Confirmar',
+                    'Desea modificar el stock?',
+                    QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                if question == QtGui.QMessageBox.No:
+                    return
+                product.stock = data['stock']
+                session.commit()
+                QtGui.QMessageBox.information(self, 'Finalizado',
+                                            'Producto modificado')
+                self.update_table_search()
+
     def create_Category(self):
         data, window = GenericFormDialog.get_data(Categoria, self)
         if window:
@@ -153,12 +172,13 @@ class Inventory_Tab(QtGui.QWidget):
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table_items.setRowCount(0)
-        self.table_items.setColumnCount(8)
+        self.table_items.setColumnCount(9)
         self.table_items.resizeColumnsToContents()
         self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria',
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock',
-                                                    'Detalle', 'Modificar'])
+                                                    'Detalle', 'Modificar',
+                                                    'Aumentar Stock'])
 
         self.stringRow = ''
         self.table_items.setVerticalHeaderLabels(
@@ -181,11 +201,12 @@ class Inventory_Tab(QtGui.QWidget):
     def clear_table(self):
         self.table_items.clear()
         self.table_items.setRowCount(0)
-        self.table_items.setColumnCount(8)
+        self.table_items.setColumnCount(9)
         self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria',
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock',
-                                                    'Detalle', 'Modificar'])
+                                                    'Detalle', 'Modificar', 
+                                                    'Aumentar Stock'])
 
     def refresh_table(self, string=None):
         self.clear_table()
@@ -238,6 +259,13 @@ class Inventory_Tab(QtGui.QWidget):
                 "background-color: rgba(255, 255, 255, 0);")
             buttonModify.setIcon(QtGui.QIcon('icons/Icon_edit.png'))
             self.table_items.setCellWidget(product, 7, buttonModify)
+    
+            buttonAdd = QtGui.QPushButton()
+            buttonAdd.clicked.connect(self.modify_stock)
+            buttonAdd.setStyleSheet(
+                "background-color: rgba(255, 255, 255, 0);")
+            buttonAdd.setIcon(QtGui.QIcon('icons/add.jpg'))
+            self.table_items.setCellWidget(product, 8, buttonAdd)
             self.stringRow = self.stringRow + str(product + 1) + ','
 
         self.table_items.setVerticalHeaderLabels(
