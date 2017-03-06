@@ -136,15 +136,15 @@ class Inventory_Tab(QtGui.QWidget):
         index = self.table_items.indexAt(button.pos())
         if index.isValid():
             product = self.query[index.row()]
-            data, window = GenericFormDialog.get_data(Producto, self, product, ['stock'], title='Modificar Stock')
+            data, window = GenericFormDialog.get_data(Producto, self, fields=['stock'], title='Agregar a Stock')
             if window:
                 question = QtGui.QMessageBox.question(
                     self, 'Confirmar',
-                    'Desea modificar el stock?',
+                    'Desea Agregar a stock?',
                     QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
                 if question == QtGui.QMessageBox.No:
                     return
-                product.stock = data['stock']
+                product.stock = product.stock + data['stock']
                 session.commit()
                 QtGui.QMessageBox.information(self, 'Finalizado',
                                             'Producto modificado')
@@ -258,6 +258,7 @@ class Inventory_Tab(QtGui.QWidget):
             buttonModify.setStyleSheet(
                 "background-color: rgba(255, 255, 255, 0);")
             buttonModify.setIcon(QtGui.QIcon('icons/Icon_edit.png'))
+            buttonModify.setToolTip("Modificar un producto")
             self.table_items.setCellWidget(product, 7, buttonModify)
     
             buttonAdd = QtGui.QPushButton()
@@ -265,6 +266,7 @@ class Inventory_Tab(QtGui.QWidget):
             buttonAdd.setStyleSheet(
                 "background-color: rgba(255, 255, 255, 0);")
             buttonAdd.setIcon(QtGui.QIcon('icons/add.jpg'))
+            buttonAdd.setToolTip("Aumentar Stock")
             self.table_items.setCellWidget(product, 8, buttonAdd)
             self.stringRow = self.stringRow + str(product + 1) + ','
 
@@ -279,11 +281,16 @@ class Inventory_Tab(QtGui.QWidget):
         self.edit_search = QtGui.QLineEdit(self)
 
         self.search_name = QRadioButton("Buscar por nombre")
+        self.search_name.setToolTip("Busca un producto dado un nombre")
         self.search_id = QRadioButton("Buscar por ID (Codigo)")
+        self.search_id.setToolTip("Busca un producto dado un ID (Codigo)")
         self.search_name.setChecked(True)
         self.search_category = QRadioButton("Buscar por Categoria")
+        self.search_category.setToolTip("Busca una categoria dando un nombre")
         self.search_min_stock = QRadioButton("Buscar los de Menor Stock")
+        self.search_min_stock.setToolTip("Busca productos con stock menores al numero dado")
         self.search_max_stock = QRadioButton("Buscar los de Mayor Stock")
+        self.search_max_stock.setToolTip("Buscar productos con stock mayor al numero dado")
 
         self.layout_line_results.addRow(self.label_search, self.edit_search)
         self.layout_line_results.addRow(self.search_name, self.search_id)

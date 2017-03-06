@@ -64,8 +64,11 @@ class Administrator_Tab(QtGui.QWidget):
         self.layout_line_expenses = QtGui.QHBoxLayout()
 
         self.search_bill_today = QRadioButton("Ver Facturas de Hoy")
+        self.search_bill_today.setToolTip("Buscar en Todas las Factuas que se realizaron hoy")
         self.search_bill_name = QRadioButton("Buscar Factura por ID")
+        self.search_bill_name.setToolTip("Buscar en Todas las factuas pero por su ID")
         self.search_bill_day = QRadioButton("Buscar Factura por Dia")
+        self.search_bill_day.setToolTip("Buscar en Todas las facturas dada una fecha")
         self.searh_name = QtGui.QLabel("Buscador ", self)
         self.edit_search = QtGui.QLineEdit(self)
         self.edit_date = QDateEdit(datetime.now())
@@ -90,26 +93,32 @@ class Administrator_Tab(QtGui.QWidget):
         self.edit_day_expenses.setDisabled(True)
 
         self.button_add_table = QtGui.QPushButton('Ver Detalle de Factura')
+        self.button_add_table.setToolTip("Ver ganacia, productos vendidos, servicios de una factura")
         self.button_add_table.clicked.connect(self.view_detail_product)
 
         self.button_add_gain = QtGui.QPushButton("Agregar Ingreso", self)
+        self.button_add_gain.setToolTip("Agregar cualquier tipo de ingreso a la caja")
         self.button_add_gain.clicked.connect(self.add_gain)
 
         self.button_add_expense = QtGui.QPushButton("Agregar Gasto", self)
+        self.button_add_expense.setToolTip("Agregar cualquier tipo de gasto que salga de caja")
         self.button_add_expense.clicked.connect(self.add_expense)
 
         self.button_detail_gain = QtGui.QPushButton(
             "Detalles de Ingresos", self)
         self.button_detail_gain.clicked.connect(self.detail_gain)
+        self.button_detail_gain.setToolTip("Ver los ingresos agregados (monto, fecha y detalle)")
 
         self.button_detail_expense = QtGui.QPushButton(
             "Detalles de Gastos", self)
         self.button_detail_expense.clicked.connect(self.detail_expense)
+        self.button_detail_expense.setToolTip("Ver los gastos agregados(monto, fecha y detalle)")
 
         self.button_show_box = QtGui.QPushButton(
             "Estado de Caja del Dia", self)
         self.button_show_box.clicked.connect(self.show_box)
         self.button_show_box.hide()
+        self.button_show_box.setToolTip("Ver estado de la caja")
 
         header_names = ['ID', 'Cliente', 'Fecha']
         self.tablemodel = MyTableModel(Factura, header_names, self)
@@ -346,11 +355,8 @@ class Administrator_Tab(QtGui.QWidget):
                 factura_id = self.tablemodel.get_id_object_alchemy(index.row())
             Detail_Bill(factura_id, self).exec_()
         except:
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText('Por favor seleccione una Factura')
-            msgBox.addButton(QtGui.QPushButton('Aceptar'), QtGui.QMessageBox.YesRole)
-            msgBox.setWindowTitle("No Selecciono una Factura")
-            msgBox.exec_()
+            QtGui.QMessageBox.information(self, 'Error',
+                                            'Por favor seleccione una Factura')
 
     def close_box(self, type_action, balance, current_day):
         self.last_query = (session.query(Caja)
