@@ -131,6 +131,25 @@ class Inventory_Tab(QtGui.QWidget):
                                             'Producto modificado')
                 self.update_table_search()
 
+    def modify_stock(self):
+        button = qApp.focusWidget()
+        index = self.table_items.indexAt(button.pos())
+        if index.isValid():
+            product = self.query[index.row()]
+            data, window = GenericFormDialog.get_data(Producto, self, fields=['stock'], title='Agregar a Stock')
+            if window:
+                question = QtGui.QMessageBox.question(
+                    self, 'Confirmar',
+                    'Desea Agregar a stock?',
+                    QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                if question == QtGui.QMessageBox.No:
+                    return
+                product.stock = product.stock + data['stock']
+                session.commit()
+                QtGui.QMessageBox.information(self, 'Finalizado',
+                                            'Producto modificado')
+                self.update_table_search()
+
     def create_Category(self):
         data, window = GenericFormDialog.get_data(Categoria, self)
         if window:
@@ -153,12 +172,13 @@ class Inventory_Tab(QtGui.QWidget):
         self.table_items = QtGui.QTableWidget(self)
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table_items.setRowCount(0)
-        self.table_items.setColumnCount(8)
+        self.table_items.setColumnCount(9)
         self.table_items.resizeColumnsToContents()
         self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria',
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock',
-                                                    'Detalle', 'Modificar'])
+                                                    'Detalle', 'Modificar',
+                                                    'Aumentar Stock'])
 
         self.stringRow = ''
         self.table_items.setVerticalHeaderLabels(
@@ -181,11 +201,12 @@ class Inventory_Tab(QtGui.QWidget):
     def clear_table(self):
         self.table_items.clear()
         self.table_items.setRowCount(0)
-        self.table_items.setColumnCount(8)
+        self.table_items.setColumnCount(9)
         self.table_items.setHorizontalHeaderLabels(['ID', 'Categoria',
                                                     'Nombre', 'Precio Compra',
                                                     'Precio Venta', 'Stock',
-                                                    'Detalle', 'Modificar'])
+                                                    'Detalle', 'Modificar', 
+                                                    'Aumentar Stock'])
 
     def refresh_table(self, string=None):
         self.clear_table()
@@ -237,7 +258,16 @@ class Inventory_Tab(QtGui.QWidget):
             buttonModify.setStyleSheet(
                 "background-color: rgba(255, 255, 255, 0);")
             buttonModify.setIcon(QtGui.QIcon('icons/Icon_edit.png'))
+            buttonModify.setToolTip("Modificar un producto")
             self.table_items.setCellWidget(product, 7, buttonModify)
+    
+            buttonAdd = QtGui.QPushButton()
+            buttonAdd.clicked.connect(self.modify_stock)
+            buttonAdd.setStyleSheet(
+                "background-color: rgba(255, 255, 255, 0);")
+            buttonAdd.setIcon(QtGui.QIcon('icons/add.jpg'))
+            buttonAdd.setToolTip("Aumentar Stock")
+            self.table_items.setCellWidget(product, 8, buttonAdd)
             self.stringRow = self.stringRow + str(product + 1) + ','
 
         self.table_items.setVerticalHeaderLabels(
@@ -251,11 +281,16 @@ class Inventory_Tab(QtGui.QWidget):
         self.edit_search = QtGui.QLineEdit(self)
 
         self.search_name = QRadioButton("Buscar por nombre")
+        self.search_name.setToolTip("Busca un producto dado un nombre")
         self.search_id = QRadioButton("Buscar por ID (Codigo)")
+        self.search_id.setToolTip("Busca un producto dado un ID (Codigo)")
         self.search_name.setChecked(True)
         self.search_category = QRadioButton("Buscar por Categoria")
+        self.search_category.setToolTip("Busca una categoria dando un nombre")
         self.search_min_stock = QRadioButton("Buscar los de Menor Stock")
+        self.search_min_stock.setToolTip("Busca productos con stock menores al numero dado")
         self.search_max_stock = QRadioButton("Buscar los de Mayor Stock")
+        self.search_max_stock.setToolTip("Buscar productos con stock mayor al numero dado")
 
         self.layout_line_results.addRow(self.label_search, self.edit_search)
         self.layout_line_results.addRow(self.search_name, self.search_id)

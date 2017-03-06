@@ -43,15 +43,19 @@ class MainWindow(QtGui.QWidget):
             QtGui.QIcon('icons/service.png'), 'Servicios')
         self.service_widget_item.setTextAlignment(QtCore.Qt.AlignCenter)
         self.service_widget_item.setToolTip(
-            'Inventario: Realizar Pagos Matricula, Alimentacion, etc')
+            'Servicios: Realizar Pagos Matricula, Alimentacion, etc')
 
         self.inventory_widget_item = QtGui.QListWidgetItem(
             QtGui.QIcon('icons/inventory.png'), 'Inventario')
         self.inventory_widget_item.setTextAlignment(QtCore.Qt.AlignCenter)
+        self.inventory_widget_item.setToolTip(
+            'Inventario: Crea, Modifica y Busca Categorias y Productos, Importa y Exporta excels')
 
         self.administrator_widget_item = QtGui.QListWidgetItem(
             QtGui.QIcon('icons/bill.png'), 'Facturas')
         self.administrator_widget_item.setTextAlignment(QtCore.Qt.AlignCenter)
+        self.administrator_widget_item.setToolTip(
+            'Facturas: Busca y Ve Detalles de Facturas, Ver Estado de Caja, Agrega Ingresos y Gastos')
 
         self.left_list.insertItem(0, self.sale_widget_item)
         self.left_list.insertItem(1, self.service_widget_item)
