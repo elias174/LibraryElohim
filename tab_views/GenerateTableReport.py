@@ -120,6 +120,9 @@ class Generate_Table_Report(QDialog):
         avail = 0
         for detail in range(len(self.query)):
             product = session.query(Producto).get(self.query[detail]['producto'])
+            self.query[detail]['p_total_compra'] = product.precio_compra * self.query[detail]['cantidad']
+            self.query[detail]['utilidad'] = self.query[detail]['p_total_venta'] - self.query[detail]['p_total_compra']
+
             self.table_items.setItem(detail, 0,
                                      QtGui.QTableWidgetItem(str(product.nombre)))
             self.table_items.setItem(detail, 1,
@@ -153,27 +156,27 @@ class Generate_Table_Report(QDialog):
 
         self.table_items.setRowCount(len(self.query))
 
-        self.table_items.setColumnCount(4)
+        self.table_items.setColumnCount(3)
         self.table_items.resizeColumnsToContents()
 
         self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
         header = self.table_items.horizontalHeader()
 
-        self.table_items.setHorizontalHeaderLabels(['Nombre', 'Apellido',
-                                                    'Servicio', 'Utilidad'])
+        self.table_items.setHorizontalHeaderLabels(['Cantidad', 'Servicio', 'Utilidad'])
         self.stringRow = ''
         avail = 0
         for detail in range(len(self.query)):
-            client = session.query(Cliente).get(self.query[detail]['cliente'])
+            cantidad = self.query[detail]['cantidad']
+            utilidad = self.query[detail]['utilidad']
+            tipo_servicio = session.query(TipoServicio).get(self.query[detail]['servicio']).nombre
+
             service = session.query(TipoServicio).get(self.query[detail]['servicio'])
             self.table_items.setItem(detail, 0,
-                                     QtGui.QTableWidgetItem(str(client.nombre)))
+                                     QtGui.QTableWidgetItem(str(cantidad)))
             self.table_items.setItem(detail, 1,
-                                     QtGui.QTableWidgetItem(str(client.apellido)))
+                                     QtGui.QTableWidgetItem(str(tipo_servicio)))
             self.table_items.setItem(detail, 2,
-                                     QtGui.QTableWidgetItem(str(service.nombre)))
-            self.table_items.setItem(detail, 3,
-                                     QtGui.QTableWidgetItem(str(self.query[detail]['utilidad'])))
+                                     QtGui.QTableWidgetItem(str(utilidad)))
 
             avail += self.query[detail]['utilidad']
             
