@@ -1,5 +1,7 @@
 from models import *
 
+import datetime
+import collections
 
 class GainingsApi:
 
@@ -7,53 +9,78 @@ class GainingsApi:
         self.result_query = []
 
     def gainings_by_date(self, type, year, month = None, day = None):
-        if not month and not day:
-            day_query = '%'+str(year)+'%'
-
-        elif not day:
-            day_query = '%'+str(year)+'%'+'%-'+str(month).zfill(2)+'-%'
-
-        else:
-            day_query = ('%'+str(year)+'%'+'%-'+str(month).zfill(2)+'-%'+'%' +
-                         str(day).zfill(2)+'%')
+        year_query = int(year)
+        filtered_detalles = None
 
         if type == "Libreria":
-            final_query = (
-                session.query(
-                    Factura, Detalle.cantidad, Producto.id,
-                    Producto.precio_compra,
-                    Producto.precio_venta).join(
-                    Detalle, Factura.id == Detalle.factura).filter(
-                    Factura.fecha.like(day_query)).join(
-                    Producto, Detalle.producto == Producto.id)).all()
-            list_query = []
-            for query_ in range(len(final_query)):
-                result = {
-                    'cantidad': final_query[query_].cantidad,
-                    'producto': final_query[query_].id,
-                    'p_total_compra': final_query[query_].precio_compra,
-                    'p_total_venta': final_query[query_].precio_venta,
-                    'utilidad': (final_query[query_].
-                                 precio_venta-final_query[query_].precio_compra)
-                }
-                list_query.append(result)
-            self.result_query = list_query
+            filtered_detalles = session.query(Detalle).join(Factura).filter(
+                extract('year', Factura.fecha) == year_query).filter(
+                Detalle.producto != None)
+
         elif type == "Servicios":
-            final_query = (
-                session.query(Factura, Factura.cliente,
-                              Servicio.tipo, Detalle.precio_total).join(
-                              Detalle, Factura.id == Detalle.factura).filter(
-                              Factura.fecha.like(day_query)).join(
-                              Servicio, Detalle.servicio == Servicio.id).all()
-            )
-            list_query = []
-            for query_ in range(len(final_query)):
-                result = {
-                    'cliente': final_query[query_].cliente,
-                    'servicio': final_query[query_].tipo,
-                    'utilidad': final_query[query_].precio_total}
-                list_query.append(result)
-            self.result_query = list_query
+            filtered_detalles = session.query(Detalle).join(Factura).filter(
+                extract('year', Factura.fecha) == year_query).filter(
+                Detalle.servicio != None)
+
+        # filtered_detalles = session.query(Detalle).join(Factura).filter(
+        #     extract('year', Factura.fecha) == year_query)
+
+        if month is not None:
+            month_query = int(month)
+            filtered_detalles = filtered_detalles.filter(
+                extract('month', Factura.fecha) == month_query)
+
+        if day is not None:
+            day_query = int(day)
+            filtered_detalles = filtered_detalles.filter(
+                extract('day', Factura.fecha) == day_query)
+
+        if type == "Libreria":
+            results = {
+            }
+            for detalle in filtered_detalles:
+                try:
+                    results[str(detalle.producto)]['cantidad'] += detalle.cantidad
+                    results[str(detalle.producto)]['p_total_venta'] += detalle.precio_total
+
+                except KeyError:
+                    results.update(
+                        {
+                            str(detalle.producto):{
+                                'cantidad': detalle.cantidad,
+                                'producto': detalle.producto,
+                                'p_total_compra': (
+                                    0
+                                ),
+                                'p_total_venta': detalle.precio_total,
+                                'utilidad': 0
+
+                            }
+                        }
+                    )
+
+            self.result_query = results.values()
+
+        elif type == "Servicios":
+            results_service = {
+            }
+            for detalle in filtered_detalles:
+                servicio = session.query(Servicio).get(detalle.servicio)
+                try:
+                    results_service[str(servicio.tipo)]['cantidad'] += detalle.cantidad
+                    results_service[str(servicio.tipo)]['utilidad'] += detalle.precio_total
+
+                except KeyError:
+                    results_service.update(
+                        {
+                            str(servicio.tipo):{
+                                'servicio': servicio.tipo,
+                                'cantidad': detalle.cantidad,
+                                'utilidad': detalle.precio_total
+                            }
+                        }
+                    )
+            self.result_query = results_service.values()
             
         assert len(self.result_query) > 0
 
