@@ -10,6 +10,7 @@ from models import *
 from models_qt import MyTableModel
 from Generic_forms import GenericFormDialog, AdvComboBox, AdvCheckBox
 from api.api_sales import SaleApi
+from constants import LIST_YEARS, INDEX_CURRENT_YEAR, CURRENT_YEAR
 # from config import ALCHEMY_SESSION as session
 
 
@@ -98,17 +99,29 @@ class ServicesTab(QtGui.QWidget):
         self.button_new_service_payment.setMinimumWidth(
             self.screenGeometry.width() / 6)
 
-        self.layout_results.addWidget(self.tableview_results)
-        self.layout_results.addLayout(self.layout_buttons_results)
+        self.layout_filter = QtGui.QFormLayout()
+        self.label_filter_years = QtGui.QLabel("Mostrar solo del Anio:")
+        self.year_filter_results = QtGui.QComboBox()
+        self.year_filter_results.addItems(LIST_YEARS)
+        self.year_filter_results.setCurrentIndex(INDEX_CURRENT_YEAR)
+        self.layout_filter.addRow(self.label_filter_years, self.year_filter_results)
+
         self.layout_buttons_results.addWidget(self.button_add_payment)
         self.layout_buttons_results.addWidget(self.button_cancel_payment)
         self.layout_buttons_results.addWidget(self.button_new_service_payment)
+        self.layout_buttons_results.addLayout(self.layout_filter)
+
+        self.layout_results.addWidget(self.tableview_results)
+        self.layout_results.addLayout(self.layout_buttons_results)
+
         self.group_results.setLayout(self.layout_results)
 
         self.button_add_payment.clicked.connect(self.add_payment_to_service)
         self.button_cancel_payment.clicked.connect(self.cancel_payment)
         self.button_new_service_payment.clicked.connect(
             self.new_service_payment)
+
+        self.year_filter_results.currentIndexChanged.connect(self.year_filter_changed)
 
         verticalSpacer = QtGui.QSpacerItem(20, 70, QtGui.QSizePolicy.Minimum,
                                            QSizePolicy.Expanding)
@@ -130,6 +143,37 @@ class ServicesTab(QtGui.QWidget):
 
         self.setLayout(self.layout)
 
+    def year_filter_changed(self):
+        if not self.exist_client:
+            return
+        self.search_client_clicked()
+
+    def update_last_query(self):
+        current_year_str = str(self.year_filter_results.currentText())
+
+        if current_year_str == 'Todos':
+            self.last_query_services = (
+                session.query(Detalle.servicio).distinct().join(Factura).
+                filter(
+                    Detalle.servicio.isnot(None),
+                    Factura.cliente == self.client_id
+                ).all()
+            )
+
+        else:
+            current_year = int(current_year_str)
+            self.last_query_services = (
+                session.query(Detalle.servicio).distinct().join(Factura).
+                filter(
+                    Detalle.servicio.isnot(None),
+                    extract('year', Factura.fecha) == current_year,
+                    Factura.cliente == self.client_id
+                ).all()
+            )
+
+        self.array_data = [session.query(Servicio).get(service)
+                           for service in self.last_query_services]
+
     def search_client_clicked(self):
         indexes = self.tableview.selectedIndexes()
         if len(indexes) < 1:
@@ -141,11 +185,8 @@ class ServicesTab(QtGui.QWidget):
         else:
             client_id = self.tablemodel.get_id_object_alchemy(indexes[0].row())
         self.client_id = client_id
-        self.last_query_services = (
-            session.query(Detalle.servicio).distinct().join(Factura).
-            filter(Detalle.servicio.isnot(None), Factura.cliente == self.client_id).all())
-        self.array_data = [session.query(Servicio).get(service)
-                           for service in self.last_query_services]
+
+        self.update_last_query()
 
         header_names = ['ID', 'Tipo', 'Cancelado', 'Monto Total']
         self.table_model_result = MyTableModel(
@@ -224,6 +265,7 @@ class ServicesTab(QtGui.QWidget):
             service.cancelado = True
             session.add(service)
             session.commit()
+            self.update_last_query()
             self.tableview_results.model().refresh_data(self.array_data)
 
     def add_payment_to_service(self):
@@ -266,7 +308,7 @@ class ServicesTab(QtGui.QWidget):
                                           'Ticket Imprimido')
             # very dangerous, we need use the same object session
             session.commit()
-
+            self.update_last_query()
             self.tableview_results.model().refresh_data(self.array_data)
             self.tableview_results.resizeColumnsToContents()
             self.service_payment_realeased.emit(float(data_pay['precio_total']))
@@ -300,12 +342,14 @@ class ServicesTab(QtGui.QWidget):
             QtGui.QMessageBox.information(self, 'Finalizado',
                                           'Ticket Imprimido')
 
-            self.last_query_services = (
-                session.query(Detalle.servicio).distinct().join(Factura).
-                filter_by(cliente=self.client_id).all())
-
-            self.array_data = [session.query(Servicio).get(service)
-                               for service in self.last_query_services]
+            # I need check why query it's this way
+            # self.last_query_services = (
+            #     session.query(Detalle.servicio).distinct().join(Factura).
+            #     filter_by(cliente=self.client_id).all())
+            #
+            # self.array_data = [session.query(Servicio).get(service)
+            #                    for service in self.last_query_services]
+            self.update_last_query()
             self.tableview_results.model().refresh_data(self.array_data)
             self.tableview_results.resizeColumnsToContents()
             self.service_payment_realeased.emit(float(data_payment['precio_total']))
