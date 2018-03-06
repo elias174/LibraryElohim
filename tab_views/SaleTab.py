@@ -15,6 +15,7 @@ from api.api_sales import SaleApi
 
 
 LIMIT_RESULTS = 20
+MIN_PRODUCTS = 1
 
 
 class ResultsButtonGroup(QtGui.QButtonGroup):
@@ -37,21 +38,46 @@ class ResultsButtonGroup(QtGui.QButtonGroup):
         for i in range(rows):
             for result in results[n:n+4]:
                 button = QtGui.QPushButton(self.parent)
-                playout = QtGui.QHBoxLayout()
+                playout = QtGui.QVBoxLayout()
+
+                font_label_product = QtGui.QFont()
+                font_label_product.setBold(True)
+
+                font_label_price = QtGui.QFont()
+                font_label_price.setUnderline(True)
+
                 label = QtGui.QLabel(result.nombre)
                 label.setAlignment(QtCore.Qt.AlignCenter)
                 label.setWordWrap(True)
                 label.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
                 label.setMouseTracking(False)
                 label.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+                label.setFont(font_label_product)
+
+                label_detail = QtGui.QLabel(result.detalle)
+                label_detail.setAlignment(QtCore.Qt.AlignCenter)
+                label_detail.setWordWrap(True)
+                label_detail.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+                label_detail.setMouseTracking(False)
+                label_detail.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
+                label_price = QtGui.QLabel(str(result.precio_venta))
+                label_price.setAlignment(QtCore.Qt.AlignCenter)
+                label_price.setWordWrap(True)
+                label_price.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+                label_price.setMouseTracking(False)
+                label_price.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+                label_price.setFont(font_label_price)
 
                 playout.addWidget(label)
+                playout.addWidget(label_price)
+                playout.addWidget(label_detail)
                 playout.setSpacing(0)
                 playout.setMargin(0)
                 playout.setContentsMargins(5, 5, 5, 5)
 
                 button.setText('')
-                button.setMinimumHeight(60)
+                button.setMinimumHeight(110)
                 button.setLayout(playout)
 
                 tool_tip = '%s \n Stock: %s \n Precio: %s' % (
@@ -295,8 +321,12 @@ class Sale_Tab(QtGui.QWidget):
 
     def on_search_edit_changed(self, string):
         text_query = '%'+unicode(string.toUtf8(), encoding="UTF-8")+'%'
-        self.last_query = (session.query(Producto)
-                           .filter(Producto.nombre.like(text_query)).limit(LIMIT_RESULTS).all())
+        self.last_query = (
+            session.query(Producto).filter(
+                Producto.nombre.like(text_query),
+                Producto.stock > MIN_PRODUCTS).limit(LIMIT_RESULTS).all()
+        )
+
         for i in reversed(range(self.layout_results.count())):
             self.layout_results.itemAt(i).widget().setParent(None)
         self.button_group.refresh(self.last_query)

@@ -118,7 +118,9 @@ class Adapter_XLSX:
             sheet['C1'].value = 'Cantidad'
             sheet['D1'].value = 'P.Compra'
             sheet['E1'].value = 'P.Venta'
-            sheet['F1'].value = 'Categoria'
+            sheet['F1'].value = 'Detalle'
+            sheet['G1'].value = 'Categoria'
+
             index = 2
             for product in products:
                 sheet['A' + str(index)].value = product.id
@@ -126,7 +128,8 @@ class Adapter_XLSX:
                 sheet['C' + str(index)].value = product.stock
                 sheet['D' + str(index)].value = float(product.precio_compra)
                 sheet['E' + str(index)].value = float(product.precio_venta)
-                sheet['F' + str(index)].value = (
+                sheet['F' + str(index)].value = str(product.detalle).decode('iso-8859-1')
+                sheet['G' + str(index)].value = (
                     session.query(Categoria).get(product.categoria).nombre)
                 index += 1
 
