@@ -3,18 +3,20 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from sqlalchemy.orm import mapper
-from models import *
+from specialized_models import *
 
 MAX_VALUE_INT = 100000000
 MAX_VALUE_FLOAT = 1000000000.0
 
 
 class AdvComboBox(QtGui.QComboBox):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, custom=False):
         super(AdvComboBox, self).__init__(parent)
+        self.custom = custom
 
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setEditable(True)
+
 
         self.pFilterModel = QtGui.QSortFilterProxyModel(self)
         self.pFilterModel.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
@@ -38,7 +40,12 @@ class AdvComboBox(QtGui.QComboBox):
 
     def extract_value(self):
         string = str(self.currentText())
-        return int(string.split(' ')[0])
+        if not self.custom:
+            return int(string.split(' ')[0])
+        return string
+
+    def set_values(self, items):
+        self.addItems(items)
 
     def is_valid(self):
         return True
@@ -151,7 +158,7 @@ class GenericFormDialog(QtGui.QDialog):
             custom_widgets=[]):
 
         def contains_fields(member):
-            if not fields:
+            if fields is None:
                 return True
             return member in fields
 

@@ -10,7 +10,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from api_printer import printer_render, TimeOutPrinter, flush_printer
-from models import *
+from specialized_models import *
 from config import TWO_COPIES, NO_PRINT
 from decimal import Decimal
 
@@ -27,51 +27,40 @@ class SaleApi(object):
         self.factura = None
 
     def generate_factura(self):
-        self.factura = Factura(self.client_id, datetime.now())
+        self.factura = Factura()
+        self.factura.cliente = self.client_id
+        self.factura.fecha = datetime.now()
+
         session.add(self.factura)
         session.flush()
         session.refresh(self.factura)
-
-    # def get_client_anonymous():
-    #     client = session.query(Cliente).get(ID_CLIENT_ANONYMOUS)
-    #     return client
-
-    def add_detail(self, id_product, quantity):
-        product = session.query(Producto).get(id_product)
-        assert quantity <= product.stock
-        detail = Detalle(id_factura=self.factura.id, producto=product.id,
-                         cantidad=quantity,
-                         precio_total=float(quantity * product.precio_venta))
-        self.details.append(
-            (detail, [str(product.id), product.nombre, str(product.precio_venta)])
-        )
-        product.stock -= quantity
-        session.add(detail)
-
-    def add_detail_service(self, id_service=None,
-                           type_service=None, quantity=1, canceled=False):
+    #
+    def add_detail_service(self, type_service, object_service=None, id_service=None):
         if not id_service:
-            service = Servicio(type_service, canceled, self.price_total)
-            session.add(service)
+            self.service = object_service
+            session.add(self.service)
             session.flush()
-            session.refresh(service)
-            type_service_obj = session.query(TipoServicio).get(type_service)
-        else:
-            service = session.query(Servicio).get(id_service)
-            service.cancelado = canceled
-            service.monto += Decimal(self.price_total)
-            type_service_obj = session.query(TipoServicio).get(service.tipo)
-
-        detail = Detalle(id_factura=self.factura.id, servicio=service.id,
-                         cantidad=quantity, precio_total=self.price_total)
-
+            session.refresh(self.service)
+        # else:
+        #     service = session.query(Servicio).get(id_service)
+        #     service.cancelado = canceled
+        #     service.monto += Decimal(self.price_total)
+        #     type_service_obj = session.query(TipoServicio).get(service.tipo)
+        #
+        self.detail = Detalle(factura=self.factura.id, servicio=self.service.id,
+                         cantidad=1, precio_total=self.price_total)
+        #
         self.details.append(
-            (detail, [str(type_service_obj.id), type_service_obj.nombre, str(self.price_total)])
+            (self.detail, [str(self.service.id), type_service, str(self.price_total)])
         )
-        session.add(detail)
+        session.add(self.detail)
 
     def save_sale(self):
-        session.commit()
+        try:
+            session.commit()
+        except:
+            session.rollback()
+            raise
 
     def print_factura(self, parent=None):
         client = session.query(Cliente).get(self.client_id)
@@ -155,11 +144,6 @@ class SaleApi(object):
             break
         QtGui.QMessageBox.information(
             parent, 'Finalizado', 'Ticket Imprimido, Guarde ticket')
-
-    @staticmethod
-    def get_quantity_product(id_product):
-        product = session.query(Producto).get(id_product)
-        return product.stock
 
 
 def test_api():

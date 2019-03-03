@@ -3,7 +3,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from models import *
+from specialized_models import *
 
 
 
@@ -99,56 +99,6 @@ class Generate_Table_Report(QDialog):
         self.setWindowTitle('Mostrar Reporte')
         self.acceptButton.clicked.connect(self.close)
 
-    def initializate_library_group(self):
-        self.layout_line = QtGui.QFormLayout()
-        # Creating table
-        self.table_items = QtGui.QTableWidget(self)
-
-        self.table_items.setRowCount(len(self.query))
-
-        self.table_items.setColumnCount(5)
-        self.table_items.resizeColumnsToContents()
-
-        self.table_items.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        header = self.table_items.horizontalHeader()
-        self.table_items.setHorizontalHeaderLabels(['Producto', 'Cantidad',
-                                            'Precio Compra', 'Precio Venta',
-                                            'Utilidad'])
-        self.stringRow = ''
-        purchase = 0
-        sale = 0
-        avail = 0
-        for detail in range(len(self.query)):
-            product = session.query(Producto).get(self.query[detail]['producto'])
-            self.query[detail]['p_total_compra'] = product.precio_compra * self.query[detail]['cantidad']
-            self.query[detail]['utilidad'] = self.query[detail]['p_total_venta'] - self.query[detail]['p_total_compra']
-
-            self.table_items.setItem(detail, 0,
-                                     QtGui.QTableWidgetItem(str(product.nombre)))
-            self.table_items.setItem(detail, 1,
-                                     QtGui.QTableWidgetItem(str(self.query[detail]['cantidad'])))
-            self.table_items.setItem(detail, 2,
-                                     QtGui.QTableWidgetItem(str(self.query[detail]['p_total_compra'])))
-            self.table_items.setItem(detail, 3,
-                                     QtGui.QTableWidgetItem(str(self.query[detail]['p_total_venta'])))
-            self.table_items.setItem(detail, 4,
-                                     QtGui.QTableWidgetItem(str(self.query[detail]['utilidad'])))
-
-            purchase += self.query[detail]['p_total_compra']
-            sale += self.query[detail]['p_total_venta']
-            avail += self.query[detail]['utilidad']
-            
-            self.stringRow = self.stringRow + str(detail+1) + ','
-
-        self.edit_total_purchase.setText(str(purchase))
-        self.edit_total_sale.setText(str(sale))
-        self.edit_total_avail.setText(str(avail))
-        self.table_items.setVerticalHeaderLabels(
-            QString(self.stringRow).split(','))
-        self.table_items.resizeColumnsToContents()
-        self.layout_line.addRow(self.table_items)
-        self.service_group.setLayout(self.layout_line)
-
     def initializate_service_group(self):
         self.layout_line = QtGui.QFormLayout()
         # Creating table
@@ -168,9 +118,7 @@ class Generate_Table_Report(QDialog):
         for detail in range(len(self.query)):
             cantidad = self.query[detail]['cantidad']
             utilidad = self.query[detail]['utilidad']
-            tipo_servicio = session.query(TipoServicio).get(self.query[detail]['servicio']).nombre
-
-            service = session.query(TipoServicio).get(self.query[detail]['servicio'])
+            tipo_servicio = 'Test'
             self.table_items.setItem(detail, 0,
                                      QtGui.QTableWidgetItem(str(cantidad)))
             self.table_items.setItem(detail, 1,

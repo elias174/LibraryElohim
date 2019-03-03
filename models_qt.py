@@ -5,7 +5,7 @@ from PyQt4.QtGui import *
 from sqlalchemy.orm import sessionmaker, relationship, mapper
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
-from models import *
+from specialized_models import *
 
 
 # class MyWindow(QWidget):
@@ -39,7 +39,7 @@ class MyTableModel(QAbstractTableModel):
     }
 
     def __init__(self, model_alchemy, header_names, parent = None,
-                 custom_query = None, *args):
+                 custom_query = None, fields_columns = None, *args):
         QAbstractTableModel.__init__(self, parent, *args)
         self.model_alchemy = model_alchemy
         self.exist_custom_query = (True
@@ -55,7 +55,11 @@ class MyTableModel(QAbstractTableModel):
 
         self.arraydata = self.last_query
         self.header_names = header_names
-        self.columns_name = model_alchemy.__table__.columns.keys()
+
+        if fields_columns is None:
+            self.columns_name = model_alchemy.__table__.columns.keys()
+        else:
+            self.columns_name = fields_columns
 
     def headerData(self, col, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -91,8 +95,8 @@ class MyTableModel(QAbstractTableModel):
                 ret = value
             return ret
 
-        ret = (str(getattr(row, self.columns_name[index.column()])))
-        return self.MAPPER_TYPES.get(ret, ret)
+        ret = getattr(row, self.columns_name[index.column()])
+        return str(self.MAPPER_TYPES.get(ret, ret))
 
     def get_id_object_alchemy(self, row):
         id_product = getattr(self.arraydata[row], self.columns_name[0])

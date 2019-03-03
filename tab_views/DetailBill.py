@@ -3,7 +3,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from models import *
+from specialized_models import *
 
 
 class Detail_Bill(QDialog):
@@ -94,31 +94,20 @@ class Detail_Bill(QDialog):
         total_price = 0
         self.stringRow = ''
         for detail in range(len(self.query)):
-            try:
-                self.table_items.setHorizontalHeaderLabels(['Producto', 'Cantidad',
-                                                            'Precio Total'])
-                product = session.query(Producto).get(self.query[detail].producto)
-                self.table_items.setItem(detail, 0,
-                                         QtGui.QTableWidgetItem(str(product.nombre)))
-                self.table_items.setItem(detail, 1,
-                                         QtGui.QTableWidgetItem(str(self.query[detail].cantidad)))
-                self.table_items.setItem(detail, 2,
-                                         QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
-                total_price += self.query[detail].precio_total
-                self.edit_total_price.setText(str(total_price))
-            except TypeError:
-                service = session.query(Servicio).get(self.query[detail].servicio)
-                self.table_items.setHorizontalHeaderLabels(['Servicio', 'Cancelado',
-                                                            'Precio Total'])
-                tipo = session.query(TipoServicio).get(service.tipo)
-                self.table_items.setItem(detail, 0,
-                                         QtGui.QTableWidgetItem(str(tipo.nombre)))
-                self.table_items.setItem(detail, 1,
-                                         QtGui.QTableWidgetItem(
-                                             self.MAPPER_BOOLEAN_TYPES[str(service.cancelado)]))
-                self.table_items.setItem(detail, 2,
-                                         QtGui.QTableWidgetItem(str(self.query[detail].precio_total)))
-                self.edit_total_price.setText(str(self.query[detail].precio_total))
+            service = session.query(Servicio).get(self.query[detail].servicio)
+            self.table_items.setHorizontalHeaderLabels(['Servicio', 'Cancelado',
+                                                        'Precio Total'])
+            tipo = 'Test'
+            self.table_items.setItem(detail, 0,
+                                     QtGui.QTableWidgetItem(str(tipo)))
+            self.table_items.setItem(detail, 1,
+                                     QtGui.QTableWidgetItem(
+                                         self.MAPPER_BOOLEAN_TYPES[
+                                             str(service.cancelado)]))
+            self.table_items.setItem(detail, 2,
+                                     QtGui.QTableWidgetItem(
+                                         str(self.query[detail].precio_total)))
+            self.edit_total_price.setText(str(self.query[detail].precio_total))
 
             self.stringRow = self.stringRow + str(detail+1) + ','
 

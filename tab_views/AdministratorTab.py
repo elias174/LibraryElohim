@@ -2,9 +2,12 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from datetime import date
+from datetime import date, datetime
 
-from models import *
+from sqlalchemy import desc
+from sqlalchemy import func
+
+from specialized_models import *
 from models_qt import MyTableModel
 from DetailExpense import Detail_Expense
 from DetailGain import Detail_Gain
@@ -21,7 +24,7 @@ class Administrator_Tab(QtGui.QWidget):
         super(Administrator_Tab, self).__init__()
 
         self.screenGeometry = QtGui.QApplication.desktop().availableGeometry()
-        self.last_query = (session.query(Producto).limit(20).all())
+        # self.last_query = (session.query(Producto).limit(20).all())
         self.central_layout = QtGui.QGridLayout()
         self.search_group = QtGui.QGroupBox(str("Busqueda"), self)
         self.control_singleton = False

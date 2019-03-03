@@ -1,10 +1,10 @@
 import sys
-from  datetime import date
+from datetime import date, datetime
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from models import *
+from specialized_models import *
 
 
 class Detail_Expense(QDialog):

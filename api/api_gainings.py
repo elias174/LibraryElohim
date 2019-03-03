@@ -1,4 +1,4 @@
-from models import *
+from specialized_models import *
 
 import datetime
 import collections

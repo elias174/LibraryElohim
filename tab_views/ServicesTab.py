@@ -5,13 +5,20 @@ import types
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from sqlalchemy import extract
 
-from models import *
+from specialized_models import *
 from models_qt import MyTableModel
-from Generic_forms import GenericFormDialog, AdvComboBox, AdvCheckBox
+from Generic_forms import GenericFormDialog, AdvComboBox, AdvCheckBox, \
+    AdvLineEdit, AdvDoubleSpinBox, AdvSpinBox, AdvTextEdit
+from dialogs.new_student import NewStudentDialog
 from api.api_sales import SaleApi
-from constants import LIST_YEARS, INDEX_CURRENT_YEAR, CURRENT_YEAR
+from constants import LIST_YEARS, INDEX_CURRENT_YEAR, CURRENT_YEAR, \
+    MATRICULA_MOUNT_DEFAULT
+
+
 # from config import ALCHEMY_SESSION as session
+from tab_views.SubTabServices import DetailedServicesTabs
 
 
 class ServicesTab(QtGui.QWidget):
@@ -35,8 +42,8 @@ class ServicesTab(QtGui.QWidget):
         self.line_edit_search = QtGui.QLineEdit()
         self.line_edit_last_name = QtGui.QLineEdit()
 
-        header_names = ['ID', 'Nombre', 'Apellido', 'DNI']
-        self.tablemodel = MyTableModel(Cliente, header_names, self)
+        header_names = ['ID', 'Nombres', 'Apellidos', 'Grado']
+        self.tablemodel = MyTableModel(Alumno, header_names, self)
         self.tableview = QtGui.QTableView()
         self.tableview.setAlternatingRowColors(True)
         self.tableview.setModel(self.tablemodel)
@@ -54,20 +61,19 @@ class ServicesTab(QtGui.QWidget):
         self.button_search_client = QtGui.QPushButton('Buscar Cliente')
         self.button_search_client.setMaximumWidth(
             self.screenGeometry.width() / 4)
-        self.button_new_client = QtGui.QPushButton('Nuevo Cliente')
-        self.button_new_client.setMaximumWidth(
-            self.screenGeometry.width() / 4)
+        self.button_new_client = QtGui.QPushButton('Nuevo Alumno')
+        self.button_new_client.setMinimumWidth(
+            self.screenGeometry.width() / 6)
 
         self.button_clean = QtGui.QPushButton('Limpiar')
 
         self.third_contain_layout = QtGui.QHBoxLayout()
         self.third_contain_layout.addWidget(self.button_search_client)
-        self.third_contain_layout.addWidget(self.button_new_client)
+        # self.third_contain_layout.addWidget(self.button_new_client)
         self.third_contain_layout.setSpacing(self.screenGeometry.width() / 2)
 
         self.first_contain_layout = QtGui.QHBoxLayout()
-        self.first_contain_layout.addWidget(
-            self.button_new_type_service, 0, QtCore.Qt.AlignRight)
+
 
         self.line_edit_search.textChanged.connect(
             self.auto_complete_client_search)
@@ -85,7 +91,9 @@ class ServicesTab(QtGui.QWidget):
         self.group_results = QtGui.QGroupBox(str("Resultados Busqueda"))
         self.layout_results = QtGui.QHBoxLayout()
         self.layout_buttons_results = QtGui.QVBoxLayout()
-        self.tableview_results = QtGui.QTableView()
+        # self.tableview_results = QtGui.QTableView()
+        self.services_tabs = DetailedServicesTabs(self)
+
         self.button_add_payment = QtGui.QPushButton("Agregar Pago")
         self.button_cancel_payment = QtGui.QPushButton("Cancelar Pago")
         self.button_new_service_payment = QtGui.QPushButton(
@@ -111,7 +119,7 @@ class ServicesTab(QtGui.QWidget):
         self.layout_buttons_results.addWidget(self.button_new_service_payment)
         self.layout_buttons_results.addLayout(self.layout_filter)
 
-        self.layout_results.addWidget(self.tableview_results)
+        self.layout_results.addWidget(self.services_tabs)
         self.layout_results.addLayout(self.layout_buttons_results)
 
         self.group_results.setLayout(self.layout_results)
@@ -132,6 +140,8 @@ class ServicesTab(QtGui.QWidget):
         self.layout_line_client.addWidget(self.line_edit_search)
         self.layout_line_client.addWidget(self.last_name)
         self.layout_line_client.addWidget(self.line_edit_last_name)
+        self.layout_line_client.addWidget(self.button_new_client)
+
         self.layout.addRow(self.first_contain_layout)
         self.layout.addRow(self.layout_line_client)
         self.layout.addRow(self.tableview)
@@ -151,25 +161,24 @@ class ServicesTab(QtGui.QWidget):
     def update_last_query(self):
         current_year_str = str(self.year_filter_results.currentText())
 
-        if current_year_str == 'Todos':
-            self.last_query_services = (
-                session.query(Detalle.servicio).distinct().join(Factura).
+        # if current_year_str == 'Todos':
+        self.last_query_services = (
+            session.query(Servicio).
                 filter(
-                    Detalle.servicio.isnot(None),
-                    Factura.cliente == self.client_id
-                ).all()
-            )
+                Servicio.alumno_id == self.client_id
+            ).all()
+        )
 
-        else:
-            current_year = int(current_year_str)
-            self.last_query_services = (
-                session.query(Detalle.servicio).distinct().join(Factura).
-                filter(
-                    Detalle.servicio.isnot(None),
-                    extract('year', Factura.fecha) == current_year,
-                    Factura.cliente == self.client_id
-                ).all()
-            )
+        # else:
+        #     current_year = int(current_year_str)
+        #     self.last_query_services = (
+        #         session.query(Detalle.servicio).distinct().join(Factura).
+        #         filter(
+        #             Detalle.servicio.isnot(None),
+        #             extract('year', Factura.fecha) == current_year,
+        #             Factura.cliente == self.client_id
+        #         ).all()
+        #     )
 
         self.array_data = [session.query(Servicio).get(service)
                            for service in self.last_query_services]
@@ -178,21 +187,14 @@ class ServicesTab(QtGui.QWidget):
         indexes = self.tableview.selectedIndexes()
         if len(indexes) < 1:
             QtGui.QMessageBox.critical(
-                self, 'Error', 'No se selecciono ningun cliente',
+                self, 'Error', 'No se selecciono ningun alumno',
                 QtGui.QMessageBox.Ok)
             self.client_id = None
             return
         else:
             client_id = self.tablemodel.get_id_object_alchemy(indexes[0].row())
         self.client_id = client_id
-
-        self.update_last_query()
-
-        header_names = ['ID', 'Tipo', 'Cancelado', 'Monto Total']
-        self.table_model_result = MyTableModel(
-            Servicio, header_names, self, self.array_data)
-        self.tableview_results.setModel(self.table_model_result)
-        self.tableview_results.resizeColumnsToContents()
+        self.services_tabs.set_alumno_id(self.client_id)
         self.exist_client = True
 
     def auto_complete_client_search(self, string):
@@ -202,26 +204,32 @@ class ServicesTab(QtGui.QWidget):
         self.tablemodel.searchClient(self.line_edit_search.text(), string)
 
     def new_service(self):
-        data, result = GenericFormDialog.get_data(TipoServicio, self)
-        if result:
-            new_type_service = TipoServicio(
-                data['nombre'],
-                data['descripcion'],
-            )
-            session.add(new_type_service)
-            session.commit()
+        pass
+        # data, result = GenericFormDialog.get_data(TipoServicio, self)
+        # if result:
+        #     new_type_service = TipoServicio(
+        #         data['nombre'],
+        #         data['descripcion'],
+        #     )
+        #     session.add(new_type_service)
+        #     session.commit()
 
     def new_client(self):
-        data, result = GenericFormDialog.get_data(Cliente, self)
+        widget_grade = AdvComboBox(custom=True)
+        widget_grade.addItems(Alumno.get_grados())
+        data, result = GenericFormDialog.get_data(
+            Alumno, self, fields=['nombres', 'apellidos', 'dni'],
+            customs_widgets=[('Grado', widget_grade),])
         if result:
-            new_client = Cliente(
-                data['nombre'],
-                data['apellido'],
-                data['dni'],
+            new_alumno = Alumno(
+                nombres=data['nombres'],
+                apellidos=data['apellidos'],
+                dni=data['dni'],
+                grado=data['Grado'],
             )
-            session.add(new_client)
+            session.add(new_alumno)
             session.commit()
-            self.tableview.model().refresh_data()
+            #self.tableview.model().refresh_data()
 
     def clean_results(self):
         if self.exist_client:
@@ -229,7 +237,7 @@ class ServicesTab(QtGui.QWidget):
             self.last_query_services = None
             self.array_data = []
             self.exist_client = False
-            self.tableview_results.model().clear()
+            self.services_tabs.clear()
         return
 
     def cancel_payment(self):
@@ -239,7 +247,7 @@ class ServicesTab(QtGui.QWidget):
                 QtGui.QMessageBox.Ok)
             return
 
-        indexes = self.tableview_results.selectedIndexes()
+        indexes = self.services_tabs.selectedIndexes()
         if len(indexes) < 1:
             QtGui.QMessageBox.critical(
                 self, 'Error', 'No se selecciono ningun servicio',
@@ -266,7 +274,7 @@ class ServicesTab(QtGui.QWidget):
             session.add(service)
             session.commit()
             self.update_last_query()
-            self.tableview_results.model().refresh_data(self.array_data)
+            self.services_tabs.model().refresh_data(self.array_data)
 
     def add_payment_to_service(self):
         if not self.exist_client:
@@ -275,7 +283,7 @@ class ServicesTab(QtGui.QWidget):
                 QtGui.QMessageBox.Ok)
             return
 
-        indexes = self.tableview_results.selectedIndexes()
+        indexes = self.services_tabs.selectedIndexes()
         if len(indexes) < 1:
             QtGui.QMessageBox.critical(
                 self, 'Error', 'No se selecciono ningun servicio',
@@ -309,8 +317,8 @@ class ServicesTab(QtGui.QWidget):
             # very dangerous, we need use the same object session
             session.commit()
             self.update_last_query()
-            self.tableview_results.model().refresh_data(self.array_data)
-            self.tableview_results.resizeColumnsToContents()
+            self.services_tabs.model().refresh_data(self.array_data)
+            self.services_tabs.resizeColumnsToContents()
             self.service_payment_realeased.emit(float(data_pay['precio_total']))
 
     def new_service_payment(self):
@@ -319,40 +327,33 @@ class ServicesTab(QtGui.QWidget):
                 self, 'Error', 'Primero Busque un Cliente',
                 QtGui.QMessageBox.Ok)
             return
-        data_type_service = ['%s %s' % (str(e.id), str(e.nombre))
-                             for e in session.query(TipoServicio).all()]
 
-        widget_type_service = AdvComboBox()
-        widget_type_service.addItems(data_type_service)
+        object_service, result_payment = self.services_tabs.generate_dialog_data()
 
-        widget_canceled = AdvCheckBox()
-        custom_widgets = [('TipoServicio', widget_type_service),
-                          ('Cancelado', widget_canceled)]
-        fields = ['precio_total']
-        data_payment, result_payment = GenericFormDialog.get_data(
-            Detalle, self, fields=fields, customs_widgets=custom_widgets)
         if result_payment:
-            sale = SaleApi(float(data_payment['precio_total']), self.client_id)
+            sale = SaleApi(object_service.monto, self.client_id)
             sale.generate_factura()
-            sale.add_detail_service(type_service=data_payment['TipoServicio'],
-                                    canceled=data_payment['Cancelado'])
+            sale.add_detail_service(
+                type_service=self.services_tabs.get_type_service(),
+                object_service=object_service
+            )
             sale.save_sale()
-            QtGui.QMessageBox.information(self, 'Finalizado', 'Pago Guardado')
-            sale.print_factura(self)
-            QtGui.QMessageBox.information(self, 'Finalizado',
-                                          'Ticket Imprimido')
-
-            # I need check why query it's this way
-            # self.last_query_services = (
-            #     session.query(Detalle.servicio).distinct().join(Factura).
-            #     filter_by(cliente=self.client_id).all())
+            # QtGui.QMessageBox.information(self, 'Finalizado', 'Pago Guardado')
+            # sale.print_factura(self)
+            # QtGui.QMessageBox.information(self, 'Finalizado',
+            #                               'Ticket Imprimido')
             #
-            # self.array_data = [session.query(Servicio).get(service)
-            #                    for service in self.last_query_services]
-            self.update_last_query()
-            self.tableview_results.model().refresh_data(self.array_data)
-            self.tableview_results.resizeColumnsToContents()
-            self.service_payment_realeased.emit(float(data_payment['precio_total']))
+            # # I need check why query it's this way
+            # # self.last_query_services = (
+            # #     session.query(Detalle.servicio).distinct().join(Factura).
+            # #     filter_by(cliente=self.client_id).all())
+            # #
+            # # self.array_data = [session.query(Servicio).get(service)
+            # #                    for service in self.last_query_services]
+            # self.update_last_query()
+            # self.tableview_results.model().refresh_data(self.array_data)
+            # self.tableview_results.resizeColumnsToContents()
+            # self.service_payment_realeased.emit(float(data_payment['precio_total']))
 
 
 
